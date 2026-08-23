@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Retning 3: Værksted — Tekstværket</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bund:#F3F4F0;
+    --gran:#1C3A31;
+    --gran-let:#4C6A60;
+    --stempel:#1E5C46;
+    --rav:#D9A441;
+    --kort:#FFFFFF;
+    --kant:#DDE0D8;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bund);color:var(--gran);font-family:'IBM Plex Sans',sans-serif;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 32px}
+  .mono{font-family:'IBM Plex Mono',monospace}
+
+  nav{background:var(--bund)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:20px 0}
+  .logo{font-weight:700;font-size:19px;letter-spacing:-0.01em;display:flex;align-items:center;gap:9px}
+  .logo-maerke{width:26px;height:26px;border-radius:6px;background:var(--gran);color:var(--bund);display:grid;place-items:center;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600}
+  .nav-links{display:flex;gap:26px;align-items:center;font-size:14px;font-weight:500}
+  .nav-links a{color:var(--gran-let);text-decoration:none}
+  .nav-links a:hover{color:var(--gran)}
+  .btn{display:inline-block;background:var(--gran);color:#fff;text-decoration:none;padding:11px 20px;border-radius:8px;font-weight:600;font-size:14px}
+  .btn:hover{background:#142B24}
+
+  /* Hero */
+  .hero{padding:76px 0 64px}
+  .hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+  .maerkat{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:500;letter-spacing:.06em;color:var(--gran-let);border:1px solid var(--kant);background:var(--kort);border-radius:999px;padding:6px 14px;margin-bottom:22px}
+  h1{font-weight:700;font-size:clamp(34px,4.6vw,52px);line-height:1.1;letter-spacing:-0.025em;margin-bottom:20px}
+  .hero p{font-size:18px;color:var(--gran-let);max-width:440px;margin-bottom:30px}
+  .hero-cta{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+  .cta-note{font-size:13px;color:var(--gran-let)}
+
+  /* Godkendelses-kortet med stempel */
+  .godkend-kort{background:var(--kort);border:1px solid var(--kant);border-radius:14px;padding:26px;position:relative;box-shadow:0 20px 44px -28px rgba(28,58,49,.35)}
+  .kort-linje{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--gran-let);padding-bottom:14px;border-bottom:1px solid var(--kant);margin-bottom:16px}
+  .kort-linje b{color:var(--gran);font-weight:600}
+  .tekstlinjer div{height:9px;border-radius:99px;background:#E8EAE3;margin-bottom:9px}
+  .tekstlinjer div:nth-child(1){width:92%}
+  .tekstlinjer div:nth-child(2){width:100%}
+  .tekstlinjer div:nth-child(3){width:84%}
+  .tekstlinjer div:nth-child(4){width:96%;margin-bottom:20px}
+  .valg{display:flex;gap:10px}
+  .valg span{font-size:13px;font-weight:600;padding:8px 14px;border-radius:8px;border:1px solid var(--kant);color:var(--gran-let)}
+  .valg .primaer{background:var(--gran);border-color:var(--gran);color:#fff}
+  .stempel{position:absolute;right:-14px;top:-20px;transform:rotate(-8deg);border:3px solid var(--stempel);color:var(--stempel);font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:15px;letter-spacing:.14em;padding:8px 16px;border-radius:6px;background:rgba(243,244,240,.9);box-shadow:0 2px 0 rgba(30,92,70,.15)}
+  .stempel::after{content:"";position:absolute;inset:3px;border:1px solid var(--stempel);border-radius:3px;opacity:.5}
+
+  /* Principper */
+  .principper{padding:72px 0;border-top:1px solid var(--kant)}
+  h2{font-weight:700;font-size:clamp(26px,3.2vw,36px);letter-spacing:-0.02em;margin-bottom:44px;max-width:22ch}
+  .princip-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .princip{background:var(--kort);border:1px solid var(--kant);border-radius:14px;padding:26px}
+  .princip .nr{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--rav);font-weight:600;letter-spacing:.08em;display:block;margin-bottom:14px}
+  .princip h3{font-size:17px;font-weight:600;margin-bottom:8px}
+  .princip p{font-size:14px;color:var(--gran-let)}
+
+  /* Kvote/ærlighed */
+  .aerlig{padding:0 0 84px}
+  .aerlig-kort{background:var(--gran);color:#E9EFEA;border-radius:16px;padding:clamp(32px,5vw,56px);display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:center}
+  .aerlig-kort h2{color:#fff;margin-bottom:14px;max-width:none}
+  .aerlig-kort p{color:#AEC2B8;max-width:420px}
+  .kvote{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:22px}
+  .kvote-linje{display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:13px;margin-bottom:10px;color:#CBDCD3}
+  .maaler{height:8px;border-radius:99px;background:rgba(255,255,255,.12);overflow:hidden;margin-bottom:18px}
+  .maaler div{height:100%;width:60%;background:var(--rav);border-radius:99px}
+  .kvote small{font-size:12.5px;color:#9DB3A8;line-height:1.5;display:block}
+
+  footer{padding:32px 0;font-size:13.5px;color:var(--gran-let);border-top:1px solid var(--kant)}
+  footer .wrap{display:flex;justify-content:space-between}
+
+  @media (max-width:860px){
+    .hero-grid{grid-template-columns:1fr;gap:44px}
+    .princip-grid{grid-template-columns:1fr}
+    .aerlig-kort{grid-template-columns:1fr;gap:32px}
+    .nav-links a:not(.btn){display:none}
+    .stempel{right:8px}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap nav-inner">
+    <div class="logo"><span class="logo-maerke">Tv</span>Tekstværket</div>
+    <div class="nav-links">
+      <a href="#">Sådan virker det</a>
+      <a href="#">Priser</a>
+      <a href="#">Log ind</a>
+      <a href="#" class="btn">Åbn værkstedet</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="maerkat">Dansk skriveværksted · siden 2026</span>
+      <h1>Skriv mindre.<br>Godkend mere.</h1>
+      <p>Et roligt arbejdsredskab til dig, der selv står for teksterne: blogindlæg, produkttekster og brandtekster — skrevet på ordentligt dansk, godkendt af dig.</p>
+      <div class="hero-cta">
+        <a href="#" class="btn">Skriv din første tekst</a>
+        <span class="cta-note">5 gratis tekster om måneden · intet kort</span>
+      </div>
+    </div>
+    <div class="godkend-kort">
+      <div class="stempel">GODKENDT</div>
+      <div class="kort-linje"><b>Produkttekst · Håndlavet keramikkrus</b><span class="mono">udkast 1/1</span></div>
+      <div class="tekstlinjer"><div></div><div></div><div></div><div></div></div>
+      <div class="valg">
+        <span class="primaer">Godkend og download</span>
+        <span>Regenerér afsnit</span>
+        <span>Redigér</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="principper">
+  <div class="wrap">
+    <h2>Tre huskeregler, vi aldrig bryder</h2>
+    <div class="princip-grid">
+      <div class="princip">
+        <span class="nr">Regel 01</span>
+        <h3>Intet udgives uden dit stempel</h3>
+        <p>Hver tekst er et forslag, til du siger god for den. Ingen automatik bag din ryg.</p>
+      </div>
+      <div class="princip">
+        <span class="nr">Regel 02</span>
+        <h3>Dine tekster er dine</h3>
+        <p>Vi gemmer ikke dine færdige tekster. Du downloader dem — kladder slettes automatisk efter 48 timer.</p>
+      </div>
+      <div class="princip">
+        <span class="nr">Regel 03</span>
+        <h3>Dansk først, altid</h3>
+        <p>Skabeloner, tone og SEO bygget til dansk — ikke oversat fra engelsk i sidste øjeblik.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="aerlig">
+  <div class="wrap">
+    <div class="aerlig-kort">
+      <div>
+        <h2>Du kan altid se, hvor du står</h2>
+        <p>Ingen skjulte grænser og ingen overraskelser. Din kvote står øverst i værkstedet, og du bestemmer selv, hvornår den skal vokse.</p>
+      </div>
+      <div class="kvote">
+        <div class="kvote-linje"><span>Kvote · juli</span><span>3 af 5 brugt</span></div>
+        <div class="maaler"><div></div></div>
+        <small>Din kladde "Om os — Krusgården" gemmes lokalt og på serveren i 48 timer endnu. Download den, når du har stemplet den.</small>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Tekstværket</span>
+    <span>Privatliv · Vilkår</span>
+  </div>
+</footer>
+
+</body>
+</html>
