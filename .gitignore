@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Skabelonen uden hemmeligheder skal gerne med på GitHub
+!.env.example
