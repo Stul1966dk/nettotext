@@ -15,6 +15,7 @@ trin 8.
 
 - [ ] **Fjern `noindex`.** `app/layout.tsx` → slet linjen `robots: { index: false, follow: false }` i `metadata`. Uden det bliver siden aldrig fundet af Google.
 - [ ] **Åbn for brugere.** Supabase → Authentication → Sign In / Providers → slå "Allow new users to sign up" til igen (eller tilføj godkendt-liste).
+- [ ] **Egen SMTP + dansk login-mail.** Skal på plads INDEN de første testbrugere — ikke først ved lancering. Supabases indbyggede mailservice sender kun til adresser knyttet til vores egen Supabase-konto, og skabelonerne kan ikke redigeres uden egen SMTP. Sæt Resend op (gratis til 3.000 mails/md.), og skift derefter Magic Link-skabelonen til dansk med `{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=email` — den form virker også, når mailen åbnes på en anden enhed end den, linket blev bestilt fra.
 - [ ] **Kobl `nettotext.com` på** i Vercel → Settings → Domains — og skift derefter **Site URL** i Supabase → Authentication → URL Configuration til det nye domæne. Sker det ikke, peger login-mailens link stadig på `.vercel.app`.
 - [ ] **Privatlivspolitik** på `/da/privatliv` (GDPR, jf. teknisk oplæg afsnit 5).
 - [ ] **Opdatér brandnavnet** i `design/design-3-vaerksted.html` til NettoText.
@@ -44,9 +45,11 @@ To lag, så en fejl i det ene ikke åbner døren. Brugere oprettes manuelt i
 Supabase, indtil vi åbner.
 
 **`/auth/callback` accepterer både `token_hash` og `code`.**
-`token_hash` er det anbefalede og virker også, hvis mailen åbnes i en anden
-browser end den, linket blev bestilt fra. `code` er Supabases standard og
-beholdes som sikkerhedsnet, hvis mailskabelonen skulle blive nulstillet.
+Det viste sig at være nødvendigt: Supabase låser mailskabelonerne, indtil
+man har koblet sin egen SMTP på, så V1 kører på standardskabelonen, der
+sender `code`. `token_hash` ligger klar til den dag, vi får egen SMTP og
+kan skrive mailen på dansk. Konsekvens indtil da: login-mailen er engelsk,
+og linket skal åbnes i samme browser, som bestilte det.
 
 **Login ligger på `/log-ind` uden sprogpræfiks.**
 Den hører til appen, ikke til marketing-siderne, og appen har sproget som
