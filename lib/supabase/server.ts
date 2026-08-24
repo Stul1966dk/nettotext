@@ -1,6 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
+import { DB_SCHEMA } from "./schema";
+
 /**
  * Supabase-klient til Server Components, Server Actions og API routes.
  * Læser og fornyer login-sessionen via cookies.
@@ -15,6 +17,8 @@ export async function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      // NettoText har sit eget skema i en delt database. Se migrationerne.
+      db: { schema: DB_SCHEMA },
       cookies: {
         getAll() {
           return cookieStore.getAll();
