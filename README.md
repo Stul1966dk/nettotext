@@ -3,6 +3,9 @@
 Dansk SaaS til generering og opdatering af webtekster. Se [CLAUDE.md](CLAUDE.md) for
 projektets regler, datamodel, driftsmodel og designsystem — den er gældende for al kode.
 
+**Live:** https://nettotext.vercel.app (`nettotext.com` kobles på ved lancering)
+Hvert push til `main` udgives automatisk af Vercel.
+
 ## Kom i gang
 
 ```bash
