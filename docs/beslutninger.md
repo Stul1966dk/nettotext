@@ -51,6 +51,22 @@ sender `code`. `token_hash` ligger klar til den dag, vi får egen SMTP og
 kan skrive mailen på dansk. Konsekvens indtil da: login-mailen er engelsk,
 og linket skal åbnes i samme browser, som bestilte det.
 
+**Manglende miljøvariabler skal fejle højlydt, ikke stille.**
+`lib/supabase/konfiguration.ts` kaster en navngiven fejl, hvis en Supabase-
+variabel er tom. Baggrund: live gav bar "Internal Server Error" på alle ruter
+der rører Supabase, mens den statiske forside virkede — årsagen var, at
+`NEXT_PUBLIC_SUPABASE_URL` var tom hos Vercel, selvom den stod på listen.
+
+Værd at huske næste gang noget kun fejler live:
+- `NEXT_PUBLIC_`-variabler læses ved BYGNING og skrives ind i koden. Ændrer
+  man dem, skal der deployes igen — Vercel gør det ikke af sig selv.
+- En manglende variabel får ikke bygningen til at fejle af sig selv. Den
+  producerer en side, der først går ned, når nogen bruger den.
+- Fejlkontrollen flytter fejlen til bygningen, hvor den ses med det samme
+  og aldrig når ud til en bruger. Beskeden går kun i byggeloggen.
+- Test altid en rute, der rører databasen. En statisk forside kan svare 200,
+  mens alt andet er brudt.
+
 **Login ligger på `/log-ind` uden sprogpræfiks.**
 Den hører til appen, ikke til marketing-siderne, og appen har sproget som
 brugerindstilling. Teksterne ligger stadig i `messages/da.json` og hentes
