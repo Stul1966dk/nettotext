@@ -42,7 +42,7 @@ Dansk SaaS til generering og opdatering af webtekster (blogindlæg, produkttekst
 
 ## Datamodel (V1 — udvid kun efter aftale)
 
-**Supabase-projektet deles med andre projekter.** Alle NettoText-tabeller ligger derfor i skemaet `nettotext`, aldrig i `public`. Nye migrationer opretter tabeller som `nettotext.<navn>` og giver eksplicitte `grant`s til `authenticated` (kun det nødvendige) og `service_role`. Rør aldrig `public`, `auth.users` eller andre skemaer — heller ikke med triggers. `auth.users` er fælles: profilrækker oprettes af serverkode ved første login, og "slet min konto" skal tage højde for, at brugeren kan findes i andre apps.
+NettoText har sit eget Supabase-projekt (`ozuwyybhjnhthfrfhwys`), så tabellerne ligger i `public` som normalt.
 
 - `profiles`: id (FK auth.users), email, plan ('free'), trial_quota (5), trial_used (0), created_at
 - `ai_keys`: id, user_id, provider ('anthropic'|'openai'), encrypted_key, key_hint, created_at, last_validated_at
