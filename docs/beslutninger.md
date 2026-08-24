@@ -15,9 +15,44 @@ trin 8.
 
 - [ ] **Fjern `noindex`.** `app/layout.tsx` → slet linjen `robots: { index: false, follow: false }` i `metadata`. Uden det bliver siden aldrig fundet af Google.
 - [ ] **Åbn for brugere.** Supabase → Authentication → Sign In / Providers → slå "Allow new users to sign up" til igen (eller tilføj godkendt-liste).
-- [ ] **Kobl `nettotext.com` på** i Vercel → Settings → Domains.
+- [ ] **Kobl `nettotext.com` på** i Vercel → Settings → Domains — og skift derefter **Site URL** i Supabase → Authentication → URL Configuration til det nye domæne. Sker det ikke, peger login-mailens link stadig på `.vercel.app`.
 - [ ] **Privatlivspolitik** på `/da/privatliv` (GDPR, jf. teknisk oplæg afsnit 5).
 - [ ] **Opdatér brandnavnet** i `design/design-3-vaerksted.html` til NettoText.
+
+---
+
+## 2026-08-24 — Trin 1: login
+
+**Kun magic link — intet Google-login.**
+Brugerens valg. Sparer et helt afsnit i Supabase-opsætningen (OAuth-klient,
+hemmelighed, godkendte domæner) og en knap i UI'et. Google kan tilføjes
+senere uden at røre resten af login-flowet.
+
+**Adgangskontrollen ligger i `app/app/layout.tsx`, ikke i `proxy.ts`.**
+Next.js' egen dokumentation advarer eksplicit mod at bruge proxy-laget som
+sikkerhedslag. Proxy'en forbereder kun sessionen. Fordi tjekket ligger i
+layoutet, er alle fremtidige sider under `/app` beskyttet automatisk.
+
+**Samme svar uanset om kontoen findes.**
+Et login-forsøg svarer altid "findes der en konto med den adresse, ligger
+der nu et link i indbakken". Ellers kunne enhver bruge login-siden til at
+afgøre, om en given mailadresse er kunde hos os. Koster: skriver du din mail
+forkert, får du ingen advarsel — du venter bare forgæves.
+
+**Låsen er `shouldCreateUser: false` plus dashboard-indstillingen.**
+To lag, så en fejl i det ene ikke åbner døren. Brugere oprettes manuelt i
+Supabase, indtil vi åbner.
+
+**`/auth/callback` accepterer både `token_hash` og `code`.**
+`token_hash` er det anbefalede og virker også, hvis mailen åbnes i en anden
+browser end den, linket blev bestilt fra. `code` er Supabases standard og
+beholdes som sikkerhedsnet, hvis mailskabelonen skulle blive nulstillet.
+
+**Login ligger på `/log-ind` uden sprogpræfiks.**
+Den hører til appen, ikke til marketing-siderne, og appen har sproget som
+brugerindstilling. Teksterne ligger stadig i `messages/da.json` og hentes
+server-side, så formularen kan være en klient-komponent uden at trække en
+sprog-provider med sig.
 
 ---
 
