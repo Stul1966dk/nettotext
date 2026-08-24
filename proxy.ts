@@ -1,10 +1,27 @@
 import createMiddleware from "next-intl/middleware";
-import { routing } from "./i18n/routing";
+import type { NextRequest } from "next/server";
 
-export default createMiddleware(routing);
+import { routing } from "./i18n/routing";
+import { refreshSession } from "./lib/supabase/refreshSession";
+
+const intlProxy = createMiddleware(routing);
+
+const erMarketingSti = (pathname: string) =>
+  pathname === "/" || /^\/(da|en)(\/|$)/.test(pathname);
+
+export default async function proxy(request: NextRequest) {
+  // Marketing-siderne har sproget i URL'en og kender ikke til login.
+  if (erMarketingSti(request.nextUrl.pathname)) {
+    return intlProxy(request);
+  }
+
+  // Alt andet — appen, login og auth-callback — får sessionen fornyet.
+  return refreshSession(request);
+}
 
 export const config = {
-  // Kun forsiden og sprog-stierne. /app, /api og statiske filer røres ikke —
-  // appen bag login har sproget som brugerindstilling, ikke i URL'en.
-  matcher: ["/", "/(da|en)/:path*"],
+  // Alt undtagen Next.js' egne filer og billeder.
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+  ],
 };

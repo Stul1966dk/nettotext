@@ -7,6 +7,32 @@
     "navn": "NettoText",
     "overskrift": "Danske webtekster, du selv godkender",
     "loefte": "De første 5 tekster er på os — derefter skriver du videre med din egen AI-nøgle.",
-    "status": "Fundamentet er sat op. Login og tekstgenerering bygges i de næste trin."
+    "status": "Fundamentet er sat op. Login og tekstgenerering bygges i de næste trin.",
+    "logInd": "Log ind"
+  },
+  "logInd": {
+    "titel": "Log ind — NettoText",
+    "overskrift": "Log ind",
+    "forklaring": "Skriv din mailadresse. Du får et link, du kan klikke på — ingen adgangskode.",
+    "label": "Mailadresse",
+    "pladsholder": "dig@ditfirma.dk",
+    "knap": "Send login-link",
+    "sender": "Sender …",
+    "tjekIndbakke": "Findes der en konto med den adresse, ligger der nu et login-link i indbakken. Linket virker i én time og kan kun bruges én gang.",
+    "ugyldigEmail": "Det ser ikke ud til at være en mailadresse. Tjek den, og prøv igen.",
+    "forMangeForsoeg": "Du har bedt om for mange links på kort tid. Vent et minut, og prøv igen.",
+    "nogetGikGalt": "Vi kunne ikke sende linket lige nu. Prøv igen om lidt.",
+    "linkVirkedeIkke": "Linket virkede ikke. Det er enten udløbet eller brugt før — bed om et nyt herunder.",
+    "lukketTest": "NettoText er i lukket test. Kun konti, der er oprettet på forhånd, kan logge ind."
+  },
+  "app": {
+    "titel": "Dashboard — NettoText",
+    "overskrift": "Dashboard",
+    "logUd": "Log ud",
+    "kvoteLabel": "Prøvetekster",
+    "kvote": "{tilbage} af {ialt} prøvetekster tilbage",
+    "kvoteForklaring": "På vores regning. Derefter skriver du videre med din egen AI-nøgle.",
+    "kvoteUkendt": "Vi kunne ikke hente din prøvekvote lige nu.",
+    "naesteTrin": "Tekstgenerering bygges i næste trin."
   }
 }

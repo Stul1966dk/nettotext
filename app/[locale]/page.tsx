@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 type Props = {
@@ -39,6 +40,13 @@ export default async function Forside({ params }: Props) {
         <p className="mt-8 border-t border-kant pt-6 font-mono text-sm text-gran-let">
           {t("status")}
         </p>
+
+        <Link
+          href="/log-ind"
+          className="mt-6 inline-block rounded-lg bg-gran px-4 py-2.5 text-sm font-medium text-bund outline-none focus-visible:ring-2 focus-visible:ring-gran focus-visible:ring-offset-2 focus-visible:ring-offset-kort"
+        >
+          {t("logInd")}
+        </Link>
       </div>
     </main>
   );
