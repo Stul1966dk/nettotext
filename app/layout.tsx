@@ -18,6 +18,9 @@ const plexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: "NettoText",
   description: "Danske webtekster, du selv godkender.",
+  // FJERNES VED LANCERING. Beder søgemaskiner holde sig væk, så en
+  // halvfærdig side ikke bliver indekseret. Gælder alle sider.
+  robots: { index: false, follow: false },
 };
 
 // V1 er kun dansk, så lang står fast her. Når /en tilføjes, flyttes
