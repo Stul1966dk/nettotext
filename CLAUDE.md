@@ -91,3 +91,5 @@ Referencefil: `design/design-3-vaerksted.html` er den visuelle facit for landing
 - Foreslå den enkleste løsning der opfylder kravet — ingen ekstra biblioteker eller abstraktioner uden begrundelse.
 - Databaseændringer: altid SQL-migrationsfiler i `supabase/migrations/`, aldrig manuelle ændringer uden fil.
 - Er et krav i denne fil i konflikt med en prompt: spørg, før du fraviger.
+- **Før hver commit: skriv nye beslutninger ind i `docs/beslutninger.md`.** Alt der er valgt fra, sat på pause, eller afviger fra oplæggene — med begrundelse. Sættes noget på pause til efter lancering, skal det på tjeklisten "Skal gøres før lancering" øverst i filen.
+- **Gennemgå tjeklisten i `docs/beslutninger.md` ved starten af hver session** og nævn åbne punkter, der er blevet relevante. Ved trin 8 (lancering) gennemgås hele listen punkt for punkt — `noindex` i `app/layout.tsx` skal fjernes der.
