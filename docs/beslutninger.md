@@ -17,10 +17,46 @@ trin 8.
 - [ ] **Åbn for brugere.** Supabase → Authentication → Sign In / Providers → slå "Allow new users to sign up" til igen (eller tilføj godkendt-liste).
 - [ ] **Egen SMTP + dansk login-mail.** Skal på plads INDEN de første testbrugere — ikke først ved lancering. Supabases indbyggede mailservice sender kun til adresser knyttet til vores egen Supabase-konto, og skabelonerne kan ikke redigeres uden egen SMTP. Sæt Resend op (gratis til 3.000 mails/md.), og skift derefter Magic Link-skabelonen til dansk med `{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=email` — den form virker også, når mailen åbnes på en anden enhed end den, linket blev bestilt fra.
 - [ ] **Kobl `nettotext.com` på** i Vercel → Settings → Domains — og skift derefter **Site URL** i Supabase → Authentication → URL Configuration til det nye domæne. Sker det ikke, peger login-mailens link stadig på `.vercel.app`.
+- [ ] **Sæt ejerkontoens prøvekvote tilbage.** Den står på 1.000.000 for at kunne teste frit under udviklingen. Beslut inden lancering, om ejerkontoen fortsat skal være speciel — og hvis ikke, sæt den til 5 som alle andre.
+- [ ] **Fjern eksempelteksten fra brief-felterne**, eller lav den om til en "Udfyld med eksempel"-knap. Felterne i `templates.input_fields` er forudfyldt med et malerfirma i Brønderslev. Det er praktisk under test, men rigtige brugere vil sende eksemplet af sted som deres egen brief uden at opdage det.
+- [ ] **Sæt et forbrugsloft på platformens AI-nøgle hos Anthropic.** Så længe `DAILY_BUDGET_DKK` ikke er bygget (trin 6), er leverandørens eget loft det eneste, der står mellem en fejl og en stor regning.
 - [ ] **Prøv ChatGPT-vejen af, før nogen får lov at vælge den.** `lib/ai/openai.ts` er skrevet, men aldrig kørt — platformens nøgle er en Anthropic-nøgle, så OpenAI-siden kan først testes, når der findes en OpenAI-nøgle at teste med. Lad ikke brugerne vælge ChatGPT i indstillinger, før mindst én tekst er skrevet den vej.
 - [ ] **Tjek at lange tekster når at blive færdige.** `/api/generate` har `maxDuration = 60`. Vercels loft afhænger af abonnement. Timer "Langt — ca. 1.400 ord" ud i produktion, er der to knapper: hæv `maxDuration` (kræver det rigtige abonnement), eller sænk `effort` i `lib/ai/anthropic.ts`.
 - [ ] **Privatlivspolitik** på `/da/privatliv` (GDPR, jf. teknisk oplæg afsnit 5).
 - [ ] **Opdatér brandnavnet** i `design/design-3-vaerksted.html` til NettoText.
+
+---
+
+## 2026-08-25 — Fri afprøvning
+
+**Ejerkontoens prøvekvote sat til 1.000.000.**
+Ejerens beslutning. Prompten skal finpudses over flere runder, og med fem
+prøvetekster ville han stå fast — BYOK-vejen er ikke bygget endnu, så der er
+ingen anden vej videre, når kvoten er brugt.
+**Vær opmærksom på hvad det betyder:** kvoten var det ENESTE, der begrænsede
+forbruget på platformens nøgle. Rate limit og `DAILY_BUDGET_DKK` hører til
+trin 6 og findes ikke. For ejerkontoen er der nu ingen bremse i appen — kun
+det loft, der måtte være sat hos Anthropic. Det er sat på tjeklisten.
+
+**Kvoteændringen fik ikke sin egen migrationsfil.**
+Det er en afvigelse fra "databaseændringer skal altid i en migrationsfil", og
+begrundelsen er regel 9: en migrationsfil, der peger på én konto, skal
+indeholde enten en mailadresse eller et bruger-id, og filen ligger på GitHub.
+Persondata i et offentligt repo er en dårligere handel end en ændring, der
+kun er dokumenteret her. Reglen gælder fortsat for skema og for indhold, der
+er ens for alle — det er dét, den er til for.
+
+**Eksempeltekst i brief-felterne — som data, ikke som kode.**
+Nyt `standard`-felt i `templates.input_fields`, brugt som `defaultValue` i
+formularen. Ejeren skal kunne teste uden at skrive en brief hver gang.
+Eksemplet ligger i skabelonen, ikke i formularens kode, så en ny teksttype
+selv bestemmer sit eget eksempel — på samme måde som den bestemmer sine
+felter.
+Eksemplet er bevidst konkret (et malerfirma i Brønderslev, med sæson,
+prisform og hvor rådskaderne starter). En tynd brief ville kun vise, om
+modellen kan finde på; en fyldig viser, om den holder sig til det, den fik.
+Bemærk bagsiden: forudfyldte felter er godt til test og dårligt til rigtige
+brugere, der vil sende eksemplet af sted som deres eget. Se tjeklisten.
 
 ---
 

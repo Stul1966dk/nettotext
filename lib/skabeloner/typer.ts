@@ -20,6 +20,12 @@ export const inputFeltSkema = z.object({
   hjaelp: z.string().optional(),
   paakraevet: z.boolean(),
   maxLaengde: z.number().int().positive().optional(),
+  /**
+   * Forudfyldt værdi. Brugeren kan skrive hen over den.
+   * Ligger i skabelonen og ikke i formularens kode, så en ny teksttype selv
+   * bestemmer sit eget eksempel — ligesom den bestemmer sine felter.
+   */
+  standard: z.string().optional(),
   valg: z
     .array(z.object({ vaerdi: z.string().min(1), label: z.string().min(1) }))
     .optional(),

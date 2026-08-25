@@ -72,6 +72,7 @@ export function BriefFormular({
               name={felt.navn}
               rows={4}
               maxLength={felt.maxLaengde}
+              defaultValue={felt.standard}
               placeholder={felt.pladsholder}
               aria-describedby={felt.hjaelp ? `${felt.navn}-hjaelp` : undefined}
               className={`${feltKlasse} resize-y`}
@@ -84,6 +85,7 @@ export function BriefFormular({
               name={felt.navn}
               type="text"
               maxLength={felt.maxLaengde}
+              defaultValue={felt.standard}
               placeholder={felt.pladsholder}
               aria-describedby={felt.hjaelp ? `${felt.navn}-hjaelp` : undefined}
               className={feltKlasse}
@@ -94,7 +96,7 @@ export function BriefFormular({
             <select
               id={felt.navn}
               name={felt.navn}
-              defaultValue={felt.valg?.[0]?.vaerdi}
+              defaultValue={felt.standard ?? felt.valg?.[0]?.vaerdi}
               aria-describedby={felt.hjaelp ? `${felt.navn}-hjaelp` : undefined}
               className={feltKlasse}
             >
