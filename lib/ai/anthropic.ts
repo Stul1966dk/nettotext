@@ -23,26 +23,38 @@ export function anthropicAdapter(apiNoegle: string): AiAdapter {
    * `fallbacks: "default"` er en sikkerhedsline: nægter modellen at svare på
    * en anmodning, prøver Anthropic samme anmodning på en anden model i stedet
    * for bare at give op. Det sker næppe for en dansk blogtekst, men det koster
-   * intet, når det ikke bruges.
+   * intet, når det ikke bruges. Sættes kun på Opus-modellerne, se nedenfor.
    */
   function grundparametre(anmodning: Anmodning) {
+    // Sikkerhedslinen `fallbacks` er dokumenteret til Opus-modellerne. Vi
+    // sætter den kun dér, frem for at risikere at et kald bliver afvist,
+    // fordi modellen ikke kender parameteren.
+    const fallback = anmodning.model.startsWith("claude-opus-")
+      ? {
+          betas: ["server-side-fallback-2026-07-01"],
+          fallbacks: "default" as const,
+        }
+      : {};
+
     return {
       model: anmodning.model,
       max_tokens: anmodning.maxTokens,
       system: anmodning.system,
       messages: [{ role: "user" as const, content: anmodning.bruger }],
-      betas: ["server-side-fallback-2026-07-01"],
-      fallbacks: "default" as const,
+      ...fallback,
       // Hvor grundigt modellen tænker, før den skriver.
       //
-      // Sat ned fra "medium" til "low", fordi den første rigtige måling gav
-      // 61 sekunder for en tekst på 800 ord — mere end de 60, Vercel giver os.
-      // Planlægningen er den del, der kan skæres i, uden at selve skrivningen
-      // bliver hurtigere eller dårligere pr. sætning.
+      // Prøvede kortvarigt "low" for at komme under tidsloftet. Målingen
+      // viste, at det var forgæves: planlægningen tager under 2 sekunder,
+      // mens selve skrivningen tager over 50. `effort` er altså IKKE knappen
+      // at dreje på, når det handler om tid — den koster kvalitet og giver
+      // næsten intet igen.
       //
-      // Det er den vigtigste knap på kvalitet mod ventetid. Serverloggen
-      // viser, hvor tiden faktisk går (se route.ts) — brug den, før du drejer.
-      output_config: { effort: "low" as const },
+      // Flaskehalsen er, hvor hurtigt modellen kan producere ord (omkring 42
+      // tokens i sekundet). Den løses med valg af model, med fast mode eller
+      // med et højere maxDuration — ikke med effort. Målingen står i
+      // serverloggen, se route.ts.
+      output_config: { effort: "medium" as const },
     };
   }
 

@@ -27,6 +27,49 @@ trin 8.
 
 ---
 
+## 2026-08-25 — Målingen: effort var den forkerte knap
+
+**Tallene fra første måling:** planlægning 1.574 ms · skrivning 52.739 ms ·
+i alt 54.313 ms · 2.819 tokens ind, 2.198 ud.
+
+**`effort` sat tilbage til "medium".** Beslutningen om at sænke den til "low"
+tidligere i dag byggede på en antagelse, målingen modbeviste: planlægningen
+er under 2 sekunder, altså 3 % af tiden. `effort` købte os omkring 6 sekunder
+og kostede tekstkvalitet. Dårlig handel.
+
+**Den rigtige flaskehals er, hvor hurtigt modellen kan producere ord.**
+Claude Opus 5 skriver omkring 42 tokens i sekundet, og det tal er stort set
+fast. Regnestykket for teksttyperne:
+- kort (400 ord ≈ 1.100 tokens) → ca. 26 sekunder
+- mellem (800 ord ≈ 2.200 tokens) → ca. 53 sekunder
+- lang (1.400 ord ≈ 3.800 tokens) → ca. 90 sekunder
+
+Den lange tekstlængde kan altså ALDRIG nå i mål inden for 60 sekunder på
+Opus 5. Det er ikke noget, kode kan fikse.
+
+**Lærdom værd at tage med:** mål, før du drejer. Havde vi ikke lagt en
+tidsmåling i `/api/generate`, ville vi have skruet videre ned på `effort` —
+tabt kvalitet og aldrig løst problemet. Målingen står stadig i loggen og
+koster ingenting.
+
+**Tre veje forelagt ejeren; han valgte at afprøve Claude Sonnet 5 først.**
+Sonnet 5 skriver hurtigere og koster cirka det halve ($3/$15 mod $5/$25 pr.
+million tokens). Det er samtidig præcis den modelbeslutning, det tekniske
+oplæg lagde i trin 2 ("afgøres af en dansk-kvalitetstest"). Fravalgt indtil
+videre: fast mode på Opus 5 (2,5 gange hurtigere, dobbelt pris, research
+preview) og et højere `maxDuration` (kræver Vercel Pro og gør ikke noget
+hurtigere — brugeren venter bare lovligt).
+`STANDARDMODEL.anthropic` står derfor på `claude-sonnet-5` mærket "under
+afprøvning". Holder dansken ikke, sættes den tilbage, og så er fast mode
+næste skridt.
+
+**`fallbacks` sættes nu kun på Opus-modellerne.**
+Sikkerhedslinen er dokumenteret til Opus- og Fable-modellerne, og det var
+uvist, om Sonnet 5 ville acceptere parameteren. Begge modeller er afprøvet
+med den kaldsform, appen bruger, og svarer som de skal.
+
+---
+
 ## 2026-08-25 — Fri afprøvning
 
 **Ejerkontoens prøvekvote sat til 1.000.000.**
