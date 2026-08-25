@@ -2,6 +2,8 @@ import "server-only";
 
 import sanitizeHtml from "sanitize-html";
 
+import { normaliserTypografi } from "./typografi";
+
 /**
  * Sanering af AI-genereret HTML. CLAUDE.md regel 4.
  *
@@ -19,7 +21,10 @@ import sanitizeHtml from "sanitize-html";
  */
 
 const HVIDLISTE = {
-  allowedTags: ["h2", "h3", "p", "ul", "ol", "li", "strong", "em", "a"],
+  // h1 er artiklens titel. Var oprindeligt forbudt ud fra den antagelse, at
+  // et CMS selv sætter sidens overskrift, men det efterlod brugeren med en
+  // tekst uden titel. Se noten om dobbelt H1 i docs/beslutninger.md.
+  allowedTags: ["h1", "h2", "h3", "p", "ul", "ol", "li", "strong", "em", "a"],
   allowedAttributes: { a: ["href"] },
   // Ingen relative links, ingen javascript:, ingen data:.
   allowedSchemes: ["http", "https"],
@@ -40,6 +45,12 @@ function fjernKodeblokke(raa: string): string {
     .trim();
 }
 
+/**
+ * Rækkefølgen er med vilje: typografien ryddes op FØRST, saneringen kører
+ * SIDST. Så er sanitize-html det sidste, der rører teksten, og ingen
+ * efterbehandling kan nå at putte noget ind igen bagefter.
+ */
 export function sanerHtml(raa: string): string {
-  return sanitizeHtml(fjernKodeblokke(raa), HVIDLISTE).trim();
+  const ryddet = normaliserTypografi(fjernKodeblokke(raa));
+  return sanitizeHtml(ryddet, HVIDLISTE).trim();
 }

@@ -17,6 +17,7 @@ trin 8.
 - [ ] **Åbn for brugere.** Supabase → Authentication → Sign In / Providers → slå "Allow new users to sign up" til igen (eller tilføj godkendt-liste).
 - [ ] **Egen SMTP + dansk login-mail.** Skal på plads INDEN de første testbrugere — ikke først ved lancering. Supabases indbyggede mailservice sender kun til adresser knyttet til vores egen Supabase-konto, og skabelonerne kan ikke redigeres uden egen SMTP. Sæt Resend op (gratis til 3.000 mails/md.), og skift derefter Magic Link-skabelonen til dansk med `{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=email` — den form virker også, når mailen åbnes på en anden enhed end den, linket blev bestilt fra.
 - [ ] **Kobl `nettotext.com` på** i Vercel → Settings → Domains — og skift derefter **Site URL** i Supabase → Authentication → URL Configuration til det nye domæne. Sker det ikke, peger login-mailens link stadig på `.vercel.app`.
+- [ ] **Afklar dobbelt H1.** Teksten indeholder nu selv en h1. De fleste CMS'er laver sidens titel til h1, så indsættes teksten råt, får siden to. To h1'er er dårlig SEO, og ejeren har udtrykkeligt bedt om at overholde Googles retningslinjer. Løsningen hører til trin 3, hvor meta-titlen bliver sit eget felt: gør h1 til noget, brugeren kan kopiere for sig, eller lad eksporten kunne udelade den.
 - [ ] **Sæt ejerkontoens prøvekvote tilbage.** Den står på 1.000.000 for at kunne teste frit under udviklingen. Beslut inden lancering, om ejerkontoen fortsat skal være speciel — og hvis ikke, sæt den til 5 som alle andre.
 - [ ] **Fjern eksempelteksten fra brief-felterne**, eller lav den om til en "Udfyld med eksempel"-knap. Felterne i `templates.input_fields` er forudfyldt med et malerfirma i Brønderslev. Det er praktisk under test, men rigtige brugere vil sende eksemplet af sted som deres egen brief uden at opdage det.
 - [ ] **Sæt et forbrugsloft på platformens AI-nøgle hos Anthropic.** Så længe `DAILY_BUDGET_DKK` ikke er bygget (trin 6), er leverandørens eget loft det eneste, der står mellem en fejl og en stor regning.
@@ -24,6 +25,54 @@ trin 8.
 - [ ] **Tjek at lange tekster når at blive færdige.** `/api/generate` har `maxDuration = 60`. Vercels loft afhænger af abonnement. Timer "Langt — ca. 1.400 ord" ud i produktion, er der to knapper: hæv `maxDuration` (kræver det rigtige abonnement), eller sænk `effort` i `lib/ai/anthropic.ts`.
 - [ ] **Privatlivspolitik** på `/da/privatliv` (GDPR, jf. teknisk oplæg afsnit 5).
 - [ ] **Opdatér brandnavnet** i `design/design-3-vaerksted.html` til NettoText.
+
+---
+
+## 2026-08-25 — Sonnet 5 valgt, og tre rettelser i sproget
+
+**Sonnet 5 beholdes.** Ejerens vurdering efter at have læst begge tekster:
+sproget er lige så godt. Dermed sparer hver tekst 43 %, og længden "mellem"
+kommer ned på 41 sekunder. `STANDARDMODEL.anthropic` er ikke længere "under
+afprøvning".
+Bemærk konsekvensen: **fast mode findes kun på Opus**, så den udvej er nu
+lukket. Skal den lange tekstlængde beholdes, er opdelt generering i trin 3
+vejen (se afsnittet nedenfor).
+
+**Lange tankestreger forbudt, og fjernet fra prompten selv.**
+Ejerens observation: den lange tankestreg (—) læses som maskinskrevet.
+Det interessante var, hvor den kom fra: systemprompten var selv fuld af dem,
+og valg-etiketterne ("Kort — ca. 400 ord") sendes med ind i brugerbeskeden.
+En model efterligner det sprog, den får. Det havde derfor ikke hjulpet bare
+at forbyde dem.
+Nu er de fjernet fra prompt, etiketter og eksempeltekst. Kun ét sted står
+tegnet tilbage: den regel, der navngiver det.
+**Og så en mekanisk sikring oveni** (`lib/tekst/typografi.ts`): alle lange
+tankestreger laves om til almindelige, efter modellen har svaret. Modeller er
+notorisk dårlige til netop dén slags forbud, og en enkelt sluppen igennem er
+nok til at afsløre teksten. Reglen gør det sjældent, oprydningen gør det
+aldrig.
+Rækkefølgen er vigtig: typografien ryddes op FØRST, saneringen kører SIDST,
+så sanitize-html er det sidste, der rører teksten.
+
+**To navngivne sætningsmønstre forbudt.**
+Ejerens eksempler var to forskellige fejl, og begge kan navngives:
+1. Verbum lavet om til navneord, især i overskrifter: "Hvad venten reelt
+   koster" i stedet for "Hvad er risikoen ved at vente?"
+2. Modsætningsfiguren "ikke X, men Y": "Det skyldes ikke bekvemmelighed, men
+   fysik" er skriftsprog, ingen siger højt.
+Prompten har fået begge med konkrete før/efter-eksempler, plus den
+overordnede regel: kunne du sige sætningen til en kunde henover et
+køkkenbord uden at lyde som en brochure?
+
+**H1 tilladt igen.**
+Var udtrykkeligt forbudt ud fra den antagelse, at et CMS selv sætter sidens
+overskrift. Det var teknisk rigtigt og i praksis forkert: brugeren sad med en
+tekst uden titel. h1 er nu på hvidlisten, og prompten kræver præcis én som
+første element.
+**Den oprindelige bekymring er ikke forsvundet:** indsættes teksten i et CMS,
+der selv laver sidens titel til h1, får siden to. Det er dårlig SEO, og det
+strider mod de Google-regler, vi lige har skrevet ind. Løsningen hører til
+trin 3, hvor meta-titlen bliver sit eget felt. Sat på tjeklisten.
 
 ---
 
