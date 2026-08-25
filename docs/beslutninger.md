@@ -27,6 +27,52 @@ trin 8.
 
 ---
 
+## 2026-08-25 — Sonnet 5 mod Opus 5: tallene
+
+Samme brief, samme prompt, samme dag.
+
+```
+Opus 5    planlægning 1.574 ms · skrivning 52.739 ms · i alt 54.313 ms · 2.819 ind / 2.198 ud
+Sonnet 5  planlægning 1.794 ms · skrivning 39.555 ms · i alt 41.349 ms · 2.819 ind / 2.039 ud
+```
+
+| | Opus 5 | Sonnet 5 |
+|---|---|---|
+| Skrivehastighed | 42 tokens/sek. | 52 tokens/sek. |
+| Tid, længden "mellem" | 54 sek. | 41 sek. |
+| Pris pr. tekst | ca. $0,069 | ca. $0,039 |
+
+Sonnet er 24 % hurtigere og 43 % billigere. Teksterne er næsten lige lange
+(2.198 mod 2.039 tokens), så sammenligningen er fair.
+Bemærk: Sonnet 5 kørte på introduktionspris indtil 31.08.2026. Tallet ovenfor
+er den normale pris ($3/$15 pr. million), ikke introprisen.
+
+**Sonnet løser IKKE den lange tekstlængde.** 1.400 ord ≈ 3.600 tokens, hvilket
+ved 52 tokens/sek. bliver omkring 72 sekunder — stadig over de 60. Håbet var
+en fordobling af hastigheden; det blev en fjerdedel.
+Og vær opmærksom: **fast mode findes kun på Opus-modellerne.** Vælges Sonnet,
+er den udvej lukket.
+
+**Sprogvurderingen er ejerens og er ikke truffet her.** Tallene afgør ikke
+sagen — spørgsmålet er, om Sonnet stadig bruger de konkrete detaljer fra
+briefen (sæson, rådskader i bundstykket, fast pris) eller falder tilbage på
+almindeligheder. Det er dér, forskellen på en dyr og en billig model plejer
+at vise sig.
+
+**Fire veje for den lange tekstlængde, hvis den skal beholdes:**
+1. **Opdelt generering (den foretrukne).** I trin 3 deles teksten alligevel i
+   blokke med regenerering pr. sektion. Med den arkitektur kan en lang artikel
+   skrives sektion for sektion: først en disposition, så hvert afsnit som sit
+   eget kald. Hvert kald ligger langt under grænsen, brugeren ser teksten
+   vokse, og det koster hverken abonnement eller højere tokenpris. Taler for
+   at lade "langt" vente til trin 3 frem for at betale sig ud af det nu.
+2. Vercel Pro (ca. $20/md.) — løser det formelt, men brugeren venter stadig
+   72 sekunder på ét kald.
+3. Opus 5 med fast mode — dobbelt tokenpris, ca. 35 sekunder, uændret sprog.
+4. Fjern "langt" indtil videre. Ingen savner det, de ikke er blevet lovet.
+
+---
+
 ## 2026-08-25 — Målingen: effort var den forkerte knap
 
 **Tallene fra første måling:** planlægning 1.574 ms · skrivning 52.739 ms ·
