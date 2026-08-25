@@ -42,3 +42,6 @@ next-env.d.ts
 
 # Skabelonen uden hemmeligheder skal gerne med på GitHub
 !.env.example
+
+# Supabase CLI-arbejdsfiler
+supabase/.temp/

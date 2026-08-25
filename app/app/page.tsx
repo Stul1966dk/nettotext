@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
 import { createClient } from "@/lib/supabase/server";
@@ -43,7 +44,12 @@ export default async function Dashboard() {
         )}
       </section>
 
-      <p className="text-sm text-gran-let">{t("naesteTrin")}</p>
+      <Link
+        href="/app/ny"
+        className="inline-block rounded-lg bg-gran px-6 py-3 font-medium text-bund outline-none focus-visible:ring-2 focus-visible:ring-gran focus-visible:ring-offset-2 focus-visible:ring-offset-bund"
+      >
+        {t("nyTekst")}
+      </Link>
     </div>
   );
 }

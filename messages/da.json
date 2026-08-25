@@ -33,6 +33,48 @@
     "kvote": "{tilbage} af {ialt} prøvetekster tilbage",
     "kvoteForklaring": "På vores regning. Derefter skriver du videre med din egen AI-nøgle.",
     "kvoteUkendt": "Vi kunne ikke hente din prøvekvote lige nu.",
-    "naesteTrin": "Tekstgenerering bygges i næste trin."
+    "naesteTrin": "Skriv en ny tekst",
+    "nyTekst": "Ny tekst"
+  },
+  "ny": {
+    "titel": "Ny tekst — NettoText",
+    "overskrift": "Ny tekst",
+    "forklaring": "Udfyld briefen. Jo mere konkret du er, jo mindre skal du rette bagefter.",
+    "paakraevet": "Skal udfyldes",
+    "valgfrit": "Valgfrit",
+    "knap": "Skriv teksten",
+    "manglerFelter": "Udfyld de felter, der er markeret \"skal udfyldes\".",
+    "ingenSkabelon": "Teksttypen findes ikke. Kør migrationsfilerne i supabase/migrations, hvis databasen er ny.",
+    "tilbage": "Tilbage til dashboardet"
+  },
+  "skriv": {
+    "titel": "Din tekst — NettoText",
+    "overskrift": "Din tekst",
+    "ingenBrief": "Der er ingen brief at skrive ud fra. Det sker, hvis siden er åbnet direkte eller genindlæst i en ny fane.",
+    "nyTekst": "Skriv en ny tekst",
+    "starter": "Sender briefen af sted …",
+    "planlaegger": "Planlægger teksten. Der går typisk 10-20 sekunder, før de første ord kommer.",
+    "skriver": "Skriver …",
+    "faerdig": "Teksten er skrevet.",
+    "raaForklaring": "Teksten vises som rå HTML. Editoren — hvor du kan rette i den enkelte sektion, skrive en ny og eksportere — bygges i næste trin.",
+    "kopier": "Kopiér teksten",
+    "kopieret": "Kopieret",
+    "proevIgen": "Prøv igen",
+    "koster": "Bemærk: hvert forsøg bruger én af dine prøvetekster.",
+    "fejl": {
+      "ikke_logget_ind": "Du er blevet logget ud. Log ind igen, og prøv forfra.",
+      "ugyldig_anmodning": "Vi kunne ikke læse briefen. Gå tilbage, og udfyld den igen.",
+      "ugyldig_brief": "Der var noget i briefen, vi ikke kunne bruge — måske et felt, der er for langt. Gå tilbage, og ret den.",
+      "ukendt_skabelon": "Teksttypen findes ikke længere. Gå tilbage, og start forfra.",
+      "mangler_noegle": "Du har brugt alle 5 prøvetekster. Herefter skriver du videre med din egen AI-nøgle — den mulighed bygges i et senere trin.",
+      "ugyldig_noegle": "AI-nøglen blev afvist af leverandøren. Tjek at den er kopieret rigtigt og ikke er slettet.",
+      "tom_saldo": "Der er ikke penge på AI-kontoen hos leverandøren. Fyld op, og prøv igen.",
+      "rate_limit": "AI-leverandøren bad os vente lidt. Prøv igen om et minut.",
+      "for_lang": "Briefen er for lang til modellen. Kort den ned, og prøv igen.",
+      "afvist": "AI’en ville ikke skrive den her tekst. Prøv at omformulere briefen.",
+      "serverfejl": "Der er noget galt i vores opsætning. Vi kan se fejlen i loggen — prøv igen om lidt.",
+      "ukendt": "Teksten kunne ikke skrives lige nu. Prøv igen om lidt.",
+      "netvaerk": "Forbindelsen blev afbrudt, før teksten var færdig. Prøv igen."
+    }
   }
 }

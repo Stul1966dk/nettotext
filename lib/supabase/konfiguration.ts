@@ -28,3 +28,25 @@ export function supabaseKonfiguration() {
 
   return { url: URL_!, anonKey: ANON_KEY! };
 }
+
+/**
+ * Service role-nøglen. Omgår ALLE RLS-regler, så den bruges kun, hvor
+ * brugeren umuligt kan have rettighederne selv — konkret: at tælle
+ * prøvekvoten op. Se migration 0001 for hvorfor profiles ikke har en
+ * update-policy.
+ *
+ * Ingen NEXT_PUBLIC_-præfiks. Havner den i klientkode, kan enhver læse og
+ * ændre alle brugeres data.
+ */
+export function supabaseServiceRoleNoegle(): string {
+  const noegle = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!noegle) {
+    throw new Error(
+      "SUPABASE_SERVICE_ROLE_KEY mangler. Lokalt sættes den i .env.local, " +
+        "i produktion under Vercel → Settings → Environment Variables.",
+    );
+  }
+
+  return noegle;
+}
