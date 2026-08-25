@@ -49,15 +49,13 @@ export const MODELLER: Record<Leverandoer, readonly Model[]> = {
 /**
  * Modellen vi bruger, når brugeren ikke selv har valgt.
  *
- * UNDER AFPRØVNING (25.08.2026): sat til Sonnet 5 i stedet for Opus 5.
- * Baggrund: Opus 5 skriver omkring 42 tokens i sekundet, hvilket gav 54
- * sekunder for en tekst på 800 ord — for tæt på tidsloftet, og håbløst for
- * den lange tekstlængde. Sonnet 5 skriver hurtigere og koster cirka det
- * halve. Spørgsmålet er, om dansken holder.
+ * Sonnet 5 er valgt frem for Opus 5 efter en sammenligning på samme brief
+ * (25.08.2026): 24 % hurtigere, 43 % billigere, og dansken var lige så god.
+ * Målingerne står i docs/beslutninger.md.
  *
- * Falder testen ud til Opus' fordel, sættes den tilbage, og hastigheden
- * løses i stedet med fast mode eller et højere maxDuration. Se
- * docs/beslutninger.md.
+ * Konsekvens værd at kende: fast mode findes kun på Opus-modellerne. Skal
+ * en tekst nogensinde skrives hurtigere end Sonnet kan, er den vej lukket,
+ * så længe Sonnet er standard.
  */
 export const STANDARDMODEL: Record<Leverandoer, string> = {
   anthropic: "claude-sonnet-5",
