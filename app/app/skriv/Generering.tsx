@@ -15,6 +15,7 @@ type Tekster = {
   visTekst: string;
   kopier: string;
   kopieret: string;
+  kopiMarkeret: string;
   proevIgen: string;
   koster: string;
   fejl: Record<string, string>;
@@ -28,7 +29,10 @@ export function Generering({ tekster }: { tekster: Tekster }) {
   const [html, setHtml] = useState("");
   const [visKoder, setVisKoder] = useState(false);
   const [fejl, setFejl] = useState<string | null>(null);
-  const [kopieret, setKopieret] = useState(false);
+  const [kopiStatus, setKopiStatus] = useState<"klar" | "kopieret" | "markeret">(
+    "klar",
+  );
+  const kodeRef = useRef<HTMLPreElement>(null);
 
   // React kalder effekter to gange i udvikling for at afsløre fejl. Uden den
   // her vagt ville hver generering koste to prøvetekster.
@@ -45,6 +49,7 @@ export function Generering({ tekster }: { tekster: Tekster }) {
       setTekst("");
       setHtml("");
       setFejl(null);
+      setKopiStatus("klar");
 
       let samlet = "";
 
@@ -148,11 +153,43 @@ export function Generering({ tekster }: { tekster: Tekster }) {
     void start();
   }, [start]);
 
+  /**
+   * Kopiér til udklipsholderen — med en vej udenom, når browseren siger nej.
+   *
+   * navigator.clipboard findes kun i det, browsere kalder en sikker kontekst.
+   * localhost tæller med; den netværksadresse, udviklingsserveren også lytter
+   * på (http://192.168.x.x:3000), gør ikke. Browseren kan desuden nægte, hvis
+   * siden ikke har fokus.
+   *
+   * Kan vi ikke kopiere, viser vi koden frem og markerer den, så brugeren selv
+   * kan trykke Ctrl+C. Det virker altid — også uden udklipsholder-API.
+   */
   async function kopier() {
-    await navigator.clipboard.writeText(html || tekst);
-    setKopieret(true);
-    setTimeout(() => setKopieret(false), 2000);
+    try {
+      if (!navigator.clipboard) throw new Error("Ingen adgang til udklipsholder");
+
+      await navigator.clipboard.writeText(html || tekst);
+      setKopiStatus("kopieret");
+      setTimeout(() => setKopiStatus("klar"), 2000);
+    } catch {
+      setVisKoder(true);
+      setKopiStatus("markeret");
+    }
   }
+
+  // Markér koden, når kopieringen slog fejl. Kører efter at <pre> er tegnet.
+  useEffect(() => {
+    if (kopiStatus !== "markeret" || !visKoder || !kodeRef.current) return;
+
+    const omraade = document.createRange();
+    omraade.selectNodeContents(kodeRef.current);
+
+    const markering = window.getSelection();
+    markering?.removeAllRanges();
+    markering?.addRange(omraade);
+
+    kodeRef.current.scrollIntoView({ block: "nearest" });
+  }, [kopiStatus, visKoder]);
 
   function proevIgen() {
     const kladde = hentKladde();
@@ -220,7 +257,10 @@ export function Generering({ tekster }: { tekster: Tekster }) {
       {erFaerdig && (
         <>
           {visKoder ? (
-            <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-2xl border border-kant bg-kort p-6 font-mono text-sm leading-relaxed text-gran">
+            <pre
+              ref={kodeRef}
+              className="overflow-x-auto whitespace-pre-wrap break-words rounded-2xl border border-kant bg-kort p-6 font-mono text-sm leading-relaxed text-gran"
+            >
               {html}
             </pre>
           ) : (
@@ -238,7 +278,7 @@ export function Generering({ tekster }: { tekster: Tekster }) {
               onClick={kopier}
               className="rounded-lg bg-gran px-4 py-2 text-sm font-medium text-bund outline-none focus-visible:ring-2 focus-visible:ring-gran focus-visible:ring-offset-2 focus-visible:ring-offset-bund"
             >
-              {kopieret ? tekster.kopieret : tekster.kopier}
+              {kopiStatus === "kopieret" ? tekster.kopieret : tekster.kopier}
             </button>
 
             <button
@@ -253,6 +293,15 @@ export function Generering({ tekster }: { tekster: Tekster }) {
               {tekster.nyTekst}
             </Link>
           </div>
+
+          {kopiStatus === "markeret" && (
+            <p
+              role="status"
+              className="rounded-lg border border-rav bg-kort px-4 py-3 text-sm leading-relaxed text-gran"
+            >
+              {tekster.kopiMarkeret}
+            </p>
+          )}
         </>
       )}
     </div>

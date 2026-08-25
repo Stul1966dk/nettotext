@@ -58,6 +58,7 @@
     "faerdig": "Teksten er skrevet.",
     "kopier": "Kopiér HTML",
     "kopieret": "Kopieret",
+    "kopiMarkeret": "Din browser ville ikke kopiere for os. Teksten er markeret herover — tryk Ctrl+C (⌘+C på Mac). Det sker typisk, hvis siden er åbnet på en netværksadresse i stedet for localhost.",
     "visHtml": "Vis HTML-koden",
     "visTekst": "Vis teksten",
     "proevIgen": "Prøv igen",

@@ -59,6 +59,7 @@ export default async function SkrivSide() {
             visTekst: t("visTekst"),
             kopier: t("kopier"),
             kopieret: t("kopieret"),
+            kopiMarkeret: t("kopiMarkeret"),
             proevIgen: t("proevIgen"),
             koster: t("koster"),
             fejl: fejlbeskeder,
