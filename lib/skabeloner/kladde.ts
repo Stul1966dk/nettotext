@@ -20,7 +20,10 @@ const NOEGLE = "nettotext:kladde";
 export type Kladde = {
   skabelon: string;
   brief: Brief;
+  /** Den rå tekst, som den kom fra modellen. Vises kun som tekst. */
   tekst: string;
+  /** Den sanerede HTML fra serveren. Kun DEN må vises som HTML. */
+  html: string;
   faerdig: boolean;
 };
 

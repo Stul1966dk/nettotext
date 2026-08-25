@@ -46,7 +46,7 @@ export function BriefFormular({
     }
 
     // Briefen rejser gennem browseren, ikke gennem databasen. Se kladde.ts.
-    gemKladde({ skabelon, brief, tekst: "", faerdig: false });
+    gemKladde({ skabelon, brief, tekst: "", html: "", faerdig: false });
     router.push("/app/skriv");
   }
 

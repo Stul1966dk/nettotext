@@ -11,7 +11,8 @@ type Tekster = {
   planlaegger: string;
   skriver: string;
   faerdig: string;
-  raaForklaring: string;
+  visHtml: string;
+  visTekst: string;
   kopier: string;
   kopieret: string;
   proevIgen: string;
@@ -24,6 +25,8 @@ type Status = "starter" | "skriver" | "faerdig" | "fejl" | "ingen-brief";
 export function Generering({ tekster }: { tekster: Tekster }) {
   const [status, setStatus] = useState<Status>("starter");
   const [tekst, setTekst] = useState("");
+  const [html, setHtml] = useState("");
+  const [visKoder, setVisKoder] = useState(false);
   const [fejl, setFejl] = useState<string | null>(null);
   const [kopieret, setKopieret] = useState(false);
 
@@ -40,6 +43,7 @@ export function Generering({ tekster }: { tekster: Tekster }) {
 
       setStatus("starter");
       setTekst("");
+      setHtml("");
       setFejl(null);
 
       let samlet = "";
@@ -84,12 +88,18 @@ export function Generering({ tekster }: { tekster: Tekster }) {
               samlet += hendelse.tekst;
               setTekst(samlet);
               setStatus("skriver");
-              gemKladde({ ...kladde, tekst: samlet, faerdig: false });
+              gemKladde({ ...kladde, tekst: samlet, html: "", faerdig: false });
             }
 
             if (hendelse.slags === "faerdig") {
+              setHtml(hendelse.html);
               setStatus("faerdig");
-              gemKladde({ ...kladde, tekst: samlet, faerdig: true });
+              gemKladde({
+                ...kladde,
+                tekst: samlet,
+                html: hendelse.html,
+                faerdig: true,
+              });
             }
 
             if (hendelse.slags === "fejl") {
@@ -121,8 +131,9 @@ export function Generering({ tekster }: { tekster: Tekster }) {
 
     // Er teksten allerede skrevet, viser vi den frem for at betale for den
     // igen. Det gør en genindlæsning af siden gratis.
-    if (kladde.faerdig && kladde.tekst) {
+    if (kladde.faerdig && kladde.html) {
       setTekst(kladde.tekst);
+      setHtml(kladde.html);
       setStatus("faerdig");
       return;
     }
@@ -138,14 +149,16 @@ export function Generering({ tekster }: { tekster: Tekster }) {
   }, [start]);
 
   async function kopier() {
-    await navigator.clipboard.writeText(tekst);
+    await navigator.clipboard.writeText(html || tekst);
     setKopieret(true);
     setTimeout(() => setKopieret(false), 2000);
   }
 
   function proevIgen() {
     const kladde = hentKladde();
-    if (kladde) void generer({ ...kladde, tekst: "", faerdig: false });
+    if (kladde) {
+      void generer({ ...kladde, tekst: "", html: "", faerdig: false });
+    }
   }
 
   if (status === "ingen-brief") {
@@ -160,6 +173,8 @@ export function Generering({ tekster }: { tekster: Tekster }) {
       </div>
     );
   }
+
+  const erFaerdig = status === "faerdig" && html;
 
   return (
     <div className="space-y-6">
@@ -191,36 +206,53 @@ export function Generering({ tekster }: { tekster: Tekster }) {
         </div>
       )}
 
-      {tekst && (
-        <>
-          {/*
-            Teksten vises som ren tekst, ikke som HTML. React escaper strenge
-            i JSX, så intet af det, modellen har skrevet, kan udføres i
-            browseren. Først i trin 3, når teksten skal VISES som HTML,
-            bliver den saneret server-side med sanitize-html.
-          */}
-          <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-2xl border border-kant bg-kort p-6 font-mono text-sm leading-relaxed text-gran">
-            {tekst}
-          </pre>
+      {/*
+        Mens teksten bliver skrevet, vises den rå strøm som TEKST — React
+        escaper den, så intet af det modellen skriver kan udføres. Først når
+        teksten er hel og saneret på serveren, vises den som HTML.
+      */}
+      {!erFaerdig && tekst && (
+        <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-2xl border border-kant bg-kort p-6 font-mono text-sm leading-relaxed text-gran">
+          {tekst}
+        </pre>
+      )}
 
-          {status === "faerdig" && (
-            <div className="flex flex-wrap items-center gap-4">
-              <button
-                type="button"
-                onClick={kopier}
-                className="rounded-lg border border-kant px-4 py-2 text-sm text-gran outline-none focus-visible:ring-2 focus-visible:ring-gran"
-              >
-                {kopieret ? tekster.kopieret : tekster.kopier}
-              </button>
-              <Link href="/app/ny" className="text-sm text-gran underline">
-                {tekster.nyTekst}
-              </Link>
-            </div>
+      {erFaerdig && (
+        <>
+          {visKoder ? (
+            <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-2xl border border-kant bg-kort p-6 font-mono text-sm leading-relaxed text-gran">
+              {html}
+            </pre>
+          ) : (
+            <article
+              className="tekst rounded-2xl border border-kant bg-kort p-8"
+              // Saneret server-side med sanitize-html mod hvidlisten i
+              // CLAUDE.md regel 4. Se lib/tekst/saner.ts.
+              dangerouslySetInnerHTML={{ __html: html }}
+            />
           )}
 
-          <p className="border-t border-kant pt-6 text-xs leading-relaxed text-gran-let">
-            {tekster.raaForklaring}
-          </p>
+          <div className="flex flex-wrap items-center gap-4">
+            <button
+              type="button"
+              onClick={kopier}
+              className="rounded-lg bg-gran px-4 py-2 text-sm font-medium text-bund outline-none focus-visible:ring-2 focus-visible:ring-gran focus-visible:ring-offset-2 focus-visible:ring-offset-bund"
+            >
+              {kopieret ? tekster.kopieret : tekster.kopier}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setVisKoder((v) => !v)}
+              className="rounded-lg border border-kant px-4 py-2 text-sm text-gran outline-none focus-visible:ring-2 focus-visible:ring-gran"
+            >
+              {visKoder ? tekster.visTekst : tekster.visHtml}
+            </button>
+
+            <Link href="/app/ny" className="text-sm text-gran underline">
+              {tekster.nyTekst}
+            </Link>
+          </div>
         </>
       )}
     </div>

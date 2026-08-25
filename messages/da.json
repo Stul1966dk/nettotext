@@ -56,9 +56,10 @@
     "planlaegger": "Planlægger teksten. Der går typisk 10-20 sekunder, før de første ord kommer.",
     "skriver": "Skriver …",
     "faerdig": "Teksten er skrevet.",
-    "raaForklaring": "Teksten vises som rå HTML. Editoren — hvor du kan rette i den enkelte sektion, skrive en ny og eksportere — bygges i næste trin.",
-    "kopier": "Kopiér teksten",
+    "kopier": "Kopiér HTML",
     "kopieret": "Kopieret",
+    "visHtml": "Vis HTML-koden",
+    "visTekst": "Vis teksten",
     "proevIgen": "Prøv igen",
     "koster": "Bemærk: hvert forsøg bruger én af dine prøvetekster.",
     "fejl": {

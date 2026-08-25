@@ -139,3 +139,68 @@
   --color-kort: #ffffff;
   --color-kant: #dde0d8;
 }
+
+/* Den færdige tekst.
+   Modellen leverer bare h2, h3, p, ul, ol, li, strong, em og a — der er
+   ingen klasser at hænge Tailwind på, så typografien sættes her.
+   Skriftstørrelser og afstande er valgt til læsning, ikke til at fylde:
+   teksten skal kunne vurderes, som den vil se ud hos kunden. */
+.tekst {
+  color: var(--color-gran);
+  font-size: 1.0625rem;
+  line-height: 1.7;
+}
+
+.tekst > * + * {
+  margin-top: 1.25rem;
+}
+
+.tekst h2 {
+  margin-top: 2.5rem;
+  font-size: 1.375rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.tekst h3 {
+  margin-top: 2rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+/* Ingen luft over den allerførste overskrift. */
+.tekst > :first-child {
+  margin-top: 0;
+}
+
+.tekst ul,
+.tekst ol {
+  padding-left: 1.5rem;
+}
+
+.tekst ul {
+  list-style: disc;
+}
+
+.tekst ol {
+  list-style: decimal;
+}
+
+.tekst li + li {
+  margin-top: 0.5rem;
+}
+
+.tekst strong {
+  font-weight: 600;
+}
+
+.tekst em {
+  font-style: italic;
+}
+
+.tekst a {
+  color: var(--color-gran);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}

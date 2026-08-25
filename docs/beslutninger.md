@@ -24,6 +24,53 @@ trin 8.
 
 ---
 
+## 2026-08-25 — Efter første rigtige tekst
+
+Den første generering kørte igennem på 61 sekunder og afslørede tre ting.
+
+**Sanering og formateret visning trukket frem fra trin 3.**
+Trin 2 lagde op til "rå tekst på skærmen", og det var teknisk korrekt — men
+ejeren kunne ikke vurdere dansk kvalitet, mens han læste `<h2>`-koder. Og at
+vurdere kvaliteten ER hele pointen med trin 2. Så `/api/generate` sanerer nu
+teksten server-side, når streamen er slut, og sender den færdige HTML som en
+`faerdig`-hændelse. Kun DEN version vises som HTML.
+Sådan forenes streaming og CLAUDE.md regel 4: man kan ikke sanere et halvt
+HTML-tag, så under streamen vises den rå tekst SOM TEKST (React escaper den),
+og først når teksten er hel, saneres den og vises som HTML. Skriv det videre
+til trin 3, hvor teksten skal deles i blokke — dér skal hver blok saneres,
+når den er hel, ikke pr. bid.
+Hvidlisten er verificeret mod `<script>`, `onclick`, `img onerror`, `iframe`,
+`javascript:`- og `data:`-links. Alle bliver fjernet; gyldigt indhold består.
+Ny afhængighed: `sanitize-html` (påbudt af regel 4 — skriv aldrig egen).
+
+**Prompten skærpet: floskler og Googles retningslinjer.**
+Ejerens krav efter at have læst den første tekst. To nye afsnit i
+systemprompten: en navngiven liste over forbudte danske AI-vendinger ("I en
+verden hvor", "når det kommer til", "sidst men ikke mindst" …) plus forbudte
+mønstre (indledning der gentager overskriften, retoriske spørgsmål,
+tre-ting-remser), og et afsnit om Googles krav til indhold.
+**Vigtigt for den, der redigerer prompten senere:** forkortelser som E-E-A-T
+og "helpful content" ændrer ikke, hvad en sprogmodel skriver. Den kender
+ordene, men de er for abstrakte til at styre output. Retningslinjerne er
+derfor oversat til konkrete instruktioner — ikke "overhold E-E-A-T", men
+"skriv aldrig 'eksperter anbefaler', hvis du ikke kan sige hvilke". Gør det
+samme, når der skal tilføjes regler.
+
+**`effort` sænket fra "medium" til "low" — og tiden bliver nu målt.**
+61 sekunder for en tekst på 800 ord er mere end de 60, `maxDuration` giver os.
+Lokalt håndhæves loftet ikke, så teksten nåede at blive færdig; på Vercel
+ville den være klippet over midt i en sætning. Den lange tekstlængde ville
+være håbløs.
+`effort` er den tid, modellen bruger på at planlægge, FØR den skriver — den
+del kan skæres, uden at selve skrivningen bliver dårligere pr. sætning.
+Samtidig logger `/api/generate` nu, hvor tiden går: planlægning kontra
+skrivning, plus tokens ind og ud. Kun tal — aldrig noget af teksten.
+Er planlægningen stadig det dyre, hjælper det at sænke `effort` yderligere.
+Er det selve skrivningen, er den eneste vej et højere `maxDuration`, og så er
+det et spørgsmål om Vercel-abonnement — altså penge, ikke kode.
+
+---
+
 ## 2026-08-25 — Trin 2: første generering
 
 **Begge leverandører bygget fra dag ét — med hver sin officielle SDK.**

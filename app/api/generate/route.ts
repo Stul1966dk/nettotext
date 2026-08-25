@@ -4,6 +4,7 @@ import { byggBrugerbesked } from "@/lib/ai/prompt";
 import { ManglerNoegle, vaelgNoegle, AiFejl } from "@/lib/ai";
 import { frigivProeveTekst, reserverProeveTekst } from "@/lib/kvote";
 import { hentSkabelon } from "@/lib/skabeloner/hent";
+import { sanerHtml } from "@/lib/tekst/saner";
 import { briefSkema } from "@/lib/skabeloner/typer";
 import { createClient } from "@/lib/supabase/server";
 
@@ -29,10 +30,17 @@ const anmodningSkema = z.object({
   brief: z.record(z.string(), z.string()),
 });
 
-/** Én linje i strømmen. Klienten oversætter `aarsag` til dansk. */
+/**
+ * Én linje i strømmen. Klienten oversætter `aarsag` til dansk.
+ *
+ * `faerdig` bærer den SANEREDE HTML. Under selve streamen sender vi rå
+ * tekstbidder, som browseren viser som tekst — man kan ikke sanere et halvt
+ * HTML-tag. Først når teksten er hel, kan den saneres, og først dén version
+ * må vises som HTML. Se lib/tekst/saner.ts.
+ */
 type Hendelse =
   | { slags: "tekst"; tekst: string }
-  | { slags: "faerdig" }
+  | { slags: "faerdig"; html: string }
   | { slags: "fejl"; aarsag: string };
 
 const encoder = new TextEncoder();
@@ -106,6 +114,13 @@ export async function POST(request: Request) {
   const stream = new ReadableStream({
     async start(controller) {
       let harSendtTekst = false;
+      let samlet = "";
+
+      // Måling, ikke gætteri. Vi skal kunne se, om tiden går med at PLANLÆGGE
+      // (før første ord) eller med at SKRIVE — det er to forskellige knapper.
+      // Kun tal og tidsforbrug, aldrig noget af teksten.
+      const begyndt = Date.now();
+      let foersteOrd: number | null = null;
 
       try {
         const bidder = valg.adapter.generateStream({
@@ -117,15 +132,28 @@ export async function POST(request: Request) {
 
         for await (const bid of bidder) {
           if (bid.slags === "tekst") {
+            foersteOrd ??= Date.now() - begyndt;
             harSendtTekst = true;
+            samlet += bid.tekst;
             controller.enqueue(linje({ slags: "tekst", tekst: bid.tekst }));
           }
-          // Trin 6: her skrives forbruget i usage_log. Indtil da bruges det
-          // ikke — og det er netop derfor, vi endnu ikke kender prisen pr.
-          // prøvetekst.
+
+          if (bid.slags === "forbrug") {
+            const ialt = Date.now() - begyndt;
+            console.log(
+              `[generate] ${bid.model} · planlægning ${foersteOrd ?? ialt} ms ` +
+                `· skrivning ${ialt - (foersteOrd ?? ialt)} ms · i alt ${ialt} ms ` +
+                `· ${bid.inputTokens} ind / ${bid.outputTokens} ud`,
+            );
+          }
+          // Trin 6: her skrives forbruget i usage_log. Indtil da står det kun
+          // i serverloggen — og det er netop derfor, vi endnu ikke kender
+          // prisen pr. prøvetekst historisk.
         }
 
-        controller.enqueue(linje({ slags: "faerdig" }));
+        // Nu er teksten hel og kan saneres. Det er den eneste version, der
+        // nogensinde bliver vist som HTML i browseren.
+        controller.enqueue(linje({ slags: "faerdig", html: sanerHtml(samlet) }));
       } catch (fejl) {
         // Kom der aldrig tekst ud, har brugeren ikke fået noget for sin
         // prøvetekst. Så giver vi den tilbage.

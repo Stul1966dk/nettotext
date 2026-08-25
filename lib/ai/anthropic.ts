@@ -33,12 +33,16 @@ export function anthropicAdapter(apiNoegle: string): AiAdapter {
       messages: [{ role: "user" as const, content: anmodning.bruger }],
       betas: ["server-side-fallback-2026-07-01"],
       fallbacks: "default" as const,
-      // Hvor grundigt modellen tænker, før den skriver. "medium" er valgt af
-      // hensyn til tiden: hele genereringen skal nå at blive færdig, inden
-      // Vercel lukker forbindelsen. Vil du have bedre tekster og kan leve med
-      // ventetiden, er "high" næste trin — det er den vigtigste knap at dreje
-      // på, når den danske kvalitet skal vurderes.
-      output_config: { effort: "medium" as const },
+      // Hvor grundigt modellen tænker, før den skriver.
+      //
+      // Sat ned fra "medium" til "low", fordi den første rigtige måling gav
+      // 61 sekunder for en tekst på 800 ord — mere end de 60, Vercel giver os.
+      // Planlægningen er den del, der kan skæres i, uden at selve skrivningen
+      // bliver hurtigere eller dårligere pr. sætning.
+      //
+      // Det er den vigtigste knap på kvalitet mod ventetid. Serverloggen
+      // viser, hvor tiden faktisk går (se route.ts) — brug den, før du drejer.
+      output_config: { effort: "low" as const },
     };
   }
 
