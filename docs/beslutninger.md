@@ -79,6 +79,18 @@ rammer ingenting.
 samme som den færdige tekst en gang til. Serverkopien indeholder briefen,
 den sanerede HTML, blokkene og meta-felterne.
 
+**Browserkopien udløber nu også — fundet ved afprøvning.**
+Serverkopien blev usynlig i samme sekund, den udløb, og dashboardet viste
+rigtigt "ingen kladder". Men åbnede man `/app/skriv` bagefter, stod teksten
+der endnu: browserkopien levede evigt.
+**Serveren holdt sit løfte, browseren gjorde ikke.** "Intet gemmes permanent"
+er produktets kerneløfte, og det gælder også den kopi, der ligger på
+brugerens egen maskine. localStorage-kladden bærer nu sit eget udløb, sat af
+gemme-funktionen (ikke af den, der kalder den, så det ikke kan glemmes ét
+sted), og en udløbet kopi bliver SLETTET ved næste opslag — ikke bare skjult.
+Værd at bemærke: fejlen var kun synlig, fordi udløbet blev afprøvet med vilje.
+Den ville ellers først være dukket op to døgn efter lancering.
+
 **Sletning fjerner også kopien i browseren.**
 Ellers ville en slettet kladde dukke op igen, næste gang `/app/skriv` blev
 åbnet — og en app, der genopliver noget, man har slettet, er skræmmende.

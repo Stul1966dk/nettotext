@@ -17,9 +17,18 @@ import type { Brief } from "./typer";
  *
  * Begge steder gemmer det SAMME id, så de to kopier ved, de er den samme
  * kladde og ikke to.
+ *
+ * Og begge steder udløber efter 48 timer. Det blev opdaget under afprøvningen:
+ * en udløbet kladde forsvandt fra dashboardet, men stod der stadig, når
+ * /app/skriv blev åbnet, fordi browserkopien levede evigt. Serveren holdt sit
+ * løfte, browseren gjorde ikke. "Intet gemmes permanent" gælder også den
+ * kopi, der ligger på brugerens egen maskine.
  */
 
 const NOEGLE = "nettotext:kladde";
+
+/** Samme 48 timer som på serveren. Ruller ved hver gemning. */
+const LEVETID_MS = 48 * 60 * 60 * 1000;
 
 export type Kladde = {
   /** Fælles id for kopien i browseren og kopien på serveren. */
@@ -36,6 +45,11 @@ export type Kladde = {
   titel: string;
   beskrivelse: string;
   faerdig: boolean;
+  /**
+   * Hvornår browserkopien holder op med at gælde. Sættes af gemKladde, ikke
+   * af den, der kalder — så kan den ikke glemmes ét sted.
+   */
+  udloeber?: string;
 };
 
 /** En ny, tom kladde med sit eget id. */
@@ -55,7 +69,12 @@ export function nyKladde(skabelon: string, brief: Brief): Kladde {
 
 export function gemKladde(kladde: Kladde): void {
   try {
-    localStorage.setItem(NOEGLE, JSON.stringify(kladde));
+    const medUdloeb: Kladde = {
+      ...kladde,
+      udloeber: new Date(Date.now() + LEVETID_MS).toISOString(),
+    };
+
+    localStorage.setItem(NOEGLE, JSON.stringify(medUdloeb));
   } catch {
     // Privat browsing eller fuldt lager. Teksten står stadig på skærmen —
     // den overlever bare ikke en genindlæsning. Ikke værd at afbryde for.
@@ -69,6 +88,13 @@ export function hentKladde(): Kladde | null {
 
     const kladde = JSON.parse(raa) as Kladde;
     if (!kladde?.skabelon || typeof kladde.brief !== "object") return null;
+
+    // Udløbet? Så er den væk her og nu, ikke bare skjult. Samme løfte som på
+    // serveren, og det skal holdes uden at spørge nogen.
+    if (kladde.udloeber && new Date(kladde.udloeber).getTime() < Date.now()) {
+      localStorage.removeItem(NOEGLE);
+      return null;
+    }
 
     // En kladde, der blev lagt her af en tidligere udgave af appen, mangler
     // de nye felter. Den skal ikke få siden til at gå ned.
