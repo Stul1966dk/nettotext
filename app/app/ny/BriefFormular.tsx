@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { gemKladde } from "@/lib/skabeloner/kladde";
+import { gemKladde, nyKladde } from "@/lib/skabeloner/kladde";
 import type { Brief, InputFelt } from "@/lib/skabeloner/typer";
 
 type Tekster = {
@@ -46,16 +46,7 @@ export function BriefFormular({
     }
 
     // Briefen rejser gennem browseren, ikke gennem databasen. Se kladde.ts.
-    gemKladde({
-      skabelon,
-      brief,
-      tekst: "",
-      html: "",
-      blokke: [],
-      titel: "",
-      beskrivelse: "",
-      faerdig: false,
-    });
+    gemKladde(nyKladde(skabelon, brief));
     router.push("/app/skriv");
   }
 

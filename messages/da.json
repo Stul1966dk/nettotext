@@ -34,7 +34,17 @@
     "kvoteForklaring": "På vores regning. Derefter skriver du videre med din egen AI-nøgle.",
     "kvoteUkendt": "Vi kunne ikke hente din prøvekvote lige nu.",
     "naesteTrin": "Skriv en ny tekst",
-    "nyTekst": "Ny tekst"
+    "nyTekst": "Ny tekst",
+    "kladderOverskrift": "Kladder",
+    "kladderForklaring": "Tekster, du ikke er færdig med. De slettes automatisk efter 48 timer.",
+    "kladderTomme": "Du har ingen kladder lige nu.",
+    "kladdeUdenNavn": "Uden titel",
+    "kladdeUdloeber": "Udløber om {timer} timer",
+    "kladdeUdloeberSnart": "Udløber inden for en time",
+    "kladdeFortsaet": "Fortsæt",
+    "kladdeSlet": "Slet",
+    "kladdeSletter": "Sletter …",
+    "kladdeSletFejl": "Kladden kunne ikke slettes. Prøv igen om lidt."
   },
   "ny": {
     "titel": "Ny tekst — NettoText",
@@ -87,6 +97,9 @@
     "hentWord": "Hent som Word",
     "henterWord": "Laver filen …",
     "eksportFejl": "Word-filen kunne ikke laves. Din tekst står, som den gjorde. Prøv igen om lidt.",
+    "kladdeGemmer": "Gemmer kladden …",
+    "kladdeGemt": "Kladden er gemt. Den ligger her i 48 timer og bliver derefter slettet.",
+    "kladdeIkkeGemt": "Kladden kunne ikke gemmes på serveren. Den ligger stadig i din browser, så du mister ikke noget, hvis du bliver i fanen.",
     "fejl": {
       "ikke_logget_ind": "Du er blevet logget ud. Log ind igen, og prøv forfra.",
       "ugyldig_anmodning": "Vi kunne ikke læse briefen. Gå tilbage, og udfyld den igen.",

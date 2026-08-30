@@ -26,6 +26,9 @@ type Tekster = BlokkortTekster & {
   hentWord: string;
   henterWord: string;
   eksportFejl: string;
+  kladdeGemmer: string;
+  kladdeGemt: string;
+  kladdeIkkeGemt: string;
   kopieret: string;
   kopiMarkeret: string;
   proevIgen: string;
@@ -170,7 +173,23 @@ function MetaFelt({
   );
 }
 
-export function Generering({ tekster }: { tekster: Tekster }) {
+/**
+ * Hvor længe vi venter, efter brugeren er holdt op med at skrive, før kladden
+ * sendes til serveren. Kort nok til at hun ikke når at lukke fanen, langt nok
+ * til at et tastetryk ikke bliver til et kald.
+ */
+const GEMMEPAUSE_MS = 2000;
+
+type GemStatus = "ukendt" | "gemmer" | "gemt" | "mislykkedes";
+
+export function Generering({
+  tekster,
+  startKladde,
+}: {
+  tekster: Tekster;
+  /** En kladde hentet fra serveren, når siden er åbnet fra dashboardet. */
+  startKladde: Kladde | null;
+}) {
   const [status, setStatus] = useState<Status>("starter");
   const [tekst, setTekst] = useState("");
   const [html, setHtml] = useState("");
@@ -184,6 +203,7 @@ export function Generering({ tekster }: { tekster: Tekster }) {
   const [markeret, setMarkeret] = useState(false);
   const [henter, setHenter] = useState(false);
   const [eksportFejl, setEksportFejl] = useState(false);
+  const [gemStatus, setGemStatus] = useState<GemStatus>("ukendt");
 
   // Omskrivning af ét afsnit. Kun ét ad gangen: to samtidige ville skrive
   // oven i hinandens blokke, og brugeren ville ikke kunne se hvilket svar
@@ -202,11 +222,68 @@ export function Generering({ tekster }: { tekster: Tekster }) {
   // genereringen, er det den her, rettelsen lægges oven på.
   const kladdeRef = useRef<Kladde | null>(null);
 
-  const gem = useCallback((aendring: Partial<Kladde>) => {
-    if (!kladdeRef.current) return;
+  // Den ventende gemning til serveren. Hvert nyt tastetryk skubber den.
+  const gemTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    kladdeRef.current = { ...kladdeRef.current, ...aendring };
-    gemKladde(kladdeRef.current);
+  /**
+   * Sender kladden til serveren, når brugeren har holdt pause.
+   *
+   * Serveren får kun FÆRDIGE kladder. Mens teksten streames, kaldes gem() for
+   * hver bid, og det ville blive til hundredvis af kald om noget, der endnu
+   * ikke er værd at gemme. localStorage tager sig af den del.
+   */
+  const planlaegServerGemning = useCallback(() => {
+    if (gemTimer.current) clearTimeout(gemTimer.current);
+
+    gemTimer.current = setTimeout(async () => {
+      const kladde = kladdeRef.current;
+      if (!kladde) return;
+
+      setGemStatus("gemmer");
+
+      try {
+        const svar = await fetch("/api/draft", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: kladde.id,
+            skabelon: kladde.skabelon,
+            indhold: {
+              brief: kladde.brief,
+              html: kladde.html,
+              blokke: kladde.blokke,
+              titel: kladde.titel,
+              beskrivelse: kladde.beskrivelse,
+              faerdig: kladde.faerdig,
+            },
+          }),
+        });
+
+        setGemStatus(svar.ok ? "gemt" : "mislykkedes");
+      } catch {
+        // Kladden ligger stadig i browseren, så der er ikke noget tabt.
+        setGemStatus("mislykkedes");
+      }
+    }, GEMMEPAUSE_MS);
+  }, []);
+
+  const gem = useCallback(
+    (aendring: Partial<Kladde>) => {
+      if (!kladdeRef.current) return;
+
+      kladdeRef.current = { ...kladdeRef.current, ...aendring };
+      gemKladde(kladdeRef.current);
+
+      if (kladdeRef.current.faerdig) planlaegServerGemning();
+    },
+    [planlaegServerGemning],
+  );
+
+  // En ventende gemning skal ikke fyre af, efter siden er forladt.
+  useEffect(() => {
+    return () => {
+      if (gemTimer.current) clearTimeout(gemTimer.current);
+    };
   }, []);
 
   // React kalder effekter to gange i udvikling for at afsløre fejl. Uden den
@@ -391,7 +468,13 @@ export function Generering({ tekster }: { tekster: Tekster }) {
    * læses, mens siden bliver bygget på serveren.
    */
   const start = useCallback(async () => {
-    const kladde = hentKladde();
+    // Kom vi hertil fra dashboardet, er kladden allerede hentet på serveren.
+    // Den lægges i browseren med det samme, så de to kopier følges ad.
+    if (startKladde) {
+      gemKladde(startKladde);
+    }
+
+    const kladde = startKladde ?? hentKladde();
 
     if (!kladde) {
       setStatus("ingen-brief");
@@ -413,7 +496,7 @@ export function Generering({ tekster }: { tekster: Tekster }) {
     }
 
     await generer(kladde);
-  }, [generer]);
+  }, [generer, startKladde]);
 
   useEffect(() => {
     if (igangsat.current) return;
@@ -569,6 +652,18 @@ export function Generering({ tekster }: { tekster: Tekster }) {
         {status === "skriver" && tekster.skriver}
         {status === "faerdig" && tekster.faerdig}
       </p>
+
+      {status === "faerdig" && gemStatus !== "ukendt" && (
+        <p
+          role="status"
+          aria-live="polite"
+          className={`text-xs leading-relaxed ${gemStatus === "mislykkedes" ? "text-rav" : "text-gran-let"}`}
+        >
+          {gemStatus === "gemmer" && tekster.kladdeGemmer}
+          {gemStatus === "gemt" && tekster.kladdeGemt}
+          {gemStatus === "mislykkedes" && tekster.kladdeIkkeGemt}
+        </p>
+      )}
 
       {fejl && (
         <div className="space-y-4 rounded-lg border border-rav bg-kort px-4 py-4">

@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
+import { hentKladder, kladdeNavn, timerTilbage } from "@/lib/kladder";
 import { createClient } from "@/lib/supabase/server";
+
+import { Kladdeliste } from "./Kladdeliste";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("app");
@@ -23,6 +26,13 @@ export default async function Dashboard() {
     ? Math.max(profil.trial_quota - profil.trial_used, 0)
     : null;
 
+  // Udløbne kladder er allerede filtreret fra af RLS. Se migration 0011.
+  const kladder = (await hentKladder()).map((kladde) => ({
+    id: kladde.id,
+    navn: kladdeNavn(kladde, t("kladdeUdenNavn")),
+    timer: timerTilbage(kladde.udloeber),
+  }));
+
   return (
     <div className="space-y-8">
       <h1 className="text-2xl font-semibold text-gran">{t("overskrift")}</h1>
@@ -42,6 +52,31 @@ export default async function Dashboard() {
             <p className="mt-2 text-sm text-gran-let">{t("kvoteForklaring")}</p>
           </>
         )}
+      </section>
+
+      <section className="space-y-4 rounded-2xl border border-kant bg-kort p-8">
+        <div className="space-y-1">
+          <h2 className="font-mono text-xs uppercase tracking-widest text-gran">
+            {t("kladderOverskrift")}
+          </h2>
+          <p className="text-sm leading-relaxed text-gran-let">
+            {t("kladderForklaring")}
+          </p>
+        </div>
+
+        <Kladdeliste
+          kladder={kladder}
+          tekster={{
+            tomme: t("kladderTomme"),
+            // t.raw: teksten har en pladsholder, klienten selv fylder ud.
+            udloeber: t.raw("kladdeUdloeber") as string,
+            udloeberSnart: t("kladdeUdloeberSnart"),
+            fortsaet: t("kladdeFortsaet"),
+            slet: t("kladdeSlet"),
+            sletter: t("kladdeSletter"),
+            sletFejl: t("kladdeSletFejl"),
+          }}
+        />
       </section>
 
       <Link

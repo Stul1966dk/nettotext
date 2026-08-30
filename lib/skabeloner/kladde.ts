@@ -3,23 +3,27 @@ import type { Blok } from "@/lib/tekst/blokke";
 import type { Brief } from "./typer";
 
 /**
- * Briefens vej fra /app/ny til /app/skriv.
+ * Kladden i browseren.
  *
- * Den ligger i browserens sessionStorage — ikke i databasen. Det er ikke
- * dovenskab: "intet gemmes permanent" er et løfte, og en brief, der aldrig
- * rører serveren, kan ikke blive liggende. sessionStorage tømmes af sig selv,
- * når fanen lukkes.
+ * Den lå oprindeligt i sessionStorage og forsvandt, når fanen blev lukket.
+ * Nu ligger den i localStorage og overlever, at browseren lukkes helt. Det
+ * er den ene halvdel af trin 4; den anden er kopien på serveren, som gør, at
+ * arbejdet også kan hentes frem på en anden computer.
  *
- * Den færdige tekst lægges samme sted, mens den skrives. Så koster en
- * genindlæsning af siden ikke en ny prøvetekst.
+ * Rollefordelingen mellem de to:
+ *   localStorage — gemmer ved HVER ændring, koster ingenting, virker offline.
+ *   serveren     — gemmer sjældnere, overlever en ryddet browser, udløber
+ *                  efter 48 timer (CLAUDE.md regel 7).
  *
- * Trin 4 lægger en rigtig kladdefunktion oven på det her: localStorage plus
- * drafts-tabellen med 48 timers udløb.
+ * Begge steder gemmer det SAMME id, så de to kopier ved, de er den samme
+ * kladde og ikke to.
  */
 
 const NOEGLE = "nettotext:kladde";
 
 export type Kladde = {
+  /** Fælles id for kopien i browseren og kopien på serveren. */
+  id: string;
   skabelon: string;
   brief: Brief;
   /** Den rå tekst, som den kom fra modellen. Vises kun som tekst. */
@@ -34,9 +38,24 @@ export type Kladde = {
   faerdig: boolean;
 };
 
+/** En ny, tom kladde med sit eget id. */
+export function nyKladde(skabelon: string, brief: Brief): Kladde {
+  return {
+    id: crypto.randomUUID(),
+    skabelon,
+    brief,
+    tekst: "",
+    html: "",
+    blokke: [],
+    titel: "",
+    beskrivelse: "",
+    faerdig: false,
+  };
+}
+
 export function gemKladde(kladde: Kladde): void {
   try {
-    sessionStorage.setItem(NOEGLE, JSON.stringify(kladde));
+    localStorage.setItem(NOEGLE, JSON.stringify(kladde));
   } catch {
     // Privat browsing eller fuldt lager. Teksten står stadig på skærmen —
     // den overlever bare ikke en genindlæsning. Ikke værd at afbryde for.
@@ -45,7 +64,7 @@ export function gemKladde(kladde: Kladde): void {
 
 export function hentKladde(): Kladde | null {
   try {
-    const raa = sessionStorage.getItem(NOEGLE);
+    const raa = localStorage.getItem(NOEGLE);
     if (!raa) return null;
 
     const kladde = JSON.parse(raa) as Kladde;
@@ -55,11 +74,22 @@ export function hentKladde(): Kladde | null {
     // de nye felter. Den skal ikke få siden til at gå ned.
     return {
       ...kladde,
+      id: kladde.id ?? crypto.randomUUID(),
       blokke: Array.isArray(kladde.blokke) ? kladde.blokke : [],
       titel: kladde.titel ?? "",
       beskrivelse: kladde.beskrivelse ?? "",
     };
   } catch {
     return null;
+  }
+}
+
+/** Fjerner kladden fra browseren. Bruges, når den er slettet på serveren. */
+export function glemKladde(id: string): void {
+  try {
+    const nuvaerende = hentKladde();
+    if (nuvaerende?.id === id) localStorage.removeItem(NOEGLE);
+  } catch {
+    // Se gemKladde.
   }
 }

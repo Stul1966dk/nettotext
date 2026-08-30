@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
+import { hentKladdeVedId } from "@/lib/kladder";
+import type { Kladde } from "@/lib/skabeloner/kladde";
+
 import { Generering } from "./Generering";
 
 /**
@@ -35,7 +38,32 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("titel") };
 }
 
-export default async function SkrivSide() {
+export default async function SkrivSide({
+  searchParams,
+}: {
+  searchParams: Promise<{ kladde?: string }>;
+}) {
+  // Kommer man fra dashboardet, står kladdens id i adressen. Den hentes her
+  // på serveren, hvor Row Level Security afgør, om den er brugerens.
+  const { kladde: kladdeId } = await searchParams;
+  const gemt = kladdeId ? await hentKladdeVedId(kladdeId) : null;
+
+  const startKladde: Kladde | null = gemt
+    ? {
+        id: gemt.id,
+        skabelon: gemt.skabelon,
+        brief: gemt.indhold.brief,
+        // Den rå strøm gemmes ikke på serveren. Den er kun interessant,
+        // mens teksten bliver skrevet, og teksten er skrevet.
+        tekst: "",
+        html: gemt.indhold.html,
+        blokke: gemt.indhold.blokke,
+        titel: gemt.indhold.titel,
+        beskrivelse: gemt.indhold.beskrivelse,
+        faerdig: gemt.indhold.faerdig,
+      }
+    : null;
+
   const t = await getTranslations("skriv");
   const fejl = await getTranslations("skriv.fejl");
 
@@ -51,6 +79,7 @@ export default async function SkrivSide() {
 
       <div className="mt-8">
         <Generering
+          startKladde={startKladde}
           tekster={{
             ingenBrief: t("ingenBrief"),
             nyTekst: t("nyTekst"),
@@ -67,6 +96,9 @@ export default async function SkrivSide() {
             hentWord: t("hentWord"),
             henterWord: t("henterWord"),
             eksportFejl: t("eksportFejl"),
+            kladdeGemmer: t("kladdeGemmer"),
+            kladdeGemt: t("kladdeGemt"),
+            kladdeIkkeGemt: t("kladdeIkkeGemt"),
             kopieret: t("kopieret"),
             kopiMarkeret: t("kopiMarkeret"),
             proevIgen: t("proevIgen"),

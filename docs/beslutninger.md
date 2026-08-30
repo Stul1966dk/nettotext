@@ -30,6 +30,65 @@ trin 8.
 
 ---
 
+## 2026-08-30 — Trin 4: kladder
+
+**To kopier, to forskellige opgaver.**
+localStorage gemmer ved HVER ændring, koster ingenting og virker offline.
+Serveren gemmer sjældnere, men overlever en ryddet browser og en anden
+computer. Begge kopier bærer det SAMME id, som browseren laver med
+`crypto.randomUUID()`, når briefen sendes af sted — ellers ville de to blive
+til to kladder i stedet for én.
+
+**sessionStorage blev til localStorage.** Den gamle forsvandt, når fanen blev
+lukket. Det er billigt for os og dyrt for brugeren.
+
+**Kun FÆRDIGE kladder sendes til serveren.**
+Mens teksten streames, kaldes gemme-funktionen for hver bid — det ville blive
+til hundredvis af kald om noget, der endnu ikke er værd at gemme. Og
+gemningen venter to sekunder, efter brugeren er holdt op med at skrive, så et
+tastetryk i meta-feltet ikke bliver til et databasekald.
+**Kendt hul:** lukker hun fanen inden for de to sekunder, når serverkopien
+ikke at blive skrevet. Kladden ligger stadig i browseren, så intet er tabt på
+den maskine. Prisen for at lukke hullet ville være et kald pr. tastetryk, og
+den er for høj.
+
+**Udløbet ruller ved hver gemning.**
+48 timer regnes fra SIDSTE rettelse, ikke fra den første. En kladde, man
+arbejder på tredje dag, skal ikke forsvinde under hænderne på en. Regel 7
+siger `now() + interval '48 hours'`, og det er præcis, hvad der sættes — bare
+hver gang.
+
+**RLS skjuler udløbne kladder i samme sekund, de udløber.**
+Select-policyen har `expires_at > now()` med. Det er en sele ud over selerne:
+oprydningsjobbet kører én gang i døgnet, og går det i stå, ville kladder
+ellers kunne læses i dagevis efter, de var lovet slettet. **Løftet til
+brugeren er 48 timer, og det løfte skal ikke afhænge af, at et natligt job
+kørte.** Jobbet er dét, der gør sletningen ægte — forskellen på at overholde
+regel 7 og at se ud som om.
+
+**Ingen `service_role` i kladdekoden overhovedet.**
+Alt går gennem brugerens egen forbindelse, så RLS afgør ejerskabet. Det er
+sikkerhedsreglernes punkt 6 vendt om: i stedet for at omgå RLS og huske et
+manuelt ejer-tjek, lader vi databasen sige nej. Der er ikke noget tjek, der
+kan glemmes, fordi der ikke er noget tjek.
+Sletning sker derfor uden ejer-betingelse i koden: et id, brugeren ikke ejer,
+rammer ingenting.
+
+**Den rå strøm fra modellen gemmes ikke på serveren.**
+`tekst` er kun interessant, mens teksten bliver skrevet, og den fylder det
+samme som den færdige tekst en gang til. Serverkopien indeholder briefen,
+den sanerede HTML, blokkene og meta-felterne.
+
+**Sletning fjerner også kopien i browseren.**
+Ellers ville en slettet kladde dukke op igen, næste gang `/app/skriv` blev
+åbnet — og en app, der genopliver noget, man har slettet, er skræmmende.
+
+**GDPR:** `drafts` har `on delete cascade` mod `auth.users` som de andre
+tabeller, så "slet min konto" tager kladderne med. Det er det eneste sted i
+hele appen, hvor tekstindhold overhovedet ligger.
+
+---
+
 ## 2026-08-30 — Word-eksport, og trin 3 er færdig
 
 **Ny afhængighed: `docx`.** Standardvalget ifølge det tekniske oplæg, afsnit 8,
