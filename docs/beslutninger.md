@@ -86,6 +86,16 @@ om dagen med Sonnet 5. Det er rigeligt til lukket test og formentlig for højt
 sat til en åben lancering. Tallet er nemt at skrue på, nu hvor der findes en
 log at træffe beslutningen ud fra.
 
+**Advarslen om prøvetekster vises ikke, hvor den ikke passer.**
+"Bemærk: hvert forsøg bruger én af dine prøvetekster" stod under alle
+fejlbeskeder. Under budgetfejlen var den forkert: afvisningen sker FØR kaldet,
+så et nyt forsøg koster ingenting. Samme gælder, når der slet ingen nøgle er
+at skrive med. Fejlens årsag følger nu med til klienten, så de to tilfælde kan
+kendes fra de andre.
+Grunden til at det er værd at rette noget så småt: en app, der advarer om
+noget, der ikke sker, er sværere at stole på næste gang den advarer. Og her
+handler advarslen om penge.
+
 **Rate limit pr. bruger mangler stadig** (punkt c i regel 6). Budgetloftet
 fanger det samlede forbrug, men ikke én bruger, der klikker tredive gange på
 et minut. Sat på tjeklisten.

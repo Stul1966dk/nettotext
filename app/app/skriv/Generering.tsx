@@ -35,6 +35,21 @@ type Tekster = {
 
 type Status = "starter" | "skriver" | "faerdig" | "fejl" | "ingen-brief";
 
+/** En fejl vi viser. Årsagen gemmes med, fordi ikke alle fejl er ens. */
+type Fejl = { aarsag: string; besked: string };
+
+/**
+ * Fejl hvor et nyt forsøg umuligt kan koste en prøvetekst.
+ *
+ * Advarslen "hvert forsøg bruger én af dine prøvetekster" står under alle
+ * fejl, og for de fleste er den rigtig: lykkes det næste forsøg, er der
+ * trukket en tekst. Men når budgettet er brugt, eller der slet ikke er nogen
+ * nøgle at skrive med, bliver forsøget afvist, før der bruges penge. Så er
+ * advarslen ikke bare overflødig, den er forkert — og en app, der advarer om
+ * noget, der ikke sker, er sværere at stole på næste gang den advarer.
+ */
+const GRATIS_AT_PROEVE_IGEN = new Set(["budget_opbrugt", "mangler_noegle"]);
+
 /**
  * Længderne, Google typisk viser, før den klipper af. Det er ikke regler fra
  * Google, men det målte gennemsnit. Derfor en venlig bemærkning i UI'et og
@@ -149,7 +164,7 @@ export function Generering({ tekster }: { tekster: Tekster }) {
   const [beskrivelse, setBeskrivelse] = useState("");
   const [harMeta, setHarMeta] = useState(false);
   const [visKoder, setVisKoder] = useState(false);
-  const [fejl, setFejl] = useState<string | null>(null);
+  const [fejl, setFejl] = useState<Fejl | null>(null);
   const [kopieret, setKopieret] = useState<string | null>(null);
   const [markeret, setMarkeret] = useState(false);
 
@@ -174,7 +189,10 @@ export function Generering({ tekster }: { tekster: Tekster }) {
   const generer = useCallback(
     async (kladde: Kladde) => {
       const visFejl = (aarsag: string) => {
-        setFejl(tekster.fejl[aarsag] ?? tekster.fejl.ukendt);
+        setFejl({
+          aarsag,
+          besked: tekster.fejl[aarsag] ?? tekster.fejl.ukendt,
+        });
         setStatus("fejl");
       };
 
@@ -410,7 +428,7 @@ export function Generering({ tekster }: { tekster: Tekster }) {
       {fejl && (
         <div className="space-y-4 rounded-lg border border-rav bg-kort px-4 py-4">
           <p role="alert" className="text-sm leading-relaxed text-gran">
-            {fejl}
+            {fejl.besked}
           </p>
           <div className="flex flex-wrap items-center gap-4">
             <button
@@ -420,7 +438,9 @@ export function Generering({ tekster }: { tekster: Tekster }) {
             >
               {tekster.proevIgen}
             </button>
-            <span className="text-xs text-gran-let">{tekster.koster}</span>
+            {!GRATIS_AT_PROEVE_IGEN.has(fejl.aarsag) && (
+              <span className="text-xs text-gran-let">{tekster.koster}</span>
+            )}
           </div>
         </div>
       )}
