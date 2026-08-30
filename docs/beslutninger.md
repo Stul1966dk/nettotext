@@ -21,12 +21,53 @@ trin 8.
 - [ ] **Fjern eksempelteksten fra brief-felterne**, eller lav den om til en "Udfyld med eksempel"-knap. Felterne i `templates.input_fields` er forudfyldt med et malerfirma i Brønderslev. Det er praktisk under test, men rigtige brugere vil sende eksemplet af sted som deres egen brief uden at opdage det.
 - [ ] **Sæt et forbrugsloft på platformens AI-nøgle hos Anthropic.** `DAILY_BUDGET_DKK` er bygget (30.08.2026), så leverandørens loft er ikke længere den eneste bremse — men det er stadig den sidste. Appens loft kan kun tælle det, appen selv sender af sted; en lækket nøgle kan det ikke stoppe.
 - [ ] **Husk `DAILY_BUDGET_DKK` i ethvert NYT miljø.** Sat hos Vercel 30.08.2026. Budgetloftet fejler LUKKET, så mangler variablen, holder genereringen op med at virke. Gælder også et eventuelt preview- eller testmiljø senere.
+- [ ] **Udvid forbuddet mod modsætningsfiguren?** Prompten forbyder "ikke X, men Y" og "det handler ikke kun om X, det handler om Y". Modellen skriver den i stedet delt over to sætninger: "... handler ikke om at gøre det pænt. Det handler om at holde fugten ude." Ejerens beslutning, om reglen skal udvides — det er en sprogvurdering, ikke en teknisk.
 - [ ] **Byg .docx-eksport** (`POST /api/export/docx`). Kopiering som HTML og Markdown er på plads; Word-filen mangler. Biblioteket `docx` er standardvalget ifølge det tekniske oplæg.
 - [ ] **Slå OpenAI-priserne op**, før nogen må vælge ChatGPT. `lib/ai/modeller.ts` har prisfeltet tomt for de to OpenAI-modeller, fordi tallene ikke er slået op. Uden pris logges forbruget som 0 kr., og budgetloftet tæller for lavt.
 - [ ] **Prøv ChatGPT-vejen af, før nogen får lov at vælge den.** `lib/ai/openai.ts` er skrevet, men aldrig kørt — platformens nøgle er en Anthropic-nøgle, så OpenAI-siden kan først testes, når der findes en OpenAI-nøgle at teste med. Lad ikke brugerne vælge ChatGPT i indstillinger, før mindst én tekst er skrevet den vej.
 - [ ] **Tjek at lange tekster når at blive færdige.** `/api/generate` har `maxDuration = 60`. Vercels loft afhænger af abonnement. Timer "Langt — ca. 1.400 ord" ud i produktion, er der to knapper: hæv `maxDuration` (kræver det rigtige abonnement), eller sænk `effort` i `lib/ai/anthropic.ts`.
 - [ ] **Privatlivspolitik** på `/da/privatliv` (GDPR, jf. teknisk oplæg afsnit 5).
 - [ ] **Opdatér brandnavnet** i `design/design-3-vaerksted.html` til NettoText.
+
+---
+
+## 2026-08-30 — Eksemplerne i prompten kunne lånes
+
+**Tredje gang samme fejl på én dag.** Værd at skrive tydeligt ned, fordi den
+kommer igen: **alt hvad en prompt viser frem, bliver efterlignet — også det,
+den udtrykkeligt advarer imod.**
+
+De tre tilfælde:
+1. Lange tankestreger. Prompten forbød dem og var selv fuld af dem.
+2. Meta-pladsholderne. "META-TITEL: titlen til søgeresultatet" med lille
+   begyndelsesbogstav gav to felter med lille begyndelsesbogstav.
+3. Denne: reglen mod "ikke X, men Y" brugte eksemplet "Det skyldes ikke
+   bekvemmelighed, men fysik", og rettelsen hed "Det skyldes, at malingen ikke
+   hærder, når det er koldt". Begge fra malerbranchen, altså samme branche som
+   testbriefen. Modellen skrev så, i en rigtig tekst: "Det er ikke af
+   bekvemmelighed, det er fordi malingen ikke hærder ordentligt."
+   **"Bekvemmelighed" er ikke almindeligt dansk.** Ordet kom fra forbuddet.
+
+**Rettelsen er todelt.** Eksemplerne er nu skabeloner med pladsholdere i
+kantede parenteser, så der ikke er ord tilbage at låne. Og prompten siger
+udtrykkeligt, at et eksempel viser en FORM og ikke et ordforråd, og at intet
+ord fra et eksempel må genbruges. Listen over forbudte vendinger har fået
+samme forbehold: den er en forbudsliste, ikke inspiration.
+
+**Regel til den, der redigerer prompten herefter:** skriv aldrig et
+eksempel med ord, der kunne passe ind i en rigtig tekst om emnet. Enten
+pladsholdere, eller et emne der ligger så langt fra brugerens som muligt.
+
+**Det virkede kun halvt, og resten er en anden fejl.**
+Efter rettelsen er "bekvemmelighed" væk og modsætningsfiguren væk i sin
+direkte form. Men modellen skrev i stedet: "Vedligeholdelse af trævinduer
+handler ikke om at gøre det pænt. Det handler om at holde fugten ude."
+Det er samme figur delt over to sætninger. Prompten forbyder "det handler
+ikke kun om X, det handler om Y", og modellen har fundet den variant, forbuddet
+ikke nævner.
+**Det er ikke et lånt ordforråd, det er en for snæver regel** — altså en anden
+fejl end den, der lige er rettet. Ejeren har set den og afgør, om reglen skal
+udvides til også at dække figuren delt over to sætninger. Sat på tjeklisten.
 
 ---
 
