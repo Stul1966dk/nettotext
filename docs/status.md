@@ -120,94 +120,89 @@ allerede i `usage_log`. Der mangler tommel op/ned i editoren og ruten
 
 ## Branchepakker — teksttyper pr. branche
 
-Retningen er besluttet 30.08.2026. NettoText skal ikke kun kunne skrive
+Retningen er besluttet 30.08.2026: NettoText skal ikke kun kunne skrive
 blogindlæg og produkttekster, men også de dokumenter, en given branche laver
-igen og igen.
+igen og igen. Hvilke brancher og hvilke dokumenter er IKKE afgjort — det
+afhænger af, hvem der viser sig at ville betale.
 
-**Arkitekturen er allerede bygget til det.** Teksttyper er DATA, ikke kode:
-en ny type er en migrationsfil med en systemprompt og nogle felter i
+**Arkitekturen er allerede bygget til det.** Teksttyper er DATA, ikke kode: en
+ny type er en migrationsfil med en systemprompt og nogle felter i
 `templates.input_fields`, og formularen bygger sig selv. Det var netop
 begrundelsen for at gøre det sådan fra trin 2.
 
-**Omfanget er dog en anden sag.** Trin 7 taler om fire teksttyper. Listen
-herunder er ni brancher med fire typer hver. Det er ikke et trin, det er en
-fase for sig, og den bør deles op og bygges branche for branche — ikke fordi
-koden bliver svær, men fordi hver enkelt teksttype skal have en systemprompt,
-der er god nok til at sende ud til nogen.
+**Omfanget er en anden sag.** Trin 7 taler om fire teksttyper. Bliver det til
+en håndfuld brancher med fire typer hver, er det ikke et trin, men en fase for
+sig — ikke fordi koden bliver svær, men fordi hver enkelt teksttype skal have
+en systemprompt, der er god nok til at sende ud til nogen. Byg branche for
+branche, ikke alle på én gang.
 
-### To slags dokumenter, og forskellen er ikke til forhandling
+### Prøven, hver ny teksttype skal igennem
 
-Eksemplerne nedenfor deler sig i to grupper med vidt forskellige krav. Det er
-værd at holde dem adskilt fra første dag, for de trækker produktet hver sin
-vej.
+Uanset hvilke brancher der ender med at blive valgt, falder teksttyper i to
+grupper, og forskellen afgør, hvad der skal på plads først. Spørg om den nye
+type:
 
-**Gruppe A — tekster, der skal overbevise.** Samme slags produkt som i dag:
-en tekst, brugeren læser igennem, retter i og godkender. Fejl koster omdømme,
-ikke andet. Her passer den nuværende arkitektur, prompten og tonen.
+**Kan et menneske komme galt af sted, hvis teksten er næsten rigtig?**
+**Og står der personoplysninger i den?**
 
-- E-handel: produktbeskrivelser, returvejledninger
-- Rejsebureauer og hoteller: rejsebeskrivelser, hotelpræsentationer
-- Kursus- og uddannelsessteder: kursusbeskrivelser, modulbeskrivelser
-- HR: jobopslag, velkomstmails
-- PR: pressemeddelelser, pitch-mails, Q&A-ark til krisekommunikation
-- Konsulenter: tilbudsskrivelser, projektforslag
+**Nej til begge — gruppe A.** Samme produkt som i dag: en tekst, brugeren
+læser igennem, retter i og godkender. Fejl koster omdømme, ikke andet. Den
+nuværende arkitektur, prompt og tone passer, og typen kan bygges med det
+samme.
 
-**Gruppe B — dokumenter med retsvirkning eller persondata.** Et andet produkt,
-selvom det ligner. Her koster en fejl penge, retsstillinger eller en klage.
+*Eksempler på formen:* en produktbeskrivelse til en webshop, et jobopslag, en
+pressemeddelelse, en kursusbeskrivelse, en hotelpræsentation, en
+tilbudsskrivelse.
 
-- Advokater: testamenter, ægtepagter, ansættelses- og lejekontrakter, stævninger
-- Finans og forsikring: låneaftaler, policetekster, årsrapporter,
-  skadesanmeldelser, kreditvurderinger
-- Offentlig forvaltning: afgørelsesbreve, aktindsigtsbesvarelser,
-  lokalplanforslag, partshøringer
-- HR: afslag på ansøgninger, medarbejderhåndbøger
-- Konsulenter: statusrapporter og evalueringsrapporter, hvis de indgår i
-  afregning eller tilsyn
+**Ja til et af dem — gruppe B.** Et andet produkt, selvom det ligner. Her
+koster en fejl penge, retsstillinger eller en klage.
+
+*Eksempler på formen:* et testamente eller en kontrakt hos en advokat, et
+afgørelsesbrev eller en partshøring i en kommune, en policetekst eller en
+kreditvurdering i finans, et afslag på en jobansøgning.
 
 ### Hvad gruppe B kræver, ud over en skabelon
 
 Det her er ikke indvendinger mod idéen. Det er de beslutninger, der skal
-træffes, FØR den første af dem sælges til nogen.
+træffes, FØR den første tekst af den slags sælges til nogen.
 
 1. **Persondata i briefen.** Et afgørelsesbrev, en skadesanmeldelse eller et
-   afslag på en ansøgning indeholder oplysninger om et navngivet menneske —
-   og i nogle tilfælde helbredsoplysninger, altså følsomme data. I dag siger
-   CLAUDE.md regel 9, at vi aldrig logger tekstindhold eller persondata, og
-   det holder. Men briefen sendes videre til Anthropic eller OpenAI, og
-   kladden ligger 48 timer i `drafts`. **Vi bliver databehandler for
-   oplysninger, vi i dag har designet os fri af.** Det kræver som minimum en
-   databehandleraftale med brugeren, en vurdering af underdatabehandlerne, og
-   en stillingtagen til, om følsomme kategorier overhovedet må røre systemet.
+   afslag på en ansøgning handler om et navngivet menneske — og nogle gange
+   om helbred, altså følsomme oplysninger. CLAUDE.md regel 9 siger, at vi
+   aldrig logger tekstindhold eller persondata, og det holder. Men briefen
+   sendes videre til Anthropic eller OpenAI, og kladden ligger 48 timer i
+   `drafts`. **Vi bliver databehandler for oplysninger, produktet i dag er
+   designet fri af.** Det kræver som minimum en databehandleraftale med
+   brugeren, en vurdering af underdatabehandlerne, og en stillingtagen til,
+   om følsomme kategorier overhovedet må røre systemet.
 2. **Ansvar for indholdet.** Et testamente har formkrav; er de ikke opfyldt,
-   er det ugyldigt. En stævning skal opfylde retsplejelovens krav. Et
-   afgørelsesbrev skal leve op til forvaltningslovens begrundelseskrav og
-   partshøringsregler. En sprogmodel, der skriver dem "næsten rigtigt", er
-   farligere end en, der ikke skriver dem. Der skal tages stilling til, hvad
-   NettoText lover, og hvad brugeren selv står på mål for — og det skal stå i
-   produktet, ikke kun i en betingelse.
-3. **Kreditvurderinger er en sag for sig.** Automatiske afgørelser med
-   retsvirkning for et menneske er reguleret særskilt (GDPR artikel 22). Det
-   punkt bør enten skæres fra eller behandles som sit eget projekt.
-4. **Prompten trækker den forkerte vej.** Systemprompten i dag kræver
+   er det ugyldigt. Et afgørelsesbrev skal leve op til forvaltningslovens
+   krav om begrundelse og partshøring. En sprogmodel, der skriver dem næsten
+   rigtigt, er farligere end en, der ikke skriver dem. Der skal tages stilling
+   til, hvad NettoText lover, og hvad brugeren selv står på mål for — og det
+   skal stå i produktet, ikke kun i en betingelse.
+3. **Automatiske afgørelser er en sag for sig.** Skal en teksttype indgå i en
+   afgørelse med retsvirkning for et menneske — en kreditvurdering er det
+   tydeligste eksempel — er det reguleret særskilt (GDPR artikel 22). Sådan
+   en type bør enten skæres fra eller behandles som sit eget projekt.
+4. **Prompten trækker den forkerte vej.** Systemprompten kræver i dag
    mundtligt dansk: "kunne du sige sætningen til en kunde henover et
-   køkkenbord?" Et policetekst eller en partshøring skal det stik modsatte —
-   fast formulering, genkendelige vendinger, ingen sproglig variation. De to
-   slags tekster kan ikke dele systemprompt. Gruppe B har brug for sin egen.
-5. **Den nuværende regel om belæg bliver vigtigere, ikke mindre.** Prompten
-   forbyder allerede at opfinde tal, datoer og paragraffer. I gruppe B er dét
-   forbud forskellen på et brugbart udkast og et falsk dokument.
+   køkkenbord?" Et formelt dokument skal det stik modsatte — fast formulering,
+   genkendelige vendinger, ingen sproglig variation. De to slags tekster kan
+   ikke dele systemprompt. Gruppe B har brug for sin egen.
+5. **Reglen om belæg bliver vigtigere, ikke mindre.** Prompten forbyder
+   allerede at opfinde tal, datoer og paragraffer. I gruppe B er dét forbud
+   forskellen på et brugbart udkast og et falsk dokument.
 
 ### Anbefalet vej
 
-Byg **gruppe A først**, branche for branche. Den kræver ingen nye
-beslutninger — kun gode systemprompter og en migrationsfil pr. teksttype — og
-den kan sælges til de samme mindre erhvervsdrivende, produktet allerede er
-skrevet til.
+Byg **gruppe A først**. Den kræver ingen nye beslutninger — kun gode
+systemprompter og en migrationsfil pr. teksttype — og den sælges til samme
+slags kunder, produktet allerede er skrevet til.
 
 **Gruppe B er et selvstændigt produktspor**, ikke en udvidelse af det
 nuværende. Tag den, når de fem punkter ovenfor er afklaret, og tag én branche
-ad gangen. Offentlig forvaltning og advokater er de to sværeste; e-handel og
-HR-jobopslag er de nemmeste.
+ad gangen.
 
 **Ingen af delene hører til i version 1.** V1 skal først kunne det, den lover
 i dag, med de fire teksttyper fra trin 7.
