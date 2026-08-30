@@ -84,6 +84,9 @@
     "kopierUdenTitel": "Kopiér uden titel",
     "kopierMarkdown": "Kopiér Markdown",
     "kopierForklaring": "Titlen er med i \"Kopiér HTML\". Laver dit CMS selv sidens overskrift, så brug \"Kopiér uden titel\" — ellers får siden to.",
+    "hentWord": "Hent som Word",
+    "henterWord": "Laver filen …",
+    "eksportFejl": "Word-filen kunne ikke laves. Din tekst står, som den gjorde. Prøv igen om lidt.",
     "fejl": {
       "ikke_logget_ind": "Du er blevet logget ud. Log ind igen, og prøv forfra.",
       "ugyldig_anmodning": "Vi kunne ikke læse briefen. Gå tilbage, og udfyld den igen.",

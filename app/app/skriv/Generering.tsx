@@ -23,6 +23,9 @@ type Tekster = BlokkortTekster & {
   kopierUdenTitel: string;
   kopierMarkdown: string;
   kopierForklaring: string;
+  hentWord: string;
+  henterWord: string;
+  eksportFejl: string;
   kopieret: string;
   kopiMarkeret: string;
   proevIgen: string;
@@ -179,6 +182,8 @@ export function Generering({ tekster }: { tekster: Tekster }) {
   const [fejl, setFejl] = useState<Fejl | null>(null);
   const [kopieret, setKopieret] = useState<string | null>(null);
   const [markeret, setMarkeret] = useState(false);
+  const [henter, setHenter] = useState(false);
+  const [eksportFejl, setEksportFejl] = useState(false);
 
   // Omskrivning af ét afsnit. Kun ét ad gangen: to samtidige ville skrive
   // oven i hinandens blokke, og brugeren ville ikke kunne se hvilket svar
@@ -453,6 +458,53 @@ export function Generering({ tekster }: { tekster: Tekster }) {
     }
   }
 
+  /**
+   * Henter teksten som Word-fil.
+   *
+   * Serveren sender filen tilbage i svaret; browseren får den ikke af sig
+   * selv. Derfor det lille kunstgreb med et usynligt link: filen laves om til
+   * en midlertidig adresse i browserens egen hukommelse, linket klikkes, og
+   * adressen gives fri igen med det samme. Uden det sidste ville filen blive
+   * liggende i hukommelsen, til fanen bliver lukket.
+   */
+  async function hentWord() {
+    setHenter(true);
+    setEksportFejl(false);
+
+    try {
+      const svar = await fetch("/api/export/docx", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ blokke, titel, beskrivelse }),
+      });
+
+      if (!svar.ok) {
+        setEksportFejl(true);
+        return;
+      }
+
+      const navn =
+        svar.headers
+          .get("Content-Disposition")
+          ?.match(/filename="([^"]+)"/)?.[1] ?? "tekst.docx";
+
+      const adresse = URL.createObjectURL(await svar.blob());
+
+      const link = document.createElement("a");
+      link.href = adresse;
+      link.download = navn;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      URL.revokeObjectURL(adresse);
+    } catch {
+      setEksportFejl(true);
+    } finally {
+      setHenter(false);
+    }
+  }
+
   // Markér koden, når kopieringen slog fejl. Kører efter at <pre> er tegnet.
   useEffect(() => {
     if (!markeret || !visKoder || !kodeRef.current) return;
@@ -653,6 +705,15 @@ export function Generering({ tekster }: { tekster: Tekster }) {
 
               <button
                 type="button"
+                onClick={hentWord}
+                disabled={henter}
+                className={`${knapKlasser} disabled:opacity-40`}
+              >
+                {henter ? tekster.henterWord : tekster.hentWord}
+              </button>
+
+              <button
+                type="button"
                 onClick={() => setVisKoder((v) => !v)}
                 className={knapKlasser}
               >
@@ -667,6 +728,15 @@ export function Generering({ tekster }: { tekster: Tekster }) {
             <p className="text-xs leading-relaxed text-gran-let">
               {tekster.kopierForklaring}
             </p>
+
+            {eksportFejl && (
+              <p
+                role="alert"
+                className="rounded-lg border border-rav bg-kort px-4 py-3 text-sm leading-relaxed text-gran"
+              >
+                {tekster.eksportFejl}
+              </p>
+            )}
           </div>
 
           {markeret && (

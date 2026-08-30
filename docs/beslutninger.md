@@ -22,12 +22,61 @@ trin 8.
 - [ ] **Sæt et forbrugsloft på platformens AI-nøgle hos Anthropic.** `DAILY_BUDGET_DKK` er bygget (30.08.2026), så leverandørens loft er ikke længere den eneste bremse — men det er stadig den sidste. Appens loft kan kun tælle det, appen selv sender af sted; en lækket nøgle kan det ikke stoppe.
 - [ ] **Husk `DAILY_BUDGET_DKK` i ethvert NYT miljø.** Sat hos Vercel 30.08.2026. Budgetloftet fejler LUKKET, så mangler variablen, holder genereringen op med at virke. Gælder også et eventuelt preview- eller testmiljø senere.
 - [ ] **Udvid forbuddet mod modsætningsfiguren?** Prompten forbyder "ikke X, men Y" og "det handler ikke kun om X, det handler om Y". Modellen skriver den i stedet delt over to sætninger: "... handler ikke om at gøre det pænt. Det handler om at holde fugten ude." Ejerens beslutning, om reglen skal udvides — det er en sprogvurdering, ikke en teknisk.
-- [ ] **Byg .docx-eksport** (`POST /api/export/docx`). Kopiering som HTML og Markdown er på plads; Word-filen mangler. Biblioteket `docx` er standardvalget ifølge det tekniske oplæg.
 - [ ] **Slå OpenAI-priserne op**, før nogen må vælge ChatGPT. `lib/ai/modeller.ts` har prisfeltet tomt for de to OpenAI-modeller, fordi tallene ikke er slået op. Uden pris logges forbruget som 0 kr., og budgetloftet tæller for lavt.
 - [ ] **Prøv ChatGPT-vejen af, før nogen får lov at vælge den.** `lib/ai/openai.ts` er skrevet, men aldrig kørt — platformens nøgle er en Anthropic-nøgle, så OpenAI-siden kan først testes, når der findes en OpenAI-nøgle at teste med. Lad ikke brugerne vælge ChatGPT i indstillinger, før mindst én tekst er skrevet den vej.
 - [ ] **Tjek at lange tekster når at blive færdige.** `/api/generate` har `maxDuration = 60`. Vercels loft afhænger af abonnement. Timer "Langt — ca. 1.400 ord" ud i produktion, er der to knapper: hæv `maxDuration` (kræver det rigtige abonnement), eller sænk `effort` i `lib/ai/anthropic.ts`.
 - [ ] **Privatlivspolitik** på `/da/privatliv` (GDPR, jf. teknisk oplæg afsnit 5).
 - [ ] **Opdatér brandnavnet** i `design/design-3-vaerksted.html` til NettoText.
+
+---
+
+## 2026-08-30 — Word-eksport, og trin 3 er færdig
+
+**Ny afhængighed: `docx`.** Standardvalget ifølge det tekniske oplæg, afsnit 8,
+og der er ikke fundet grund til at vælge om. Word-filen bygges server-side;
+browseren kan ikke lave en .docx selv.
+
+**Ruten har hverken kvote, budgetloft eller rate limit — og det er med vilje.**
+Tjekkene i CLAUDE.md regel 6 gælder alt, der KOSTER PENGE. Her kaldes ingen AI:
+filen bygges af tekst, brugeren allerede har fået og betalt for.
+Login kræves stadig. Ikke fordi det koster noget, men fordi resten af appen er
+lukket, og en åben rute ville være et hul, ingen havde besluttet.
+
+**Teksten sendes fra browseren, ikke hentet fra databasen.**
+Det ser omvendt ud, men følger direkte af "intet gemmes permanent": serveren
+HAR ikke en kopi at hente. Blokkene blev saneret, dengang de blev skrevet, og
+saneres ikke igen — de bliver aldrig vist som HTML, kun læst som tekst, når
+Word-afsnittene bygges.
+
+**Ingen skrifttype sættes i filen.**
+Designsystemet gælder appen, ikke brugerens dokumenter. Word bruger nu
+modtagerens egen standard, og filen ser ud som alt andet, hun skriver. En
+skrifttype, hun ikke har installeret, ville alligevel blive skiftet ud — bare
+uden at hun opdagede det.
+
+**Meta-felterne kommer med til sidst i filen, adskilt af en streg.**
+De hører ikke til i teksten og skal i to felter i et CMS. Men de er en del af
+det, hun har fået lavet, og en Word-fil uden dem ville betyde, at hun skulle
+have appen åben ved siden af for at samle det hele.
+
+**To små ting, der kostede mest tid, og som er værd at huske:**
+Nummererede lister i Word kræver en opskrift på, HVORDAN der tælles
+(`numbering.config`). Uden den står punkterne uden numre, og det opdages først,
+når filen åbnes.
+Og sættes både `bold: false` og `italics: true` på samme stykke tekst, skriver
+`docx` en udtrykkelig "ikke fed" ud i filen. Det virker, men det fylder
+dokumentet med støj. Sæt kun den egenskab, der faktisk gælder.
+
+**Filnavnet afkortes ved sidste hele ord.**
+Første udgave klippede hårdt ved 60 tegn og gav
+"...inden-vinteren-melde.docx". Et filnavn, der slutter midt i et ord, ser ud
+som om noget er gået galt — og filen ligger i brugerens mappe længe efter, hun
+har glemt hvorfor.
+
+**Dermed er trin 3 færdig:** blokke, meta-titel og -beskrivelse, omskrivning af
+ét afsnit ad gangen, og eksport som HTML, HTML uden titel, Markdown og Word.
+Næste trin er 4: kladder med localStorage-autosave, `drafts`-tabellen med 48
+timers udløb og pg_cron-jobbet, der rydder op om natten.
 
 ---
 
