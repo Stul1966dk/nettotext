@@ -30,7 +30,7 @@ udelukket i `.gitignore` og må aldrig committes.
 | `lib/` | Hjælpefunktioner og klienter (Supabase, AI-adapter) |
 | `messages/` | Alle UI-tekster. `da.json` er den eneste sandhed — aldrig hardcodet tekst |
 | `supabase/migrations/` | SQL-migrationer. Databasen ændres kun via filer her |
-| `docs/` | Produktvision, teknisk oplæg og de faste regler |
+| `docs/` | Produktvision, teknisk oplæg, beslutningslog, status og de faste regler |
 | `design/` | Visuel facit for landingssiden |
 
 ## Stak

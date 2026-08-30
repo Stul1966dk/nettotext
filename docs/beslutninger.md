@@ -25,6 +25,7 @@ trin 8.
 - [ ] **Slå OpenAI-priserne op**, før nogen må vælge ChatGPT. `lib/ai/modeller.ts` har prisfeltet tomt for de to OpenAI-modeller, fordi tallene ikke er slået op. Uden pris logges forbruget som 0 kr., og budgetloftet tæller for lavt.
 - [ ] **Prøv ChatGPT-vejen af, før nogen får lov at vælge den.** `lib/ai/openai.ts` er skrevet, men aldrig kørt — platformens nøgle er en Anthropic-nøgle, så OpenAI-siden kan først testes, når der findes en OpenAI-nøgle at teste med. Lad ikke brugerne vælge ChatGPT i indstillinger, før mindst én tekst er skrevet den vej.
 - [ ] **Tjek at lange tekster når at blive færdige.** `/api/generate` har `maxDuration = 60`. Vercels loft afhænger af abonnement. Timer "Langt — ca. 1.400 ord" ud i produktion, er der to knapper: hæv `maxDuration` (kræver det rigtige abonnement), eller sænk `effort` i `lib/ai/anthropic.ts`.
+- [ ] **Byg "slet min konto"** (GDPR, CLAUDE.md regel 9). Alle brugerens rækker i alle tabeller, `ai_keys` inklusive. De fleste tabeller har `on delete cascade` mod `auth.users`, så meget er gjort — der mangler en knap, en rute og en bekræftelse.
 - [ ] **Privatlivspolitik** på `/da/privatliv` (GDPR, jf. teknisk oplæg afsnit 5).
 - [ ] **Opdatér brandnavnet** i `design/design-3-vaerksted.html` til NettoText.
 
