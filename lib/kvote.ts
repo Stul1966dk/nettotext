@@ -26,6 +26,30 @@ export async function reserverProeveTekst(brugerId: string): Promise<boolean> {
   return data === true;
 }
 
+/**
+ * Er der prøvekvote tilbage? Uden at bruge af den.
+ *
+ * Bruges der, hvor vi kun skal VIDE, hvem der betaler — ikke trække fra.
+ * At skrive ét afsnit om koster ikke en prøvetekst (beslutningen fra
+ * 30.08.2026), men det skal stadig afgøres, om regningen går til platformen
+ * eller til brugerens egen nøgle.
+ */
+export async function harProeveKvote(brugerId: string): Promise<boolean> {
+  const supabase = createServiceClient();
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("trial_used, trial_quota")
+    .eq("id", brugerId)
+    .single();
+
+  if (error) {
+    throw new Error(`Kunne ikke læse prøvekvoten: ${error.message}`);
+  }
+
+  return data.trial_used < data.trial_quota;
+}
+
 export async function frigivProeveTekst(brugerId: string): Promise<void> {
   const supabase = createServiceClient();
   await supabase.rpc("frigiv_proeve_tekst", { bruger: brugerId });

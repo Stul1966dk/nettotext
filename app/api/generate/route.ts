@@ -5,6 +5,8 @@ import { ManglerNoegle, vaelgNoegle, AiFejl } from "@/lib/ai";
 import { hentBudgetstatus, skrivForbrug } from "@/lib/budget";
 import { frigivProeveTekst, reserverProeveTekst } from "@/lib/kvote";
 import { hentSkabelon } from "@/lib/skabeloner/hent";
+import { afvis, ndjsonLinje, NDJSON_HEADERS } from "@/lib/api/ndjson";
+import { tagPladsIKoeen } from "@/lib/ratelimit";
 import { delIBlokke, type Blok } from "@/lib/tekst/blokke";
 import { META_LOFT, udtraekMeta } from "@/lib/tekst/meta";
 import { sanerHtml } from "@/lib/tekst/saner";
@@ -17,9 +19,13 @@ import { createClient } from "@/lib/supabase/server";
  * Alt der koster penge går gennem denne rute. Rækkefølgen af tjek er den fra
  * CLAUDE.md regel 6:
  *   (a) er brugeren logget ind?
+ *   (c) rate limit pr. bruger        → maks. 3 kald i minuttet
  *   (b) er der prøvekvote tilbage — eller en gyldig egen nøgle?
- *   (c) rate limit pr. bruger        → mangler stadig, trin 6
  *   (d) globalt dagligt budgetloft   → kun på platformens nøgle
+ *
+ * Bogstaverne er CLAUDE.md's, rækkefølgen er vores: rate limit'en står før
+ * kvoten, fordi en reserveret prøvetekst ellers skulle gives tilbage igen,
+ * hver gang nogen bliver bedt om at vente et minut.
  *
  * Svaret er NDJSON: én JSON-linje pr. hændelse. Se protokollen nedenfor.
  */
@@ -57,15 +63,9 @@ type Hendelse =
     }
   | { slags: "fejl"; aarsag: string };
 
-const encoder = new TextEncoder();
-
+/** Typet indpakning af ndjsonLinje, så hændelserne ikke kan skrive sig skæve. */
 function linje(h: Hendelse): Uint8Array {
-  return encoder.encode(JSON.stringify(h) + "\n");
-}
-
-/** Fejl FØR strømmen er åbnet — her kan vi stadig sætte en statuskode. */
-function afvis(aarsag: string, status: number) {
-  return Response.json({ slags: "fejl", aarsag }, { status });
+  return ndjsonLinje(h);
 }
 
 export async function POST(request: Request) {
@@ -103,6 +103,18 @@ export async function POST(request: Request) {
     return afvis("ugyldig_brief", 400);
   }
 
+  // --- (c) Rate limit pr. bruger -------------------------------------------
+  // Står FØR kvoten reserveres. Så er der ikke noget at give tilbage, når
+  // nogen bliver bedt om at vente.
+  try {
+    if (!(await tagPladsIKoeen(user.id))) {
+      return afvis("for_mange_kald", 429);
+    }
+  } catch (fejl) {
+    console.error("Rate limit-tjek mislykkedes:", fejl);
+    return afvis("serverfejl", 500);
+  }
+
   // --- (b) Hvem betaler? ---------------------------------------------------
   // Reserveres FØR kaldet, så samtidige forsøg ikke kan dele den samme
   // sidste prøvetekst mellem sig.
@@ -121,11 +133,6 @@ export async function POST(request: Request) {
     console.error("Nøglevalg mislykkedes:", fejl);
     return afvis("serverfejl", 500);
   }
-
-  // --- (c) Rate limit pr. bruger -------------------------------------------
-  // Mangler stadig (maks. 3 genereringskald i minuttet, CLAUDE.md regel 6).
-  // Budgetloftet nedenfor fanger det samlede forbrug, men ikke én bruger,
-  // der klikker tredive gange på et minut.
 
   // --- (d) Det globale budgetloft ------------------------------------------
   // Gælder kun platformens nøgle. Betaler brugeren selv, er forbruget hendes
@@ -300,10 +307,5 @@ export async function POST(request: Request) {
     },
   });
 
-  return new Response(stream, {
-    headers: {
-      "Content-Type": "application/x-ndjson; charset=utf-8",
-      "Cache-Control": "no-store",
-    },
-  });
+  return new Response(stream, { headers: NDJSON_HEADERS });
 }

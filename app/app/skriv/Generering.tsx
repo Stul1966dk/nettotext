@@ -3,10 +3,14 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { laesNdjson } from "@/lib/api/laesStream";
 import { gemKladde, hentKladde, type Kladde } from "@/lib/skabeloner/kladde";
-import type { Blok } from "@/lib/tekst/blokke";
+import { delIBlokke, type Blok } from "@/lib/tekst/blokke";
+import { samlHtml, tilMarkdown, udenTitel } from "@/lib/tekst/markdown";
 
-type Tekster = {
+import { Blokkort, type BlokkortTekster } from "./Blokkort";
+
+type Tekster = BlokkortTekster & {
   ingenBrief: string;
   nyTekst: string;
   planlaegger: string;
@@ -16,6 +20,9 @@ type Tekster = {
   visTekst: string;
   kopier: string;
   kopierFelt: string;
+  kopierUdenTitel: string;
+  kopierMarkdown: string;
+  kopierForklaring: string;
   kopieret: string;
   kopiMarkeret: string;
   proevIgen: string;
@@ -43,12 +50,17 @@ type Fejl = { aarsag: string; besked: string };
  *
  * Advarslen "hvert forsøg bruger én af dine prøvetekster" står under alle
  * fejl, og for de fleste er den rigtig: lykkes det næste forsøg, er der
- * trukket en tekst. Men når budgettet er brugt, eller der slet ikke er nogen
- * nøgle at skrive med, bliver forsøget afvist, før der bruges penge. Så er
- * advarslen ikke bare overflødig, den er forkert — og en app, der advarer om
- * noget, der ikke sker, er sværere at stole på næste gang den advarer.
+ * trukket en tekst. Men er budgettet brugt, grænsen nået, eller er der slet
+ * ingen nøgle at skrive med, bliver forsøget afvist, før der bruges penge.
+ * Så er advarslen ikke bare overflødig, den er forkert — og en app, der
+ * advarer om noget, der ikke sker, er sværere at stole på, næste gang den
+ * advarer.
  */
-const GRATIS_AT_PROEVE_IGEN = new Set(["budget_opbrugt", "mangler_noegle"]);
+const GRATIS_AT_PROEVE_IGEN = new Set([
+  "budget_opbrugt",
+  "mangler_noegle",
+  "for_mange_kald",
+]);
 
 /**
  * Længderne, Google typisk viser, før den klipper af. Det er ikke regler fra
@@ -168,6 +180,16 @@ export function Generering({ tekster }: { tekster: Tekster }) {
   const [kopieret, setKopieret] = useState<string | null>(null);
   const [markeret, setMarkeret] = useState(false);
 
+  // Omskrivning af ét afsnit. Kun ét ad gangen: to samtidige ville skrive
+  // oven i hinandens blokke, og brugeren ville ikke kunne se hvilket svar
+  // der hørte til hvad.
+  const [omskriverId, setOmskriverId] = useState<string | null>(null);
+  const [omskrivTekst, setOmskrivTekst] = useState("");
+  const [omskrivFejl, setOmskrivFejl] = useState<{
+    id: string;
+    besked: string;
+  } | null>(null);
+
   const kodeRef = useRef<HTMLPreElement>(null);
 
   // Kladden, som den ser ud lige nu. Ligger i en ref og ikke i state, fordi
@@ -204,6 +226,7 @@ export function Generering({ tekster }: { tekster: Tekster }) {
       setBeskrivelse("");
       setHarMeta(false);
       setFejl(null);
+      setOmskrivFejl(null);
       setKopieret(null);
       setMarkeret(false);
 
@@ -228,61 +251,129 @@ export function Generering({ tekster }: { tekster: Tekster }) {
           return;
         }
 
-        // Svaret er NDJSON: én JSON-linje pr. hændelse. Vi læser bid for bid
-        // og behandler kun de linjer, der er hele.
-        const laeser = svar.body.getReader();
-        const afkoder = new TextDecoder();
-        let rest = "";
+        await laesNdjson(svar.body, (hendelse) => {
+          // Meta-felterne kommer et par sekunder inde i genereringen, længe
+          // før teksten er færdig. De vises med det samme.
+          if (hendelse.slags === "meta") {
+            const nyTitel = hendelse.titel as string;
+            const nyBeskrivelse = hendelse.beskrivelse as string;
 
-        while (true) {
-          const { value, done } = await laeser.read();
-          if (done) break;
-
-          rest += afkoder.decode(value, { stream: true });
-          const linjer = rest.split("\n");
-          rest = linjer.pop() ?? "";
-
-          for (const linje of linjer) {
-            if (!linje.trim()) continue;
-
-            const hendelse = JSON.parse(linje);
-
-            // Meta-felterne kommer et par sekunder inde i genereringen, længe
-            // før teksten er færdig. De vises med det samme.
-            if (hendelse.slags === "meta") {
-              setTitel(hendelse.titel);
-              setBeskrivelse(hendelse.beskrivelse);
-              setHarMeta(true);
-              gem({ titel: hendelse.titel, beskrivelse: hendelse.beskrivelse });
-            }
-
-            if (hendelse.slags === "tekst") {
-              samlet += hendelse.tekst;
-              setTekst(samlet);
-              setStatus("skriver");
-              gem({ tekst: samlet, html: "", blokke: [], faerdig: false });
-            }
-
-            if (hendelse.slags === "faerdig") {
-              setHtml(hendelse.html);
-              setBlokke(hendelse.blokke);
-              setStatus("faerdig");
-              gem({
-                tekst: samlet,
-                html: hendelse.html,
-                blokke: hendelse.blokke,
-                faerdig: true,
-              });
-            }
-
-            if (hendelse.slags === "fejl") {
-              visFejl(hendelse.aarsag);
-              return;
-            }
+            setTitel(nyTitel);
+            setBeskrivelse(nyBeskrivelse);
+            setHarMeta(true);
+            gem({ titel: nyTitel, beskrivelse: nyBeskrivelse });
           }
-        }
+
+          if (hendelse.slags === "tekst") {
+            samlet += hendelse.tekst as string;
+            setTekst(samlet);
+            setStatus("skriver");
+            gem({ tekst: samlet, html: "", blokke: [], faerdig: false });
+          }
+
+          if (hendelse.slags === "faerdig") {
+            const nyHtml = hendelse.html as string;
+            const nyeBlokke = hendelse.blokke as Blok[];
+
+            setHtml(nyHtml);
+            setBlokke(nyeBlokke);
+            setStatus("faerdig");
+            gem({
+              tekst: samlet,
+              html: nyHtml,
+              blokke: nyeBlokke,
+              faerdig: true,
+            });
+          }
+
+          if (hendelse.slags === "fejl") {
+            visFejl(hendelse.aarsag as string);
+          }
+        });
       } catch {
         // Forbindelsen røg. Har vi tekst, beholder vi den. Den er betalt for.
+        visFejl("netvaerk");
+      }
+    },
+    [gem, tekster],
+  );
+
+  /**
+   * Skriver ét afsnit om.
+   *
+   * Alle blokkene sendes med, så modellen kan se sammenhængen og skrive
+   * noget, der passer ind. Svaret er kun det ene afsnit.
+   *
+   * Bemærk hvad der sker, når afsnittet er kommet hjem: hele teksten samles
+   * og deles op PÅ NY. Så bliver numrene rigtige igen, hvis modellen svarede
+   * med to sektioner i stedet for én — frem for at en blok stille og roligt
+   * kom til at indeholde noget andet, end dens navn siger.
+   */
+  const skrivOm = useCallback(
+    async (blokId: string, instruktion: string) => {
+      const kladde = kladdeRef.current;
+      if (!kladde) return;
+
+      const visFejl = (aarsag: string) => {
+        setOmskrivFejl({
+          id: blokId,
+          besked: tekster.fejl[aarsag] ?? tekster.fejl.ukendt,
+        });
+        setOmskriverId(null);
+      };
+
+      setOmskriverId(blokId);
+      setOmskrivTekst("");
+      setOmskrivFejl(null);
+
+      let samlet = "";
+
+      try {
+        const svar = await fetch("/api/regenerate-section", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            skabelon: kladde.skabelon,
+            brief: kladde.brief,
+            blokke: kladde.blokke,
+            blokId,
+            instruktion,
+          }),
+        });
+
+        if (!svar.ok || !svar.body) {
+          const krop = await svar.json().catch(() => null);
+          visFejl(krop?.aarsag ?? "ukendt");
+          return;
+        }
+
+        await laesNdjson(svar.body, (hendelse) => {
+          if (hendelse.slags === "tekst") {
+            samlet += hendelse.tekst as string;
+            setOmskrivTekst(samlet);
+          }
+
+          if (hendelse.slags === "faerdig") {
+            const opdaterede = (kladdeRef.current?.blokke ?? []).map((blok) =>
+              blok.id === blokId
+                ? { ...blok, html: hendelse.html as string }
+                : blok,
+            );
+
+            const nyHtml = samlHtml(opdaterede);
+            const nyeBlokke = delIBlokke(nyHtml);
+
+            setHtml(nyHtml);
+            setBlokke(nyeBlokke);
+            gem({ html: nyHtml, blokke: nyeBlokke });
+            setOmskriverId(null);
+          }
+
+          if (hendelse.slags === "fejl") {
+            visFejl(hendelse.aarsag as string);
+          }
+        });
+      } catch {
         visFejl("netvaerk");
       }
     },
@@ -412,6 +503,8 @@ export function Generering({ tekster }: { tekster: Tekster }) {
   }
 
   const erFaerdig = status === "faerdig" && html;
+  const knapKlasser =
+    "rounded-lg border border-kant px-4 py-2 text-sm text-gran outline-none focus-visible:ring-2 focus-visible:ring-gran";
 
   return (
     <div className="space-y-6">
@@ -431,11 +524,7 @@ export function Generering({ tekster }: { tekster: Tekster }) {
             {fejl.besked}
           </p>
           <div className="flex flex-wrap items-center gap-4">
-            <button
-              type="button"
-              onClick={proevIgen}
-              className="rounded-lg border border-kant px-4 py-2 text-sm text-gran outline-none focus-visible:ring-2 focus-visible:ring-gran"
-            >
+            <button type="button" onClick={proevIgen} className={knapKlasser}>
               {tekster.proevIgen}
             </button>
             {!GRATIS_AT_PROEVE_IGEN.has(fejl.aarsag) && (
@@ -511,23 +600,17 @@ export function Generering({ tekster }: { tekster: Tekster }) {
           ) : blokke.length > 0 ? (
             <div className="space-y-4">
               {blokke.map((blok) => (
-                <section
+                <Blokkort
                   key={blok.id}
-                  aria-label={blok.overskrift ?? blokLabel(blok)}
-                  className="space-y-3 rounded-2xl border border-kant bg-kort p-6"
-                >
-                  <p className="font-mono text-xs uppercase tracking-widest text-gran-let">
-                    {blokLabel(blok)}
-                  </p>
-
-                  <div
-                    className="tekst"
-                    // Saneret server-side med sanitize-html mod hvidlisten i
-                    // CLAUDE.md regel 4, FØR teksten blev delt i blokke.
-                    // Se lib/tekst/saner.ts og lib/tekst/blokke.ts.
-                    dangerouslySetInnerHTML={{ __html: blok.html }}
-                  />
-                </section>
+                  blok={blok}
+                  label={blokLabel(blok)}
+                  tekster={tekster}
+                  omskrives={omskriverId === blok.id}
+                  streametTekst={omskriverId === blok.id ? omskrivTekst : ""}
+                  fejl={omskrivFejl?.id === blok.id ? omskrivFejl.besked : null}
+                  laast={omskriverId !== null}
+                  skrivOm={(instruktion) => void skrivOm(blok.id, instruktion)}
+                />
               ))}
             </div>
           ) : (
@@ -538,26 +621,52 @@ export function Generering({ tekster }: { tekster: Tekster }) {
             />
           )}
 
-          <div className="flex flex-wrap items-center gap-4">
-            <button
-              type="button"
-              onClick={() => kopier("html", html)}
-              className="rounded-lg bg-gran px-4 py-2 text-sm font-medium text-bund outline-none focus-visible:ring-2 focus-visible:ring-gran focus-visible:ring-offset-2 focus-visible:ring-offset-bund"
-            >
-              {kopieret === "html" ? tekster.kopieret : tekster.kopier}
-            </button>
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={() => kopier("html", html)}
+                className="rounded-lg bg-gran px-4 py-2 text-sm font-medium text-bund outline-none focus-visible:ring-2 focus-visible:ring-gran focus-visible:ring-offset-2 focus-visible:ring-offset-bund"
+              >
+                {kopieret === "html" ? tekster.kopieret : tekster.kopier}
+              </button>
 
-            <button
-              type="button"
-              onClick={() => setVisKoder((v) => !v)}
-              className="rounded-lg border border-kant px-4 py-2 text-sm text-gran outline-none focus-visible:ring-2 focus-visible:ring-gran"
-            >
-              {visKoder ? tekster.visTekst : tekster.visHtml}
-            </button>
+              <button
+                type="button"
+                onClick={() => kopier("uden-titel", samlHtml(udenTitel(blokke)))}
+                className={knapKlasser}
+              >
+                {kopieret === "uden-titel"
+                  ? tekster.kopieret
+                  : tekster.kopierUdenTitel}
+              </button>
 
-            <Link href="/app/ny" className="text-sm text-gran underline">
-              {tekster.nyTekst}
-            </Link>
+              <button
+                type="button"
+                onClick={() => kopier("markdown", tilMarkdown(html))}
+                className={knapKlasser}
+              >
+                {kopieret === "markdown"
+                  ? tekster.kopieret
+                  : tekster.kopierMarkdown}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setVisKoder((v) => !v)}
+                className={knapKlasser}
+              >
+                {visKoder ? tekster.visTekst : tekster.visHtml}
+              </button>
+
+              <Link href="/app/ny" className="text-sm text-gran underline">
+                {tekster.nyTekst}
+              </Link>
+            </div>
+
+            <p className="text-xs leading-relaxed text-gran-let">
+              {tekster.kopierForklaring}
+            </p>
           </div>
 
           {markeret && (

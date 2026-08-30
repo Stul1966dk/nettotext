@@ -6,8 +6,8 @@ import { Generering } from "./Generering";
 /**
  * Skærm 3: teksten.
  *
- * Trin 3 gør den til den rigtige editor. Blokke og meta-felter er på plads;
- * regenerering af enkelte sektioner og eksport mangler stadig.
+ * Den rigtige editor: teksten i blokke, meta-felter til søgeresultatet,
+ * omskrivning af ét afsnit ad gangen og kopiering i tre former.
  */
 
 /** Skal svare til `aarsag`-værdierne fra /api/generate og lib/ai/typer.ts. */
@@ -21,6 +21,8 @@ const FEJLNOEGLER = [
   "ugyldig_noegle",
   "tom_saldo",
   "rate_limit",
+  "for_mange_kald",
+  "tomt_svar",
   "for_lang",
   "afvist",
   "serverfejl",
@@ -59,6 +61,9 @@ export default async function SkrivSide() {
             visTekst: t("visTekst"),
             kopier: t("kopier"),
             kopierFelt: t("kopierFelt"),
+            kopierUdenTitel: t("kopierUdenTitel"),
+            kopierMarkdown: t("kopierMarkdown"),
+            kopierForklaring: t("kopierForklaring"),
             kopieret: t("kopieret"),
             kopiMarkeret: t("kopiMarkeret"),
             proevIgen: t("proevIgen"),
@@ -76,6 +81,13 @@ export default async function SkrivSide() {
             blokTitel: t("blokTitel"),
             blokIndledning: t("blokIndledning"),
             blokSektion: t.raw("blokSektion") as string,
+            skrivOm: t("skrivOm"),
+            skrivOmForklaring: t("skrivOmForklaring"),
+            skrivOmPladsholder: t("skrivOmPladsholder"),
+            skrivOmKnap: t("skrivOmKnap"),
+            skrivOmGratis: t("skrivOmGratis"),
+            omskriver: t("omskriver"),
+            annuller: t("annuller"),
             fejl: fejlbeskeder,
           }}
         />

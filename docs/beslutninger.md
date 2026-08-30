@@ -17,17 +17,85 @@ trin 8.
 - [ ] **Åbn for brugere.** Supabase → Authentication → Sign In / Providers → slå "Allow new users to sign up" til igen (eller tilføj godkendt-liste).
 - [ ] **Egen SMTP + dansk login-mail.** Skal på plads INDEN de første testbrugere — ikke først ved lancering. Supabases indbyggede mailservice sender kun til adresser knyttet til vores egen Supabase-konto, og skabelonerne kan ikke redigeres uden egen SMTP. Sæt Resend op (gratis til 3.000 mails/md.), og skift derefter Magic Link-skabelonen til dansk med `{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=email` — den form virker også, når mailen åbnes på en anden enhed end den, linket blev bestilt fra.
 - [ ] **Kobl `nettotext.com` på** i Vercel → Settings → Domains — og skift derefter **Site URL** i Supabase → Authentication → URL Configuration til det nye domæne. Sker det ikke, peger login-mailens link stadig på `.vercel.app`.
-- [ ] **Afklar dobbelt H1 — halvvejs løst.** Meta-titlen er nu sit eget felt, og h1 er sin egen blok på skærmen, så de to ting ikke længere forveksles. Tilbage står selve kopieringen: "Kopiér HTML" tager stadig hele teksten med titlen. Laver brugerens CMS selv sidens overskrift, får siden to h1'er. Løses i eksport-delen af trin 3 med en "kopiér uden titel"-mulighed.
 - [ ] **Sæt ejerkontoens prøvekvote tilbage.** Den står på 1.000.000 for at kunne teste frit under udviklingen. Beslut inden lancering, om ejerkontoen fortsat skal være speciel — og hvis ikke, sæt den til 5 som alle andre.
 - [ ] **Fjern eksempelteksten fra brief-felterne**, eller lav den om til en "Udfyld med eksempel"-knap. Felterne i `templates.input_fields` er forudfyldt med et malerfirma i Brønderslev. Det er praktisk under test, men rigtige brugere vil sende eksemplet af sted som deres egen brief uden at opdage det.
 - [ ] **Sæt et forbrugsloft på platformens AI-nøgle hos Anthropic.** `DAILY_BUDGET_DKK` er bygget (30.08.2026), så leverandørens loft er ikke længere den eneste bremse — men det er stadig den sidste. Appens loft kan kun tælle det, appen selv sender af sted; en lækket nøgle kan det ikke stoppe.
 - [ ] **Husk `DAILY_BUDGET_DKK` i ethvert NYT miljø.** Sat hos Vercel 30.08.2026. Budgetloftet fejler LUKKET, så mangler variablen, holder genereringen op med at virke. Gælder også et eventuelt preview- eller testmiljø senere.
-- [ ] **Byg rate limit pr. bruger** (maks. 3 genereringskald i minuttet, CLAUDE.md regel 6 punkt c). Budgetloftet fanger det samlede forbrug, men ikke én bruger, der klikker tredive gange på et minut. Hører til trin 6 sammen med Sentry og feedback-widgetten.
+- [ ] **Byg .docx-eksport** (`POST /api/export/docx`). Kopiering som HTML og Markdown er på plads; Word-filen mangler. Biblioteket `docx` er standardvalget ifølge det tekniske oplæg.
 - [ ] **Slå OpenAI-priserne op**, før nogen må vælge ChatGPT. `lib/ai/modeller.ts` har prisfeltet tomt for de to OpenAI-modeller, fordi tallene ikke er slået op. Uden pris logges forbruget som 0 kr., og budgetloftet tæller for lavt.
 - [ ] **Prøv ChatGPT-vejen af, før nogen får lov at vælge den.** `lib/ai/openai.ts` er skrevet, men aldrig kørt — platformens nøgle er en Anthropic-nøgle, så OpenAI-siden kan først testes, når der findes en OpenAI-nøgle at teste med. Lad ikke brugerne vælge ChatGPT i indstillinger, før mindst én tekst er skrevet den vej.
 - [ ] **Tjek at lange tekster når at blive færdige.** `/api/generate` har `maxDuration = 60`. Vercels loft afhænger af abonnement. Timer "Langt — ca. 1.400 ord" ud i produktion, er der to knapper: hæv `maxDuration` (kræver det rigtige abonnement), eller sænk `effort` i `lib/ai/anthropic.ts`.
 - [ ] **Privatlivspolitik** på `/da/privatliv` (GDPR, jf. teknisk oplæg afsnit 5).
 - [ ] **Opdatér brandnavnet** i `design/design-3-vaerksted.html` til NettoText.
+
+---
+
+## 2026-08-30 — Omskrivning af afsnit og eksport
+
+**At skrive ét afsnit om koster IKKE en prøvetekst.**
+Ejerens beslutning. Begrundelsen: brugeren har allerede betalt for teksten, og
+at rette i den er en del af at gøre den færdig. Fem prøvetekster ville
+forsvinde på den første artikel, hvis to rettelser kostede to af dem — og så
+får den nye bruger aldrig set, hvad værktøjet kan.
+**Konsekvensen skulle dækkes ind.** Prøvekvoten var indtil nu dét, der holdt
+den ENKELTE bruger i skak. Er afsnit gratis, er den bremse væk, og så kan én
+bruger tømme dagens budget ved at klikke løs. Derfor blev rate limit'en bygget
+samtidig, og ikke i trin 6 som planlagt. Rækkefølgen var ikke til at vælge om:
+den ene beslutning skabte behovet for den anden.
+
+**Rate limit ligger i databasen, ikke i hukommelsen.**
+Appen kører på Vercel, hvor hvert kald kan ramme sin egen instans. Et tal i
+hukommelsen ville tælle hver instans for sig og dermed tillade mange gange for
+meget — en af de fejl, der ser ud til at virke lokalt og ikke gør live.
+Tællingen bruger en rådgivende lås pr. bruger. Uden den kunne to samtidige
+kald begge nå at tælle "to forsøg indtil videre" og begge få lov. Samme slags
+fejl som ved prøvekvoten, hvor svaret var at lade databasen afgøre sagen.
+Gamle rækker ryddes ved hvert kald, så tabellen aldrig bliver større end det
+vindue, den skal huske, og der ikke er et natligt job at vedligeholde.
+
+**Rate limit'en står FØR kvoten i rækkefølgen.**
+CLAUDE.md nummererer tjekkene (a) login, (b) kvote, (c) rate limit, (d) budget.
+I koden kommer (c) før (b). Grunden er praktisk: reserveres prøveteksten
+først, skal den gives tilbage igen, hver gang nogen bliver bedt om at vente et
+minut. Bogstaverne er reglens, rækkefølgen er vores, og det står skrevet i
+ruten, så den næste ikke tror, det er en fejl.
+
+**Systemprompten ophæves delvist ved omskrivning — som SYSTEM-instruktion.**
+Skabelonens prompt kræver META-linjer og en hel artikel. Ved omskrivning skal
+der hverken være meta eller mere end ét afsnit. Tillægget (`OMSKRIV_TILLAEG`)
+lægges derfor efter systemprompten, ikke i brugerbeskeden: det er vores egen
+instruktion og hører til på systemets side af skellet i CLAUDE.md regel 5.
+Det siger udtrykkeligt HVILKE to punkter der ændrer sig. Ellers kunne "noget
+af formatet er til forhandling" smitte af på resten.
+
+**Brugerens ønske til afsnittet er den mest udsatte tekst i hele appen.**
+Det er et frit felt, der bliver sendt direkte til modellen sammen med en
+instruktion om at ændre noget. Det ligger derfor i sin egen afgrænsede blok
+med sin egen markør, renses for linjer der ligner en markør, er begrænset til
+500 tegn, og prompten siger udtrykkeligt, at ønsket handler om INDHOLD og ikke
+kan ændre regler, sprog eller format.
+
+**Efter en omskrivning deles hele teksten op på ny.**
+Svaret erstatter blokkens HTML, hvorefter alt samles og køres gennem
+`delIBlokke` igen. Hvis modellen svarede med to sektioner i stedet for én,
+bliver de til to blokke med rigtige numre — frem for at én blok stille og
+roligt kom til at indeholde noget andet, end dens navn siger.
+
+**Kun ét afsnit ad gangen.** To samtidige omskrivninger ville skrive oven i
+hinandens blokke, og brugeren ville ikke kunne se, hvilket svar der hørte til
+hvad. De andre knapper er slået fra imens.
+
+**Markdown-konverteringen er skrevet selv, og det er forsvarligt.**
+CLAUDE.md regel 4 forbyder at skrive sin egen SANERING. Det her er ikke
+sanering: konverteringen kører på HTML, der ALLEREDE er saneret server-side,
+så tagsene er præcis dem fra hvidlisten og intet andet. Den beskytter ikke mod
+noget og må derfor heller ikke være det eneste, der gør det. Filen siger det
+selv, øverst.
+
+**Dobbelt H1 er løst og taget af tjeklisten.**
+"Kopiér uden titel" springer titelblokken over. Laver brugerens CMS selv
+sidens overskrift, får siden nu kun én h1. Der står en linje under knapperne,
+som forklarer hvornår man vælger hvad — det er ikke til at gætte.
 
 ---
 
