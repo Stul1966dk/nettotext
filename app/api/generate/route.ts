@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { byggBrugerbesked } from "@/lib/ai/prompt";
 import { ManglerNoegle, vaelgNoegle, AiFejl } from "@/lib/ai";
+import { hentBudgetstatus, skrivForbrug } from "@/lib/budget";
 import { frigivProeveTekst, reserverProeveTekst } from "@/lib/kvote";
 import { hentSkabelon } from "@/lib/skabeloner/hent";
 import { delIBlokke, type Blok } from "@/lib/tekst/blokke";
@@ -17,8 +18,8 @@ import { createClient } from "@/lib/supabase/server";
  * CLAUDE.md regel 6:
  *   (a) er brugeren logget ind?
  *   (b) er der prøvekvote tilbage — eller en gyldig egen nøgle?
- *   (c) rate limit pr. bruger        → bygges i trin 6
- *   (d) globalt dagligt budgetloft   → bygges i trin 6
+ *   (c) rate limit pr. bruger        → mangler stadig, trin 6
+ *   (d) globalt dagligt budgetloft   → kun på platformens nøgle
  *
  * Svaret er NDJSON: én JSON-linje pr. hændelse. Se protokollen nedenfor.
  */
@@ -121,6 +122,40 @@ export async function POST(request: Request) {
     return afvis("serverfejl", 500);
   }
 
+  // --- (c) Rate limit pr. bruger -------------------------------------------
+  // Mangler stadig (maks. 3 genereringskald i minuttet, CLAUDE.md regel 6).
+  // Budgetloftet nedenfor fanger det samlede forbrug, men ikke én bruger,
+  // der klikker tredive gange på et minut.
+
+  // --- (d) Det globale budgetloft ------------------------------------------
+  // Gælder kun platformens nøgle. Betaler brugeren selv, er forbruget hendes
+  // sag og hendes regning, og så skal vi ikke stå i vejen.
+  if (valg.betaler === "platform") {
+    try {
+      const budget = await hentBudgetstatus();
+
+      if (budget.tilbage <= 0) {
+        // Kvoten blev reserveret ovenfor. Teksten bliver ikke skrevet, så
+        // den skal tilbage.
+        if (harKvote) await frigivProeveTekst(user.id);
+
+        console.warn(
+          `[generate] Dagens budget er brugt: ${budget.brugt} af ${budget.loft} kr. ` +
+            "Alle kald på platformens nøgle afvises indtil i morgen.",
+        );
+
+        return afvis("budget_opbrugt", 503);
+      }
+    } catch (fejl) {
+      if (harKvote) await frigivProeveTekst(user.id);
+
+      // Kan vi ikke føre regnskab, bruger vi ikke penge. Samme afvejning som
+      // i lib/kvote.ts.
+      console.error("Budgettjek mislykkedes:", fejl);
+      return afvis("serverfejl", 500);
+    }
+  }
+
   const brugerbesked = byggBrugerbesked(skabelon.input_fields, brief.data);
 
   // --- Selve genereringen --------------------------------------------------
@@ -156,6 +191,11 @@ export async function POST(request: Request) {
       const begyndt = Date.now();
       let foersteOrd: number | null = null;
 
+      // Gemmes her og skrives i usage_log til sidst — også hvis genereringen
+      // gik i stykker undervejs. Tokens er brugt, uanset om teksten blev hel.
+      let forbrug: { model: string; inputTokens: number; outputTokens: number } | null =
+        null;
+
       try {
         const bidder = valg.adapter.generateStream({
           system: skabelon.system_prompt,
@@ -190,6 +230,8 @@ export async function POST(request: Request) {
           }
 
           if (bid.slags === "forbrug") {
+            forbrug = bid;
+
             const ialt = Date.now() - begyndt;
             console.log(
               `[generate] ${bid.model} · planlægning ${foersteOrd ?? ialt} ms ` +
@@ -197,9 +239,6 @@ export async function POST(request: Request) {
                 `· ${bid.inputTokens} ind / ${bid.outputTokens} ud`,
             );
           }
-          // Trin 6: her skrives forbruget i usage_log. Indtil da står det kun
-          // i serverloggen — og det er netop derfor, vi endnu ikke kender
-          // prisen pr. prøvetekst historisk.
         }
 
         // Nu er teksten hel. Meta-felterne skilles fra, resten saneres, og
@@ -238,6 +277,24 @@ export async function POST(request: Request) {
         const aarsag = fejl instanceof AiFejl ? fejl.aarsag : "ukendt";
         controller.enqueue(linje({ slags: "fejl", aarsag }));
       } finally {
+        // Regnskabet føres til sidst og må aldrig vælte genereringen: teksten
+        // er skrevet og betalt, uanset om vi fik skrevet det ned.
+        if (forbrug) {
+          try {
+            await skrivForbrug({
+              brugerId: user.id,
+              skabelon: skabelon.slug,
+              leverandoer: valg.adapter.leverandoer,
+              model: forbrug.model,
+              betaler: valg.betaler,
+              inputTokens: forbrug.inputTokens,
+              outputTokens: forbrug.outputTokens,
+            });
+          } catch (fejl) {
+            console.error("Kunne ikke føre forbrug til protokols:", fejl);
+          }
+        }
+
         controller.close();
       }
     },

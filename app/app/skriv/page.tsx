@@ -17,6 +17,7 @@ const FEJLNOEGLER = [
   "ugyldig_brief",
   "ukendt_skabelon",
   "mangler_noegle",
+  "budget_opbrugt",
   "ugyldig_noegle",
   "tom_saldo",
   "rate_limit",

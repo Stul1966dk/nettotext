@@ -20,11 +20,75 @@ trin 8.
 - [ ] **Afklar dobbelt H1 — halvvejs løst.** Meta-titlen er nu sit eget felt, og h1 er sin egen blok på skærmen, så de to ting ikke længere forveksles. Tilbage står selve kopieringen: "Kopiér HTML" tager stadig hele teksten med titlen. Laver brugerens CMS selv sidens overskrift, får siden to h1'er. Løses i eksport-delen af trin 3 med en "kopiér uden titel"-mulighed.
 - [ ] **Sæt ejerkontoens prøvekvote tilbage.** Den står på 1.000.000 for at kunne teste frit under udviklingen. Beslut inden lancering, om ejerkontoen fortsat skal være speciel — og hvis ikke, sæt den til 5 som alle andre.
 - [ ] **Fjern eksempelteksten fra brief-felterne**, eller lav den om til en "Udfyld med eksempel"-knap. Felterne i `templates.input_fields` er forudfyldt med et malerfirma i Brønderslev. Det er praktisk under test, men rigtige brugere vil sende eksemplet af sted som deres egen brief uden at opdage det.
-- [ ] **Sæt et forbrugsloft på platformens AI-nøgle hos Anthropic.** Så længe `DAILY_BUDGET_DKK` ikke er bygget (trin 6), er leverandørens eget loft det eneste, der står mellem en fejl og en stor regning.
+- [ ] **Sæt et forbrugsloft på platformens AI-nøgle hos Anthropic.** `DAILY_BUDGET_DKK` er bygget (30.08.2026), så leverandørens loft er ikke længere den eneste bremse — men det er stadig den sidste. Appens loft kan kun tælle det, appen selv sender af sted; en lækket nøgle kan det ikke stoppe.
+- [ ] **Sæt `DAILY_BUDGET_DKK` hos Vercel.** Budgetloftet fejler LUKKET: mangler variablen, virker genereringen ikke live. Det er med vilje, men det skal huskes, når der deployes.
+- [ ] **Byg rate limit pr. bruger** (maks. 3 genereringskald i minuttet, CLAUDE.md regel 6 punkt c). Budgetloftet fanger det samlede forbrug, men ikke én bruger, der klikker tredive gange på et minut. Hører til trin 6 sammen med Sentry og feedback-widgetten.
+- [ ] **Slå OpenAI-priserne op**, før nogen må vælge ChatGPT. `lib/ai/modeller.ts` har prisfeltet tomt for de to OpenAI-modeller, fordi tallene ikke er slået op. Uden pris logges forbruget som 0 kr., og budgetloftet tæller for lavt.
 - [ ] **Prøv ChatGPT-vejen af, før nogen får lov at vælge den.** `lib/ai/openai.ts` er skrevet, men aldrig kørt — platformens nøgle er en Anthropic-nøgle, så OpenAI-siden kan først testes, når der findes en OpenAI-nøgle at teste med. Lad ikke brugerne vælge ChatGPT i indstillinger, før mindst én tekst er skrevet den vej.
 - [ ] **Tjek at lange tekster når at blive færdige.** `/api/generate` har `maxDuration = 60`. Vercels loft afhænger af abonnement. Timer "Langt — ca. 1.400 ord" ud i produktion, er der to knapper: hæv `maxDuration` (kræver det rigtige abonnement), eller sænk `effort` i `lib/ai/anthropic.ts`.
 - [ ] **Privatlivspolitik** på `/da/privatliv` (GDPR, jf. teknisk oplæg afsnit 5).
 - [ ] **Opdatér brandnavnet** i `design/design-3-vaerksted.html` til NettoText.
+
+---
+
+## 2026-08-30 — Budgetloftet, trukket frem fra trin 6
+
+**Bygget nu og ikke i trin 6, fordi genereringen er gået live.**
+Byggeplanen lægger kvote, forbrugslog, rate limit og budgetloft samlet i trin
+6. Prøvekvoten blev allerede trukket frem, da `/api/generate` blev bygget, med
+samme begrundelse som her: CLAUDE.md regel 6 kalder det ufravigeligt, at alt
+der koster penge går gennem serveren med tjek af budget. Og siden ejerkontoens
+kvote står på 1.000.000, var der reelt ingen bremse tilbage.
+**`usage_log` kom med af nødvendighed.** Et loft skal vide, hvad der er brugt
+i dag, og der var ikke noget at måle imod. Tabellen er den fra datamodellen i
+CLAUDE.md, feedback-felterne inklusive, så trin 6's feedback-widget har et sted
+at skrive hen. Kun metadata og tal — aldrig et ord af briefen eller teksten.
+
+**Loftet fejler LUKKET.**
+Kan dagens forbrug ikke læses, eller mangler `DAILY_BUDGET_DKK`, genererer vi
+ikke. Samme afvejning som i `lib/kvote.ts`: kan vi ikke føre regnskab, bruger
+vi ikke penge.
+**Vær opmærksom på prisen for den beslutning:** glemmes variablen hos Vercel,
+holder genereringen op med at virke live, og brugeren får "der er noget galt i
+vores opsætning". Det er stadig det rigtige valg — en åben pengekasse, ingen
+opdager, er værre end en fejl, alle opdager. Sat på tjeklisten.
+
+**Loftet er bagudskuende, og det kan overskrides.**
+Prisen på et kald kendes først, når kaldet er færdigt, så tjekket spørger til
+det, der ALLEREDE er brugt. Sættes ti genereringer i gang i samme sekund, kan
+de alle sammen nå forbi et loft, der er ved at være nået. Overskridelsen er
+højst nogle få tekster.
+Fravalgt: at reservere et beløb på forhånd, som man ikke kender. Det ville
+kræve et skøn over outputlængden, en reservation og en frigivelse bagefter —
+tre nye steder at tage fejl for at fange nogle få kroner.
+
+**Dagen er en dansk dag.**
+`platform_forbrug_i_dag()` regner fra midnat i Europe/Copenhagen, ikke fra
+midnat UTC. Ellers ville loftet nulstille sig klokken 01 eller 02 om natten
+dansk tid, og en aftens forbrug ville blive delt over to budgetter.
+
+**Priserne står i `lib/ai/modeller.ts`, hos modellen selv.**
+Prisen hører til modellen på samme måde som navnet, og filen er i forvejen det
+eneste sted, modelnavne står. Mangler prisen, returnerer `beregnPrisDkk` null
+— ikke 0. **Forskellen er vigtig:** 0 betyder "det var gratis", null betyder
+"vi ved det ikke". Ved null logges kaldet med 0 kr. OG der skrives en fejl i
+serverloggen, for så tæller loftet for lavt. OpenAI-modellerne står uden pris
+og må derfor ikke vælges endnu. Sat på tjeklisten.
+
+**Kursen er en konstant på 7 kroner pr. dollar, sat bevidst for højt.**
+Den rigtige kurs ligger lavere. Et loft skal hellere ramme lidt for tidligt end
+for sent, og et rundt tal er nemmere at regne efter i hovedet, når man sidder
+med loggen. Skal det være præcist en dag, hører det til et sted, der kan hente
+en rigtig kurs — ikke i en konstant.
+
+**Hvad loftet på 200 kr. faktisk svarer til:** cirka 1.100 mellemlange tekster
+om dagen med Sonnet 5. Det er rigeligt til lukket test og formentlig for højt
+sat til en åben lancering. Tallet er nemt at skrue på, nu hvor der findes en
+log at træffe beslutningen ud fra.
+
+**Rate limit pr. bruger mangler stadig** (punkt c i regel 6). Budgetloftet
+fanger det samlede forbrug, men ikke én bruger, der klikker tredive gange på
+et minut. Sat på tjeklisten.
 
 ---
 
@@ -169,7 +233,15 @@ Sonnet 5  planlægning 1.794 ms · skrivning 39.555 ms · i alt 41.349 ms · 2.8
 Sonnet er 24 % hurtigere og 43 % billigere. Teksterne er næsten lige lange
 (2.198 mod 2.039 tokens), så sammenligningen er fair.
 Bemærk: Sonnet 5 kørte på introduktionspris indtil 31.08.2026. Tallet ovenfor
-er den normale pris ($3/$15 pr. million), ikke introprisen.
+er den normale pris, ikke introprisen.
+
+**RETTELSE (30.08.2026): priserne ovenfor er forkerte.** Sonnet 5 koster
+$2/$10 pr. million tokens, ikke $3/$15 — $3/$15 er Sonnet 4.6's pris, som blev
+forvekslet med Sonnet 5's. De rigtige tal: Opus 5 koster 0,48 kr. pr.
+mellemlang tekst, Sonnet 5 koster 0,18 kr. Sonnet er altså ikke 43 % billigere,
+men **62 %** billigere. Konklusionen bliver ikke svagere af rettelsen, kun
+stærkere. Slå priser op, skriv dem ikke ned efter hukommelsen — de står nu i
+`lib/ai/modeller.ts`, hvor koden selv regner på dem.
 
 **Sonnet løser IKKE den lange tekstlængde.** 1.400 ord ≈ 3.600 tokens, hvilket
 ved 52 tokens/sek. bliver omkring 72 sekunder — stadig over de 60. Håbet var

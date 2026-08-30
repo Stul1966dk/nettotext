@@ -80,6 +80,7 @@
       "ugyldig_brief": "Der var noget i briefen, vi ikke kunne bruge — måske et felt, der er for langt. Gå tilbage, og ret den.",
       "ukendt_skabelon": "Teksttypen findes ikke længere. Gå tilbage, og start forfra.",
       "mangler_noegle": "Du har brugt alle 5 prøvetekster. Herefter skriver du videre med din egen AI-nøgle — den mulighed bygges i et senere trin.",
+      "budget_opbrugt": "Vi har brugt dagens budget på prøvetekster. Det nulstilles i nat. Prøv igen i morgen, eller skriv videre med din egen AI-nøgle.",
       "ugyldig_noegle": "AI-nøglen blev afvist af leverandøren. Tjek at den er kopieret rigtigt og ikke er slettet.",
       "tom_saldo": "Der er ikke penge på AI-kontoen hos leverandøren. Fyld op, og prøv igen.",
       "rate_limit": "AI-leverandøren bad os vente lidt. Prøv igen om et minut.",
