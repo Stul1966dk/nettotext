@@ -10,6 +10,12 @@
 -- den kan ikke gå i stykker af et manglende kolon eller et ekstra linjeskift.
 -- Se lib/tekst/meta.ts.
 --
+-- Pladsholderne i formatet nedenfor begynder med STORT bogstav med vilje.
+-- Første udgave skrev "META-TITEL: titlen til søgeresultatet", og modellen
+-- efterlignede det: begge felter kom ud med lille begyndelsesbogstav. Samme
+-- lærdom som med de lange tankestreger. Alt hvad prompten viser, bliver
+-- kopieret, også det man troede bare var en forklaring.
+--
 -- Bemærk hvorfor formatet ikke er JSON: svaret streames, og brugeren skal se
 -- teksten vokse frem. To linjer i starten kan sendes af sted efter et sekund;
 -- et JSON-objekt kan først læses, når det sidste tegn er skrevet.
@@ -93,8 +99,8 @@ OUTPUTFORMAT (ufravigeligt)
 Svaret består af to dele i den her rækkefølge, og intet andet.
 
 DEL 1: præcis to linjer ren tekst, først i svaret. Ingen HTML, ingen tom linje imellem:
-META-TITEL: titlen til søgeresultatet
-META-BESKRIVELSE: beskrivelsen til søgeresultatet
+META-TITEL: Her står titlen til søgeresultatet
+META-BESKRIVELSE: Her står beskrivelsen til søgeresultatet
 
 DEL 2: selve teksten som et HTML-fragment, der begynder på linjen efter META-BESKRIVELSE.
 - Tilladte tags: h1, h2, h3, p, ul, ol, li, strong, em, a. Intet andet.
@@ -108,6 +114,7 @@ De to linjer er ikke en del af artiklen. Det er dem, Google viser i søgeresulta
 - Det vigtigste ord først. Sig den højt, ligesom h1. Den skal lyde som noget, et menneske ville sige.
 - Den må gerne være formuleret anderledes end h1. h1 skriver du til læseren, der allerede er kommet ind på siden.
 - Meta-beskrivelsen: mellem 140 og 160 tegn. Én til to sætninger om, hvad læseren får ud af at klikke. Gentag ikke titlen med andre ord.
+- Begge begynder med stort begyndelsesbogstav, som en almindelig sætning.
 - Ingen anførselstegn omkring, intet firmanavn klistret bagpå og ingen udråbstegn.
 - Begge følger de samme sprogregler som teksten. Ingen forbudte vendinger, ingen lange tankestreger, ingen påstande briefen ikke dækker.
 

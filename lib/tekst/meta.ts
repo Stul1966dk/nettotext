@@ -1,5 +1,7 @@
 import "server-only";
 
+import { normaliserTypografi } from "./typografi";
+
 /**
  * Meta-titel og meta-beskrivelse ud af modellens svar.
  *
@@ -47,9 +49,13 @@ const FELT_LOFT = 300;
  * fjernes tags alligevel, så et `<strong>` fra modellen ikke ender som synlige
  * vinkelparenteser i Googles søgeresultat. Det er kosmetik, ikke sikkerhed;
  * sikkerheden ligger i sanitize-html på artiklen (CLAUDE.md regel 4).
+ *
+ * Typografien ryddes op her og ikke i sanerHtml, som kun ser artiklen. Ellers
+ * ville en lang tankestreg i meta-titlen slippe udenom oprydningen — og en
+ * meta-titel er netop dét, en fremmed læser først får øje på.
  */
 function renTekst(raa: string): string {
-  return raa
+  return normaliserTypografi(raa)
     .replace(/<[^>]*>/g, "")
     .replace(/\s+/g, " ")
     .trim()

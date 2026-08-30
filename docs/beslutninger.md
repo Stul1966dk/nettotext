@@ -76,6 +76,25 @@ Tegntællerne (60 og 160) er vejledende, ikke en spærring. Det er målte tal
 for, hvor Google typisk klipper af — ikke regler fra Google — og så skal de
 heller ikke opføre sig som regler.
 
+**Pladsholderne i prompten skal se ud som det, de skal blive til.**
+Formatet stod første gang som "META-TITEL: titlen til søgeresultatet". Begge
+felter kom retur med lille begyndelsesbogstav: "mal trævinduerne, før vinteren
+tager fat". Modellen efterlignede pladsholderen, ikke reglen — samme lærdom
+som med de lange tankestreger, bare et andet sted. **Alt hvad prompten viser
+frem, bliver kopieret, også det man selv opfattede som en forklaring.**
+Rettet til "Her står titlen til søgeresultatet" plus en udtrykkelig regel om
+stort begyndelsesbogstav.
+Bemærk at fejlen blev fundet, fordi teksten blev læst efter i browseren og
+ikke bare på skærmen: to felter i træk med lille bogstav er ikke noget, en
+model gør tilfældigt.
+
+**Den mekaniske oprydning af tankestreger gælder nu også meta-felterne.**
+`normaliserTypografi` kørte kun inde i `sanerHtml`, og `sanerHtml` ser kun
+artiklen. En lang tankestreg i meta-titlen ville altså være sluppet forbi den
+sikring, der findes netop for at fange det, prompten ikke fanger — og
+meta-titlen er dét, en fremmed læser først får øje på. Oprydningen ligger nu
+også i `lib/tekst/meta.ts`.
+
 **`t.raw()` frem for `t()` til tekster med pladsholdere.**
 Værd at kende: next-intl tolker krøllede parenteser i en sprogfil som ICU-
 pladsholdere og fejler, hvis man henter teksten uden at udfylde dem. Tallene
