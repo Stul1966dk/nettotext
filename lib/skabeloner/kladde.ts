@@ -1,3 +1,5 @@
+import type { Blok } from "@/lib/tekst/blokke";
+
 import type { Brief } from "./typer";
 
 /**
@@ -24,6 +26,11 @@ export type Kladde = {
   tekst: string;
   /** Den sanerede HTML fra serveren. Kun DEN må vises som HTML. */
   html: string;
+  /** Samme HTML, delt ved overskrifterne. Se lib/tekst/blokke.ts. */
+  blokke: Blok[];
+  /** Til Googles søgeresultat. Brugeren kan rette i dem. */
+  titel: string;
+  beskrivelse: string;
   faerdig: boolean;
 };
 
@@ -44,7 +51,14 @@ export function hentKladde(): Kladde | null {
     const kladde = JSON.parse(raa) as Kladde;
     if (!kladde?.skabelon || typeof kladde.brief !== "object") return null;
 
-    return kladde;
+    // En kladde, der blev lagt her af en tidligere udgave af appen, mangler
+    // de nye felter. Den skal ikke få siden til at gå ned.
+    return {
+      ...kladde,
+      blokke: Array.isArray(kladde.blokke) ? kladde.blokke : [],
+      titel: kladde.titel ?? "",
+      beskrivelse: kladde.beskrivelse ?? "",
+    };
   } catch {
     return null;
   }

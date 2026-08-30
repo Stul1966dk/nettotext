@@ -17,7 +17,7 @@ trin 8.
 - [ ] **Åbn for brugere.** Supabase → Authentication → Sign In / Providers → slå "Allow new users to sign up" til igen (eller tilføj godkendt-liste).
 - [ ] **Egen SMTP + dansk login-mail.** Skal på plads INDEN de første testbrugere — ikke først ved lancering. Supabases indbyggede mailservice sender kun til adresser knyttet til vores egen Supabase-konto, og skabelonerne kan ikke redigeres uden egen SMTP. Sæt Resend op (gratis til 3.000 mails/md.), og skift derefter Magic Link-skabelonen til dansk med `{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=email` — den form virker også, når mailen åbnes på en anden enhed end den, linket blev bestilt fra.
 - [ ] **Kobl `nettotext.com` på** i Vercel → Settings → Domains — og skift derefter **Site URL** i Supabase → Authentication → URL Configuration til det nye domæne. Sker det ikke, peger login-mailens link stadig på `.vercel.app`.
-- [ ] **Afklar dobbelt H1.** Teksten indeholder nu selv en h1. De fleste CMS'er laver sidens titel til h1, så indsættes teksten råt, får siden to. To h1'er er dårlig SEO, og ejeren har udtrykkeligt bedt om at overholde Googles retningslinjer. Løsningen hører til trin 3, hvor meta-titlen bliver sit eget felt: gør h1 til noget, brugeren kan kopiere for sig, eller lad eksporten kunne udelade den.
+- [ ] **Afklar dobbelt H1 — halvvejs løst.** Meta-titlen er nu sit eget felt, og h1 er sin egen blok på skærmen, så de to ting ikke længere forveksles. Tilbage står selve kopieringen: "Kopiér HTML" tager stadig hele teksten med titlen. Laver brugerens CMS selv sidens overskrift, får siden to h1'er. Løses i eksport-delen af trin 3 med en "kopiér uden titel"-mulighed.
 - [ ] **Sæt ejerkontoens prøvekvote tilbage.** Den står på 1.000.000 for at kunne teste frit under udviklingen. Beslut inden lancering, om ejerkontoen fortsat skal være speciel — og hvis ikke, sæt den til 5 som alle andre.
 - [ ] **Fjern eksempelteksten fra brief-felterne**, eller lav den om til en "Udfyld med eksempel"-knap. Felterne i `templates.input_fields` er forudfyldt med et malerfirma i Brønderslev. Det er praktisk under test, men rigtige brugere vil sende eksemplet af sted som deres egen brief uden at opdage det.
 - [ ] **Sæt et forbrugsloft på platformens AI-nøgle hos Anthropic.** Så længe `DAILY_BUDGET_DKK` ikke er bygget (trin 6), er leverandørens eget loft det eneste, der står mellem en fejl og en stor regning.
@@ -25,6 +25,62 @@ trin 8.
 - [ ] **Tjek at lange tekster når at blive færdige.** `/api/generate` har `maxDuration = 60`. Vercels loft afhænger af abonnement. Timer "Langt — ca. 1.400 ord" ud i produktion, er der to knapper: hæv `maxDuration` (kræver det rigtige abonnement), eller sænk `effort` i `lib/ai/anthropic.ts`.
 - [ ] **Privatlivspolitik** på `/da/privatliv` (GDPR, jf. teknisk oplæg afsnit 5).
 - [ ] **Opdatér brandnavnet** i `design/design-3-vaerksted.html` til NettoText.
+
+---
+
+## 2026-08-30 — Trin 3: blokke og meta-felter
+
+**Meta-titel og meta-beskrivelse skrives som to tekstlinjer, ikke som JSON.**
+Modellen svarer nu:
+
+```
+META-TITEL: Mal trævinduerne inden vinteren
+META-BESKRIVELSE: Maling hærder ikke under 10 grader ...
+<h1>Sådan holder du trævinduerne tætte</h1>
+```
+
+Det oplagte valg ville være et JSON-objekt med tre felter. Fravalgt, fordi
+svaret streames: et JSON-objekt kan først læses, når det sidste tegn er
+skrevet, mens to linjer i starten kan sendes videre efter et sekund. Brugeren
+ser meta-felterne stå udfyldt, længe før teksten er færdig.
+**Grænsen mellem meta og artikel er det første `<`.** Bevidst en dum regel:
+den kan ikke gå i stykker af et manglende kolon, en ekstra tom linje eller en
+model, der skriver "META-TITEL" med småt. Prompten forbyder til gengæld
+udtrykkeligt tegnet `<` i del 1.
+
+**Starten af strømmen holdes tilbage, til meta-linjerne er hele.**
+Ellers ville brugeren se "META-TITEL:" blinke øverst i sin tekst og forsvinde
+igen. Det koster omkring et sekund. Sikringen er et loft på 600 tegn: skriver
+modellen så meget uden at begynde på HTML'en, har den ikke fulgt formatet, og
+så vises det, den skrev, frem for ingenting.
+Bemærk konsekvensen for kvoten: `harSendtTekst` tæller de tegn, KLIENTEN har
+fået — ikke dem, modellen nåede at skrive. Går det galt i det første sekund,
+er skærmen tom, og så gives prøveteksten tilbage, selvom kaldet kostede
+penge. Det er med vilje den vej rundt.
+
+**Teksten deles i blokke ved overskrifterne.**
+h1 bliver titelblokken, alt før den første h2 bliver indledningen, og hver h2
+starter en sektion. En h3 hører til den sektion, den står i. Blokkene er
+fundamentet for at kunne regenerere ét afsnit uden at betale for resten, og
+de er samtidig svaret på, hvorfor titlen ikke længere sidder klistret fast i
+brødteksten.
+**Rækkefølgen er ufravigelig: sanér FØRST, del bagefter.** Blokkenes HTML går
+direkte i `dangerouslySetInnerHTML`, så en opdeling af usaneret HTML ville
+være en bagvej udenom CLAUDE.md regel 4.
+
+**Meta-felterne kan rettes af brugeren.**
+De er indtastningsfelter, ikke visninger. Modellens forslag er et forslag.
+Rettelserne gemmes i kladden i sessionStorage sammen med resten, så en
+genindlæsning ikke koster en ny prøvetekst.
+Tegntællerne (60 og 160) er vejledende, ikke en spærring. Det er målte tal
+for, hvor Google typisk klipper af — ikke regler fra Google — og så skal de
+heller ikke opføre sig som regler.
+
+**`t.raw()` frem for `t()` til tekster med pladsholdere.**
+Værd at kende: next-intl tolker krøllede parenteser i en sprogfil som ICU-
+pladsholdere og fejler, hvis man henter teksten uden at udfylde dem. Tallene
+i "{antal} af {loft} tegn" kendes først i browseren, og derfor hentes de to
+tekster råt på serveren og udfyldes i klienten.
 
 ---
 

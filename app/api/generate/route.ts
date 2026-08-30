@@ -4,6 +4,8 @@ import { byggBrugerbesked } from "@/lib/ai/prompt";
 import { ManglerNoegle, vaelgNoegle, AiFejl } from "@/lib/ai";
 import { frigivProeveTekst, reserverProeveTekst } from "@/lib/kvote";
 import { hentSkabelon } from "@/lib/skabeloner/hent";
+import { delIBlokke, type Blok } from "@/lib/tekst/blokke";
+import { META_LOFT, udtraekMeta } from "@/lib/tekst/meta";
 import { sanerHtml } from "@/lib/tekst/saner";
 import { briefSkema } from "@/lib/skabeloner/typer";
 import { createClient } from "@/lib/supabase/server";
@@ -37,10 +39,21 @@ const anmodningSkema = z.object({
  * tekstbidder, som browseren viser som tekst — man kan ikke sanere et halvt
  * HTML-tag. Først når teksten er hel, kan den saneres, og først dén version
  * må vises som HTML. Se lib/tekst/saner.ts.
+ *
+ * `meta` kommer først. Modellen skriver meta-titel og meta-beskrivelse som to
+ * tekstlinjer før HTML'en, så de kan sendes af sted et par sekunder inde i
+ * genereringen — længe før teksten er færdig.
  */
 type Hendelse =
+  | { slags: "meta"; titel: string; beskrivelse: string }
   | { slags: "tekst"; tekst: string }
-  | { slags: "faerdig"; html: string }
+  | {
+      slags: "faerdig";
+      html: string;
+      blokke: Blok[];
+      titel: string;
+      beskrivelse: string;
+    }
   | { slags: "fejl"; aarsag: string };
 
 const encoder = new TextEncoder();
@@ -116,6 +129,27 @@ export async function POST(request: Request) {
       let harSendtTekst = false;
       let samlet = "";
 
+      // Meta-linjerne står FØR artiklen, så starten af svaret holdes tilbage,
+      // indtil de er hele. Det koster typisk et sekund, og til gengæld ser
+      // brugeren aldrig "META-TITEL:" stå og blinke øverst i sin tekst.
+      let metaSendt = false;
+      let sendtIndtil = 0;
+
+      /** Sender det af `samlet`, klienten endnu ikke har fået. */
+      const skubTekst = () => {
+        const rest = samlet.slice(sendtIndtil);
+        if (!rest) return;
+
+        sendtIndtil = samlet.length;
+        harSendtTekst = true;
+        controller.enqueue(linje({ slags: "tekst", tekst: rest }));
+      };
+
+      const sendMeta = (titel: string, beskrivelse: string) => {
+        metaSendt = true;
+        controller.enqueue(linje({ slags: "meta", titel, beskrivelse }));
+      };
+
       // Måling, ikke gætteri. Vi skal kunne se, om tiden går med at PLANLÆGGE
       // (før første ord) eller med at SKRIVE — det er to forskellige knapper.
       // Kun tal og tidsforbrug, aldrig noget af teksten.
@@ -133,9 +167,26 @@ export async function POST(request: Request) {
         for await (const bid of bidder) {
           if (bid.slags === "tekst") {
             foersteOrd ??= Date.now() - begyndt;
-            harSendtTekst = true;
             samlet += bid.tekst;
-            controller.enqueue(linje({ slags: "tekst", tekst: bid.tekst }));
+
+            if (metaSendt) {
+              skubTekst();
+            } else {
+              const udtraek = udtraekMeta(samlet);
+
+              if (udtraek.komplet) {
+                sendMeta(udtraek.meta.titel, udtraek.meta.beskrivelse);
+                // `krop` er en nøjagtig slutning af `samlet`, så det her er
+                // præcis dét, der står før artiklen.
+                sendtIndtil = samlet.length - udtraek.krop.length;
+                skubTekst();
+              } else if (samlet.length > META_LOFT) {
+                // Modellen fulgte ikke formatet. Så viser vi det, den skrev,
+                // frem for at holde en hel tekst tilbage.
+                sendMeta("", "");
+                skubTekst();
+              }
+            }
           }
 
           if (bid.slags === "forbrug") {
@@ -151,12 +202,31 @@ export async function POST(request: Request) {
           // prisen pr. prøvetekst historisk.
         }
 
-        // Nu er teksten hel og kan saneres. Det er den eneste version, der
-        // nogensinde bliver vist som HTML i browseren.
-        controller.enqueue(linje({ slags: "faerdig", html: sanerHtml(samlet) }));
+        // Nu er teksten hel. Meta-felterne skilles fra, resten saneres, og
+        // først DEN version deles i blokke og vises som HTML i browseren.
+        const udtraek = udtraekMeta(samlet);
+        if (!metaSendt) {
+          sendMeta(udtraek.meta.titel, udtraek.meta.beskrivelse);
+          skubTekst();
+        }
+
+        const html = sanerHtml(udtraek.komplet ? udtraek.krop : samlet);
+
+        controller.enqueue(
+          linje({
+            slags: "faerdig",
+            html,
+            blokke: delIBlokke(html),
+            titel: udtraek.meta.titel,
+            beskrivelse: udtraek.meta.beskrivelse,
+          }),
+        );
       } catch (fejl) {
-        // Kom der aldrig tekst ud, har brugeren ikke fået noget for sin
-        // prøvetekst. Så giver vi den tilbage.
+        // Kom der aldrig tekst ud AF DØREN, har brugeren ikke fået noget for
+        // sin prøvetekst. Så giver vi den tilbage. Bemærk at det tæller de
+        // tegn, klienten har fået — ikke dem, modellen nåede at skrive. Går
+        // det galt, mens meta-linjerne stadig holdes tilbage, er skærmen tom,
+        // og så skal kvoten også være det.
         if (!harSendtTekst && valg.betaler === "platform") {
           await frigivProeveTekst(user.id);
         }

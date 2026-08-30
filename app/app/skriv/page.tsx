@@ -6,9 +6,8 @@ import { Generering } from "./Generering";
 /**
  * Skærm 3: teksten.
  *
- * I trin 2 viser den kun den rå tekst, mens den bliver skrevet. Trin 3 gør
- * den til den rigtige editor: blokke, regenerering af enkelte sektioner,
- * meta-titel og eksport.
+ * Trin 3 gør den til den rigtige editor. Blokke og meta-felter er på plads;
+ * regenerering af enkelte sektioner og eksport mangler stadig.
  */
 
 /** Skal svare til `aarsag`-værdierne fra /api/generate og lib/ai/typer.ts. */
@@ -58,10 +57,24 @@ export default async function SkrivSide() {
             visHtml: t("visHtml"),
             visTekst: t("visTekst"),
             kopier: t("kopier"),
+            kopierFelt: t("kopierFelt"),
             kopieret: t("kopieret"),
             kopiMarkeret: t("kopiMarkeret"),
             proevIgen: t("proevIgen"),
             koster: t("koster"),
+            metaOverskrift: t("metaOverskrift"),
+            metaForklaring: t("metaForklaring"),
+            metaTitel: t("metaTitel"),
+            metaBeskrivelse: t("metaBeskrivelse"),
+            // t.raw, ikke t: de to tekster indeholder pladsholdere i
+            // krøllede parenteser, som klienten selv sætter tal ind i. Kaldes
+            // de med t(), forsøger next-intl at udfylde dem her og fejler.
+            metaTegn: t.raw("metaTegn") as string,
+            metaForLang: t("metaForLang"),
+            metaTom: t("metaTom"),
+            blokTitel: t("blokTitel"),
+            blokIndledning: t("blokIndledning"),
+            blokSektion: t.raw("blokSektion") as string,
             fejl: fejlbeskeder,
           }}
         />
