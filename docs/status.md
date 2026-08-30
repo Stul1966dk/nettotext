@@ -209,6 +209,57 @@ i dag, med de fire teksttyper fra trin 7.
 
 ---
 
+## Adminside
+
+Besluttet 30.08.2026. Ejeren har brug for ét sted at se, hvordan det går —
+uden at åbne Supabase og skrive SQL.
+
+**Adressen på adminkontoen står IKKE i repoet.** Den ligger i miljøvariablen
+`ADMIN_EMAIL`, både i `.env.local` og hos Vercel. Begrundelsen er den samme
+som da ejerkontoens prøvekvote blev ændret uden migrationsfil: en fil på et
+offentligt GitHub-repo, der siger "det her er adminkontoen", fortæller også en
+fremmed, hvilken konto der er værd at angribe. Skal der senere være mere end
+én admin, er en `role`-kolonne på `profiles` den rigtige udvidelse — sat i
+hånden i Supabase, ikke i en migrationsfil.
+
+**Adgangen tjekkes server-side, aldrig i browseren.** Sikkerhedsreglernes
+punkt 5. Tjekket hører hjemme i et layout under `/app/admin`, på samme måde
+som `/app`-layoutet i dag afgør, om man er logget ind — så er hver fremtidig
+underside beskyttet automatisk, uden at nogen skal huske det.
+
+**Og der skal bruges `service_role` til at læse på tværs af brugere**, fordi
+RLS ellers kun viser adminens egne rækker. Det udløser sikkerhedsreglernes
+punkt 6: når `service_role` omgår RLS, skal adgangen verificeres manuelt i
+koden. Rækkefølgen er derfor: tjek admin FØRST, hent data BAGEFTER.
+
+### Hvad siden kan vise — og hvad den aldrig må
+
+Alt herunder findes allerede som metadata i `usage_log` og `profiles`. Der
+skal ikke gemmes noget nyt for at bygge siden.
+
+- **Forbrug:** i dag, denne måned, i kroner. Delt op på `paid_by`, så
+  platformens egen omkostning kan skelnes fra det, brugerne selv betaler.
+- **Dagens budget:** hvor meget af `DAILY_BUDGET_DKK` der er brugt.
+- **Brugere:** antal i alt og nye pr. uge, fra `profiles`.
+- **Tekster:** antal skrevne, fordelt på teksttype og model.
+- **Prøvekvote:** hvor mange gratis tekster der er givet væk i alt. Det er
+  det tal, der afgør, om de fem prøvetekster er sat rigtigt.
+- **Pris pr. tekst:** gennemsnit, tokens ind og ud. Grundlaget for
+  V2-priserne, jf. det tekniske oplæg afsnit 7.
+- **Feedback:** andel tommel op, når widgetten fra trin 6 er bygget.
+- **Kladder:** hvor mange der ligger lige nu. Antal, aldrig indhold.
+
+**Aldrig tekstindhold. Heller ikke som admin.** CLAUDE.md regel 9 kender ikke
+en undtagelse for ejeren, og `usage_log` indeholder med vilje ingen tekst at
+vise. Skal en fejl undersøges, hører det til i Sentry (trin 6) — ikke i en
+funktion, der kan læse brugernes tekster.
+
+**Ikke en spærring for lancering,** men den bør stå klar INDEN de første
+20-50 brugere. Det er dér, tallene begynder at betyde noget, og dér man
+opdager, om prøvekvoten eller budgetloftet er sat forkert.
+
+---
+
 ## Mindre huller, der ikke hører til et bestemt trin
 
 - **Redigér og slet en blok i hånden.** Det tekniske oplæg beskriver editoren
