@@ -1,6 +1,6 @@
 # Status — hvad mangler i version 1
 
-Sidst opdateret: **30. august 2026**, efter trin 4.
+Sidst opdateret: **2. september 2026**, midt i BYOK.
 
 Dokumentet holder byggeplanen i `teknisk-oplaeg-v1.md` op mod, hvad der
 faktisk står i koden og databasen. Byggeplanen er en plan; det her er en
@@ -35,7 +35,8 @@ hver eneste brief.
 - `brand_profiles`-tabel: firmabeskrivelse, tone, forbudte ord, sprogprøve.
   Én pr. bruger i V1.
 - `instructions`-tabel: gemte instruktioner, der genbruges på tværs af tekster.
-- `/app/indstillinger` — siden findes ikke endnu.
+- `/app/indstillinger` — siden findes nu, med AI-forbindelsen. Profil og
+  brand-profil skal ind som egne afsnit på den.
 - Brand-profil og instruktioner ind i prompten som TYDELIGT AFGRÆNSEDE blokke.
   CLAUDE.md regel 5 gælder uændret: de supplerer systemets regler og kan ikke
   omdefinere dem. Samme behandling som briefen og som ønsket til et afsnit.
@@ -51,20 +52,36 @@ Manglen er reel og alvorlig: uden BYOK stopper appen for enhver bruger efter
 den femte tekst. `vaelgNoegle` kaster `ManglerNoegle`, og der er ingen vej
 videre i appen.
 
-- `ai_keys`-tabel med kryptering. **Et valg, der endnu ikke er truffet:**
-  AES-256-GCM med `ENCRYPTION_KEY`, eller Supabase Vault/pgsodium. CLAUDE.md
-  regel 2 kræver, at fordele og ulemper lægges frem, og at der anbefales én,
-  første gang det bygges.
-- `POST /api/keys` — gem, validér og slet nøgle.
-- AI-forbindelse i indstillinger: vælg leverandør, indsæt nøgle, kurateret
-  modelliste, "Test forbindelsen"-knap, slet nøgle.
+**Halvvejs, pr. 02.09.2026.** Nøglen kan gemmes, afprøves og slettes — men
+genereringen bruger den ikke endnu.
+
+Færdigt:
+
+- `ai_keys`-tabel med kryptering (migration 0012). Valget faldt på
+  AES-256-GCM med `ENCRYPTION_KEY`; begrundelsen står i `beslutninger.md`.
+- `POST /api/keys` — gem, validér, skift model og slet nøgle.
+- AI-forbindelse i `/app/indstillinger`: vælg leverandør, indsæt nøgle,
+  kurateret modelliste, "Test forbindelsen"-knap, slet nøgle.
+  Afprøvet ende til ende med en rigtig nøgle 02.09.2026 — kryptering,
+  lagring, dekryptering og kald til Anthropic. **Undtagen sletningen**, som
+  ikke er kørt igennem på en rigtig nøgle endnu.
+
+Mangler:
+
+- **`vaelgNoegle` skal hente og bruge nøglen.** Det er dét, der lukker hullet:
+  indtil da kan brugeren gemme en nøgle, som genereringen ikke rører. Alt
+  maskineriet er der — `hentNoegleTilBrug` i `lib/ainoegler.ts` gør allerede
+  arbejdet. Dekryptering KUN server-side i genererings-øjeblikket; nøglen
+  sendes aldrig til klienten igen, kun `key_hint`.
+- Forbruget skal logges med `paid_by = 'user'`, og budgetloftet må IKKE
+  gælde, når brugeren betaler selv. Loftet beskytter platformens nøgle.
 - Opsætnings-wizard på dansk: trinvis guide til at oprette en nøgle hos
   Anthropic hhv. OpenAI, med anbefaling om forbrugsloft hos leverandøren.
-- `vaelgNoegle` skal hente og dekryptere brugerens nøgle. Dekryptering KUN
-  server-side i genererings-øjeblikket; nøglen sendes aldrig til klienten
-  igen, kun `key_hint`.
+  Indstillingssiden linker i dag direkte til leverandørens konsol — det er
+  nok til at komme videre, men ikke den guide, CLAUDE.md beskriver.
 - ChatGPT-vejen skal afprøves, og OpenAI-priserne slås op. Begge står allerede
-  på tjeklisten i `beslutninger.md`.
+  på tjeklisten i `beslutninger.md`. Bemærk: manglende priser er dét, der
+  holder OpenAI ude af indstillinger — se `lib/ai/modeller.ts`.
 
 **Anbefalet rækkefølge: BYOK før trin 5.** Personalisering gør gode tekster
 bedre; nøglen er forskellen på, om nogen overhovedet kan bruge værktøjet efter

@@ -33,6 +33,61 @@ trin 8.
 
 ---
 
+## 2026-09-02 — BYOK: API-rute og indstillingsside
+
+**Nøglen testes, FØR den gemmes.**
+Der findes ingen "tjek nøglen"-funktion hos leverandørerne; den eneste ærlige
+måde at vide, om en nøgle virker, er at bruge den. Ruten sender derfor et
+minimalt kald af sted og gemmer kun, hvis det lykkes.
+**Hvad det koster os:** en brøkdel af en øre pr. gemning, betalt af brugerens
+egen konto. Alternativet var at opdage fejlen, mens hun sad midt i en tekst.
+
+**Rate limiten gælder også nøgletest.**
+Et kald til leverandøren koster penge og kan misbruges til at gætte nøgler af
+sted mod Anthropic fra vores server. Samme loft som generering: 3 i minuttet.
+**Kendt bivirkning:** tester hun forbindelsen to gange og skriver en tekst
+lige efter, kan hun ramme loftet. Beskeden siger, hvad hun skal gøre.
+
+**OpenAI holdes ude af indstillinger — men ikke med et flag.**
+Reglen er den samme for alle modeller: en model uden pris kan ikke vælges,
+fordi forbruget så ville blive logget som 0 kroner, og budgetloftet ville
+tælle for lavt. OpenAI-modellerne mangler priser, og derfor kan de ikke
+vælges. Slås priserne op, åbner vejen af sig selv.
+**Hvorfor det er bedre end et flag:** der er ikke noget, nogen skal huske at
+fjerne, og der kan ikke opstå en tilstand, hvor en model kan vælges, men ikke
+bogføres. Tjekket ligger BÅDE i UI'et og i ruten — det første er en
+venlighed, det andet er sikkerheden.
+**Bemærk:** dette dækker prisen, ikke afprøvningen. Punktet om at prøve
+ChatGPT-vejen af står stadig på tjeklisten og skal lukkes særskilt.
+
+**Modelskift kræver ikke nøglen igen.**
+Egen handling i ruten, der hverken rører leverandøren eller koster en plads
+i køen. Ellers ville et skifte fra Sonnet til Opus betyde, at brugeren skulle
+finde sin nøgle frem.
+
+**"Skift nøgle" er en ny indtastning, ikke en redigering.**
+Vi kan ikke vise den gemte nøgle, og vil ikke — den findes kun krypteret og
+som de fire sidste tegn. Et felt, der lod som om det viste nøglen, ville
+være en løgn om, hvad vi opbevarer.
+
+**Formularen står på STANDARDMODEL, ikke på den første i listen.**
+Den stod først på Opus 5, fordi den er nævnt først i modellisten — og
+modsagde dermed valget af Sonnet som standard (25.08.2026: hurtigere,
+billigere, lige så god dansk). `standardValgbarModel` gør det ene sted til
+det andet. Fanget under afprøvningen 02.09.2026.
+
+**Nøgletest logges ikke i `usage_log`.**
+Kaldet er på to tokens og siger intet om, hvad brugeren har skrevet. En linje
+i forbrugsloggen pr. gemning ville gøre hendes eget forbrugsoverblik
+sværere at læse, ikke lettere. Konsekvens: de få ører er usynlige i vores
+egen opgørelse — de betales af brugerens konto, så det rammer ikke budgettet.
+
+**Nøglen ryddes af browserens hukommelse, så snart den er sendt.**
+Feltet tømmes ved svar. Den skal ikke ligge i en React-state resten af
+besøget.
+
+---
+
 ## 2026-09-02 — BYOK: kryptering og nøgletabel
 
 **AES-256-GCM frem for Supabase Vault/pgsodium.**

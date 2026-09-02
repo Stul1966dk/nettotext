@@ -31,6 +31,23 @@ export type Model = {
   pris?: { ind: number; ud: number };
 };
 
+/**
+ * Leverandørernes navne, som brugeren kender dem.
+ *
+ * "Anthropic" og "OpenAI" er firmanavne; "Claude" og "ChatGPT" er dét, folk
+ * har hørt om. Vi skriver begge dele, hvor der er plads.
+ */
+export const LEVERANDOER_NAVN: Record<Leverandoer, string> = {
+  anthropic: "Claude (Anthropic)",
+  openai: "ChatGPT (OpenAI)",
+};
+
+/** Hvor brugeren selv laver sin nøgle. Opsætnings-wizarden uddyber. */
+export const LEVERANDOER_KONSOL: Record<Leverandoer, string> = {
+  anthropic: "https://console.anthropic.com/settings/keys",
+  openai: "https://platform.openai.com/api-keys",
+};
+
 export const MODELLER: Record<Leverandoer, readonly Model[]> = {
   anthropic: [
     {
@@ -79,6 +96,48 @@ export const STANDARDMODEL: Record<Leverandoer, string> = {
   anthropic: "claude-sonnet-5",
   openai: "gpt-5.6-sol",
 };
+
+/**
+ * Må brugeren vælge den her model?
+ *
+ * Svaret er nej, så længe prisen mangler. Det er ikke en teknisk formalitet:
+ * uden pris logges forbruget som 0 kroner, og budgetloftet tæller for lavt.
+ * En model, vi ikke kan regne på, er en model, vi ikke har styr på.
+ *
+ * Det er samtidig dét, der holder OpenAI ude af indstillinger indtil videre —
+ * ikke et flag, nogen skal huske at fjerne, men den samme regel som for alle
+ * andre modeller. Slås priserne op i modellisten ovenfor, åbner vejen af sig
+ * selv. Se tjeklisten i docs/beslutninger.md.
+ */
+export function modelErValgbar(leverandoer: Leverandoer, id: string): boolean {
+  return MODELLER[leverandoer].some((m) => m.id === id && m.pris !== undefined);
+}
+
+/** Modellerne, brugeren faktisk kan vælge hos én leverandør. */
+export function valgbareModeller(leverandoer: Leverandoer): readonly Model[] {
+  return MODELLER[leverandoer].filter((m) => m.pris !== undefined);
+}
+
+/** Kan leverandøren vælges overhovedet? Nej, hvis ingen af modellerne kan. */
+export function leverandoerErKlar(leverandoer: Leverandoer): boolean {
+  return valgbareModeller(leverandoer).length > 0;
+}
+
+/**
+ * Den model, indstillinger skal stå på, før brugeren rører ved noget.
+ *
+ * STANDARDMODEL, når den kan vælges — ellers den første, der kan. Uden det
+ * ville formularen foreslå den dyreste model i listen, blot fordi den står
+ * øverst, og modsige valget af Sonnet som standard.
+ */
+export function standardValgbarModel(leverandoer: Leverandoer): string {
+  const valgbare = valgbareModeller(leverandoer);
+  const standard = STANDARDMODEL[leverandoer];
+
+  return valgbare.some((m) => m.id === standard)
+    ? standard
+    : (valgbare[0]?.id ?? "");
+}
 
 export function erKendtModel(leverandoer: Leverandoer, id: string): boolean {
   return MODELLER[leverandoer].some((m) => m.id === id);

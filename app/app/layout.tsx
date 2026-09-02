@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
@@ -35,6 +36,13 @@ export default async function AppLayout({
 
           <div className="flex items-center gap-4">
             <span className="truncate text-sm text-gran-let">{user.email}</span>
+            <Link
+              href="/app/indstillinger"
+              className="rounded-lg px-2 py-1.5 text-sm text-gran underline underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-gran"
+            >
+              {t("indstillinger")}
+            </Link>
+
             <form action={logUd}>
               <button
                 type="submit"
