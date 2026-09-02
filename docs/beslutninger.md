@@ -21,6 +21,7 @@ trin 8.
 - [ ] **Fjern eksempelteksten fra brief-felterne**, eller lav den om til en "Udfyld med eksempel"-knap. Felterne i `templates.input_fields` er forudfyldt med et malerfirma i Brønderslev. Det er praktisk under test, men rigtige brugere vil sende eksemplet af sted som deres egen brief uden at opdage det.
 - [ ] **Sæt et forbrugsloft på platformens AI-nøgle hos Anthropic.** `DAILY_BUDGET_DKK` er bygget (30.08.2026), så leverandørens loft er ikke længere den eneste bremse — men det er stadig den sidste. Appens loft kan kun tælle det, appen selv sender af sted; en lækket nøgle kan det ikke stoppe.
 - [ ] **Sæt `ADMIN_EMAIL`** i `.env.local` og hos Vercel, når adminsiden bygges. Adressen står bevidst ikke i repoet — se afsnittet om adminsiden i `docs/status.md`.
+- [ ] **Sæt `ENCRYPTION_KEY` hos Vercel** (og i ethvert nyt miljø). Den krypterer brugernes egne AI-nøgler. Mangler den, kan ingen gemme eller bruge sin nøgle. **Skift den ALDRIG efter idriftsættelse** — så kan allerede gemte nøgler ikke læses igen, og alle brugere skal indtaste deres på ny. Står lokalt i `.env.local`.
 - [ ] **Husk `DAILY_BUDGET_DKK` i ethvert NYT miljø.** Sat hos Vercel 30.08.2026. Budgetloftet fejler LUKKET, så mangler variablen, holder genereringen op med at virke. Gælder også et eventuelt preview- eller testmiljø senere.
 - [ ] **Udvid forbuddet mod modsætningsfiguren?** Prompten forbyder "ikke X, men Y" og "det handler ikke kun om X, det handler om Y". Modellen skriver den i stedet delt over to sætninger: "... handler ikke om at gøre det pænt. Det handler om at holde fugten ude." Ejerens beslutning, om reglen skal udvides — det er en sprogvurdering, ikke en teknisk.
 - [ ] **Slå OpenAI-priserne op**, før nogen må vælge ChatGPT. `lib/ai/modeller.ts` har prisfeltet tomt for de to OpenAI-modeller, fordi tallene ikke er slået op. Uden pris logges forbruget som 0 kr., og budgetloftet tæller for lavt.
@@ -29,6 +30,54 @@ trin 8.
 - [ ] **Byg "slet min konto"** (GDPR, CLAUDE.md regel 9). Alle brugerens rækker i alle tabeller, `ai_keys` inklusive. De fleste tabeller har `on delete cascade` mod `auth.users`, så meget er gjort — der mangler en knap, en rute og en bekræftelse.
 - [ ] **Privatlivspolitik** på `/da/privatliv` (GDPR, jf. teknisk oplæg afsnit 5).
 - [ ] **Opdatér brandnavnet** i `design/design-3-vaerksted.html` til NettoText.
+
+---
+
+## 2026-09-02 — BYOK: kryptering og nøgletabel
+
+**AES-256-GCM frem for Supabase Vault/pgsodium.**
+CLAUDE.md regel 2 kræver, at valget lægges frem, første gang det bygges.
+Sikkerhedsmæssigt er de to reelt ligeværdige her: begge holder nøglen
+krypteret i databasen og dekrypterer kun server-side. Forskellen er, hvor
+maskineriet ligger. AES-256-GCM er 40 linjer Node-kode, man kan læse og
+forstå; Vault ville flytte krypteringen ind i SQL-funktioner og binde os
+tættere til Supabase.
+**Hvad det koster os:** `ENCRYPTION_KEY` skal findes i ethvert miljø, og den
+må aldrig skiftes efter idriftsættelse. Sker det, kan ingen gemt nøgle læses
+igen, og alle brugere skal indtaste deres på ny. Derfor står den nu også på
+tjeklisten som noget, der skal sættes hos Vercel.
+
+**GCM og ikke CBC.** GCM giver et autentificerings-tag, så en ændret krypteret
+tekst bliver afvist i stedet for at blive dekrypteret til volapyk. Vi opdager
+altså, hvis nogen har pillet ved rækken.
+
+**Versionsnummer forrest i hver gemt værdi** — `v1.<iv>.<tag>.<tekst>`.
+Skal algoritmen en dag skiftes, kan gamle rækker stadig læses, fordi de selv
+siger, hvordan de blev lavet. Det koster fire tegn pr. række og sparer os for
+at bede alle brugere om at indtaste nøglen igen.
+
+**Én nøgle pr. bruger, ikke én pr. leverandør.**
+Brugeren kan alligevel kun skrive med én ad gangen, og to gemte nøgler ville
+kræve et ekstra valg af, hvilken der er den aktive — et valg, der skal vises,
+forklares og huskes. Skifter hun leverandør, erstattes rækken.
+**Hvad det koster os:** skifter hun frem og tilbage, skal nøglen findes frem
+igen hver gang. Bliver det et reelt problem, er udvidelsen at fjerne
+`unique`-betingelsen på `user_id` og tilføje et aktivt-flag.
+
+**`model`-kolonne på `ai_keys` — en udvidelse af datamodellen.**
+Datamodellen i CLAUDE.md nævner den ikke, og filen siger, at den kun udvides
+efter aftale. Aftalt 02.09.2026: den valgte model hører til nøglen på samme
+måde som leverandøren gør, og den skal gemmes et sted, når brugeren vælger
+den i indstillinger.
+
+**Den krypterede nøgle kan slet ikke læses gennem en login-forbindelse.**
+`revoke select (encrypted_key) ... from authenticated, anon` tager kolonnen
+fra igen, efter policyen har givet adgang til rækken. Indstillingssiden har
+kun brug for leverandør, model og `key_hint`. Skal den krypterede tekst
+hentes for at blive dekrypteret, sker det med `service_role` i server-kode —
+og dér skal ejerskabet verificeres i hånden, jf. sikkerhedsreglernes punkt 6.
+Værdien er ganske vist krypteret og ubrugelig uden `ENCRYPTION_KEY`; det
+andet lag koster os én linje.
 
 ---
 
