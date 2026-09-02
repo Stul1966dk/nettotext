@@ -103,6 +103,7 @@ export default async function SkrivSide({
             kopiMarkeret: t("kopiMarkeret"),
             proevIgen: t("proevIgen"),
             koster: t("koster"),
+            saetNoegleOp: t("saetNoegleOp"),
             metaOverskrift: t("metaOverskrift"),
             metaForklaring: t("metaForklaring"),
             metaTitel: t("metaTitel"),

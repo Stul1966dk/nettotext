@@ -33,6 +33,8 @@
     "kvoteLabel": "Prøvetekster",
     "kvote": "{tilbage} af {ialt} prøvetekster tilbage",
     "kvoteForklaring": "På vores regning. Derefter skriver du videre med din egen AI-nøgle.",
+    "saetNoegleOp": "Sæt din egen AI-nøgle op på 5 minutter",
+    "egenNoegle": "Du skriver nu med din egen nøgle: {navn}, der slutter på {hint}.",
     "kvoteUkendt": "Vi kunne ikke hente din prøvekvote lige nu.",
     "naesteTrin": "Skriv en ny tekst",
     "nyTekst": "Ny tekst",
@@ -53,6 +55,7 @@
     "tilbage": "Tilbage til dashboard",
     "aiOverskrift": "AI-forbindelse",
     "aiForklaring": "Når dine prøvetekster er brugt, skriver du videre med din egen AI-nøgle. Du opretter nøglen hos leverandøren, betaler dem direkte for det, du bruger, og kan slette den her når som helst.",
+    "tilGuide": "Sådan laver du en nøgle — trin for trin",
     "leverandoerLabel": "Leverandør",
     "leverandoerIkkeKlar": "{navn} kan ikke vælges endnu. Vi har ikke afprøvet den vej, og uden det kan vi ikke vise dig, hvad en tekst koster.",
     "modelLabel": "Model",
@@ -88,6 +91,62 @@
     "fejlIngenNoegle": "Der er ingen gemt nøgle at afprøve.",
     "fejlLeverandoerIkkeKlar": "Den leverandør kan ikke vælges endnu.",
     "fejlUkendt": "Det virkede ikke. Prøv igen om lidt — sker det igen, er det os, der skal kigge på det."
+  },
+  "opsaetning": {
+    "titel": "Sæt din AI-nøgle op — NettoText",
+    "overskrift": "Sæt din egen AI-nøgle op",
+    "tid": "Det tager omkring fem minutter.",
+    "forklaring": "Dine prøvetekster er skrevet på vores regning. Herefter skriver du videre på din egen konto hos AI-leverandøren. Du betaler dem direkte for det, du bruger — vi lægger intet oveni og kan ikke se, hvad der står på din konto.",
+    "koster": "En kort tekst koster typisk under en krone hos leverandøren. Det mindste beløb, de tager imod, er i skrivende stund 5 dollars — omkring 35 kroner — og det rækker til mange tekster.",
+    "forbehold": "Leverandørerne ændrer deres sider indimellem, så menuerne kan hedde noget lidt andet, end der står her. Ordene nedenfor er de engelske, som de står på skærmen.",
+    "anthropicTrin": [
+      {
+        "overskrift": "Opret en konto",
+        "tekst": "Gå til console.anthropic.com og opret en konto, eller log ind med Google. Bemærk: det er en anden konto end den, du bruger til at chatte med Claude — også selvom du logger ind med den samme mailadresse."
+      },
+      {
+        "overskrift": "Læg et beløb på",
+        "tekst": "Under Billing lægger du penge på kontoen. Uden saldo svarer nøglen ikke, og teksten bliver ikke skrevet."
+      },
+      {
+        "overskrift": "Sæt et forbrugsloft",
+        "tekst": "Under Limits sætter du et månedligt loft — gør det nu, ikke senere. NettoText har sit eget loft, men det kan kun tælle det, NettoText selv sender af sted. Loftet hos Anthropic gælder også, hvis nøglen bliver brugt et andet sted."
+      },
+      {
+        "overskrift": "Lav nøglen",
+        "tekst": "Under API keys trykker du Create Key. Giv den et navn, du kan kende igen — for eksempel NettoText. Så ved du, hvilken du skal slette, hvis du senere vil lukke den."
+      },
+      {
+        "overskrift": "Kopiér den med det samme",
+        "tekst": "Nøglen vises kun én gang. Kopiér den, inden du lukker vinduet. Mister du den, er der ikke sket noget alvorligt — så laver du bare en ny."
+      }
+    ],
+    "openaiTrin": [
+      {
+        "overskrift": "Opret en konto",
+        "tekst": "Gå til platform.openai.com og opret en konto. Bemærk: det er en anden konto end et ChatGPT-abonnement — de to ting betales hver for sig."
+      },
+      {
+        "overskrift": "Læg et beløb på",
+        "tekst": "Under Billing lægger du penge på kontoen. Uden saldo svarer nøglen ikke, og teksten bliver ikke skrevet."
+      },
+      {
+        "overskrift": "Sæt et forbrugsloft",
+        "tekst": "Under Limits sætter du et månedligt loft — gør det nu, ikke senere. NettoText har sit eget loft, men det kan kun tælle det, NettoText selv sender af sted."
+      },
+      {
+        "overskrift": "Lav nøglen",
+        "tekst": "Under API keys trykker du Create new secret key. Giv den et navn, du kan kende igen — for eksempel NettoText."
+      },
+      {
+        "overskrift": "Kopiér den med det samme",
+        "tekst": "Nøglen vises kun én gang. Kopiér den, inden du lukker vinduet. Mister du den, laver du bare en ny."
+      }
+    ],
+    "aabnKonsol": "Åbn {navn} i en ny fane",
+    "indsaetOverskrift": "Indsæt nøglen her",
+    "indsaetForklaring": "Vi krypterer nøglen, før den gemmes, og viser den aldrig igen — du ser kun de sidste fire tegn. Vi prøver den af med det samme, så du ved, om den virker, inden du skriver din første tekst.",
+    "tilbage": "Tilbage til dashboard"
   },
   "ny": {
     "titel": "Ny tekst — NettoText",
@@ -160,6 +219,7 @@
       "serverfejl": "Der er noget galt i vores opsætning. Vi kan se fejlen i loggen — prøv igen om lidt.",
       "ukendt": "Teksten kunne ikke skrives lige nu. Prøv igen om lidt.",
       "netvaerk": "Forbindelsen blev afbrudt, før teksten var færdig. Prøv igen."
-    }
+    },
+    "saetNoegleOp": "Sæt din egen AI-nøgle op"
   }
 }

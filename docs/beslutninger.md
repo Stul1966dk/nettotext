@@ -18,6 +18,7 @@ trin 8.
 - [ ] **Egen SMTP + dansk login-mail.** Skal på plads INDEN de første testbrugere — ikke først ved lancering. Supabases indbyggede mailservice sender kun til adresser knyttet til vores egen Supabase-konto, og skabelonerne kan ikke redigeres uden egen SMTP. Sæt Resend op (gratis til 3.000 mails/md.), og skift derefter Magic Link-skabelonen til dansk med `{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=email` — den form virker også, når mailen åbnes på en anden enhed end den, linket blev bestilt fra.
 - [ ] **Kobl `nettotext.com` på** i Vercel → Settings → Domains — og skift derefter **Site URL** i Supabase → Authentication → URL Configuration til det nye domæne. Sker det ikke, peger login-mailens link stadig på `.vercel.app`.
 - [ ] **Sæt ejerkontoens prøvekvote tilbage.** Den står på 1.000.000 for at kunne teste frit under udviklingen. Beslut inden lancering, om ejerkontoen fortsat skal være speciel — og hvis ikke, sæt den til 5 som alle andre.
+- [ ] **Efterse beløbene i opsætnings-guiden.** `messages/da.json` → `opsaetning.koster` siger, at en kort tekst koster under en krone, og at mindstebeløbet hos leverandøren er 5 dollars. Begge dele bestemmer leverandøren og kan ændre sig. Tjek dem, inden guiden vises for rigtige brugere.
 - [ ] **Fjern eksempelteksten fra brief-felterne**, eller lav den om til en "Udfyld med eksempel"-knap. Felterne i `templates.input_fields` er forudfyldt med et malerfirma i Brønderslev. Det er praktisk under test, men rigtige brugere vil sende eksemplet af sted som deres egen brief uden at opdage det.
 - [ ] **Sæt et forbrugsloft på platformens AI-nøgle hos Anthropic.** `DAILY_BUDGET_DKK` er bygget (30.08.2026), så leverandørens loft er ikke længere den eneste bremse — men det er stadig den sidste. Appens loft kan kun tælle det, appen selv sender af sted; en lækket nøgle kan det ikke stoppe.
 - [ ] **Sæt `ADMIN_EMAIL`** i `.env.local` og hos Vercel, når adminsiden bygges. Adressen står bevidst ikke i repoet — se afsnittet om adminsiden i `docs/status.md`.
@@ -30,6 +31,38 @@ trin 8.
 - [ ] **Byg "slet min konto"** (GDPR, CLAUDE.md regel 9). Alle brugerens rækker i alle tabeller, `ai_keys` inklusive. De fleste tabeller har `on delete cascade` mod `auth.users`, så meget er gjort — der mangler en knap, en rute og en bekræftelse.
 - [ ] **Privatlivspolitik** på `/da/privatliv` (GDPR, jf. teknisk oplæg afsnit 5).
 - [ ] **Opdatér brandnavnet** i `design/design-3-vaerksted.html` til NettoText.
+
+---
+
+## 2026-09-02 — Opsætnings-guiden
+
+**Kun leverandører, der faktisk kan vælges, får en guide.**
+Samme regel som i indstillinger: uden kendt pris kan modellen ikke vælges, og
+så kan leverandøren det heller ikke. En guide til noget, man ikke kan bruge
+bagefter, er en blindgyde, og guiden har ét formål: at få brugeren fra
+ingenting til en nøgle, der virker. **Teksten til ChatGPT er skrevet og
+ligger klar i `da.json`** — den viser sig af sig selv, den dag priserne
+bliver slået op.
+
+**Guiden ender i selve formularen, ikke i et link til indstillinger.**
+Brugeren står med en nøgle i udklipsholderen, som kun vises én gang hos
+leverandøren. Et ekstra klik dér er et sted, hun kan tabe den.
+
+**Formularen flyttet til `components/ai-forbindelse/`.**
+Den bruges nu to steder. `AiForbindelseSektion` henter selv sine data og har
+med vilje hverken overskrift eller ramme — de to sider siger hver sit om,
+hvorfor man står der, og skal kunne gøre det med deres egne ord.
+
+**Dashboardet siger nu, hvem der betaler.**
+Var kvoten brugt, stod der før kun "0 af 5 prøvetekster tilbage". Nu står
+der enten, at hun skriver på sin egen nøgle — med de fire sidste tegn — eller
+en knap til guiden. Ellers ville hun først opdage forskellen, når hun stod
+midt i en tekst, der ikke blev skrevet.
+
+**Beløbene i guiden er skøn og skal efterses.**
+"En kort tekst koster typisk under en krone" og mindstebeløbet på 5 dollars
+er rigtige i dag. Begge dele bestemmer leverandøren, ikke os. Sat på
+tjeklisten.
 
 ---
 

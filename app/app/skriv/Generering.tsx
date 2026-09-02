@@ -33,6 +33,7 @@ type Tekster = BlokkortTekster & {
   kopiMarkeret: string;
   proevIgen: string;
   koster: string;
+  saetNoegleOp: string;
   metaOverskrift: string;
   metaForklaring: string;
   metaTitel: string;
@@ -671,6 +672,14 @@ export function Generering({
             {fejl.besked}
           </p>
           <div className="flex flex-wrap items-center gap-4">
+            {/* Uden nøgle hjælper det ikke at prøve igen — så skal brugeren
+                et andet sted hen. Guiden står før knappen, fordi den er dét,
+                der faktisk bringer hende videre. */}
+            {fejl.aarsag === "mangler_noegle" && (
+              <Link href="/app/opsaetning" className={knapKlasser}>
+                {tekster.saetNoegleOp}
+              </Link>
+            )}
             <button type="button" onClick={proevIgen} className={knapKlasser}>
               {tekster.proevIgen}
             </button>

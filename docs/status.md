@@ -48,13 +48,12 @@ hver eneste brief.
 
 **Det her trin står ikke i det tekniske oplæg.** Oplægget blev skrevet, før
 hybridmodellen blev besluttet, og byggeplanen er aldrig blevet opdateret.
-Manglen er reel og alvorlig: uden BYOK stopper appen for enhver bruger efter
-den femte tekst. `vaelgNoegle` kaster `ManglerNoegle`, og der er ingen vej
-videre i appen.
+Manglen var reel og alvorlig: uden BYOK stoppede appen for enhver bruger
+efter den femte tekst.
 
-**Virker, pr. 02.09.2026.** Nøglen kan gemmes, afprøves og slettes, og
-genereringen bruger den. Hullet efter den femte tekst er lukket. Tilbage
-står opsætnings-wizarden og ChatGPT-vejen.
+**Virker, pr. 02.09.2026.** Nøglen kan gemmes, afprøves og slettes,
+genereringen bruger den, og der er en dansk guide til at oprette den. Hullet
+efter den femte tekst er lukket. Tilbage står kun ChatGPT-vejen.
 
 Færdigt:
 
@@ -66,27 +65,27 @@ Færdigt:
   Afprøvet ende til ende med en rigtig nøgle 02.09.2026 — kryptering,
   lagring, dekryptering og kald til Anthropic. **Undtagen sletningen**, som
   ikke er kørt igennem på en rigtig nøgle endnu.
-
 - **`vaelgNoegle` henter og bruger nøglen.** Dekryptering KUN server-side i
   genererings-øjeblikket; nøglen sendes aldrig til klienten igen, kun
   `key_hint`. Forbruget logges med `paid_by = 'user'`, og budgetloftet
   spørges ikke, når brugeren betaler selv. Rate limiten gælder begge veje.
   Afprøvet 02.09.2026 med tom prøvekvote og en rigtig nøgle, på både
   `/api/generate` og `/api/regenerate-section`.
+- Opsætnings-guide på `/app/opsaetning`: fem trin til en nøgle hos
+  leverandøren, med forbrugsloft som trin 3 og formularen som sidste trin.
+  Vises fra dashboardet, når kvoten er brugt, fra indstillinger, og fra
+  fejlbeskeden, når en tekst ikke kan skrives uden nøgle.
 
 Mangler:
 
-- Opsætnings-wizard på dansk: trinvis guide til at oprette en nøgle hos
-  Anthropic hhv. OpenAI, med anbefaling om forbrugsloft hos leverandøren.
-  Indstillingssiden linker i dag direkte til leverandørens konsol — det er
-  nok til at komme videre, men ikke den guide, CLAUDE.md beskriver.
 - ChatGPT-vejen skal afprøves, og OpenAI-priserne slås op. Begge står allerede
   på tjeklisten i `beslutninger.md`. Bemærk: manglende priser er dét, der
   holder OpenAI ude af indstillinger — se `lib/ai/modeller.ts`.
 
-**Anbefalet rækkefølge: BYOK før trin 5.** Personalisering gør gode tekster
-bedre; nøglen er forskellen på, om nogen overhovedet kan bruge værktøjet efter
-den femte tekst.
+**BYOK blev bygget før trin 5, og det var den rigtige rækkefølge.**
+Personalisering gør gode tekster bedre; nøglen var forskellen på, om nogen
+overhovedet kunne bruge værktøjet efter den femte tekst. Trin 5 er nu det
+næste.
 
 ---
 
