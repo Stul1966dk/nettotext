@@ -33,6 +33,42 @@ trin 8.
 
 ---
 
+## 2026-09-02 — BYOK: genereringen bruger nøglen
+
+**`vaelgNoegle` er nu asynkron og tager bruger-id'et.**
+Den skal slå brugerens nøgle op i databasen, og det kan ikke gøres synkront.
+`brugerId` SKAL komme fra `auth.getUser()` på serveren — et id fra browseren
+ville være det samme som at lade enhver bruge en andens nøgle.
+
+**`byggAdapter` flyttet til `lib/ai/adapter.ts`.**
+Ellers ville `lib/ai/index.ts` og `lib/ainoegler.ts` importere hinanden i
+ring: index → ainoegler (hent nøglen) → index (byg adapteren). Ringen ville
+måske virke, men den slags går i stykker på en ubehagelig måde.
+
+**Budgetloftet gælder stadig kun platformens nøgle.**
+Det stod allerede rigtigt i begge ruter (`valg.betaler === "platform"`), så
+der var intet at ændre. Loftet findes for at beskytte VORES nøgle; betaler
+brugeren selv, er forbruget hendes sag. **Rate limiten gælder derimod begge
+veje** — den beskytter også leverandøren mod at få tredive kald i sekundet
+fra os, og brugeren mod sit eget klik-løb.
+
+**En gemt model, der er taget af listen, falder tilbage til standarden.**
+`sikkerModel` var der i forvejen; nu bruges den også på brugerens eget valg.
+Bedre at skrive teksten med standardmodellen end at fejle på et navn.
+
+**Loglinjen siger nu, hvem der betalte.**
+`betalt af user` eller `betalt af platform` i både `[generate]` og
+`[omskriv]`. Uden det kan man ikke se forskel på de to veje i driften, og
+det er præcis dét, man har brug for at kunne se, når noget undrer en.
+Stadig kun tal og kategorier — aldrig noget af teksten.
+
+**Kan den gemte nøgle ikke dekrypteres, er det ikke en serverfejl.**
+Sker typisk kun, hvis `ENCRYPTION_KEY` er skiftet. Brugeren får nu beskeden
+om, at nøglen blev afvist, og skal indsætte den igen — ikke "prøv igen om
+lidt", som hun kunne blive ved med at gøre forgæves.
+
+---
+
 ## 2026-09-02 — BYOK: API-rute og indstillingsside
 
 **Nøglen testes, FØR den gemmes.**

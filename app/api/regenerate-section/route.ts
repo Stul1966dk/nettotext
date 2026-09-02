@@ -108,10 +108,15 @@ export async function POST(request: Request) {
   // platformen for omskrivningen — uden at tælle den som en tekst.
   let valg;
   try {
-    valg = vaelgNoegle(await harProeveKvote(user.id));
+    valg = await vaelgNoegle(user.id, await harProeveKvote(user.id));
   } catch (fejl) {
     if (fejl instanceof ManglerNoegle) {
       return afvis("mangler_noegle", 402);
+    }
+
+    // Den gemte nøgle kunne ikke læses. Se samme sted i /api/generate.
+    if (fejl instanceof AiFejl) {
+      return afvis(fejl.aarsag, 400);
     }
 
     console.error("Nøglevalg mislykkedes:", fejl);
@@ -198,7 +203,8 @@ export async function POST(request: Request) {
           if (bid.slags === "forbrug") {
             forbrug = bid;
             console.log(
-              `[omskriv] ${bid.model} · ${Date.now() - begyndtTid} ms · ` +
+              `[omskriv] ${bid.model} · betalt af ${valg.betaler} ` +
+                `· ${Date.now() - begyndtTid} ms · ` +
                 `${bid.inputTokens} ind / ${bid.outputTokens} ud`,
             );
           }

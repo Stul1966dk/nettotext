@@ -1,9 +1,12 @@
 import "server-only";
 
-import { anthropicAdapter } from "./anthropic";
-import { openaiAdapter } from "./openai";
+import { hentNoegleTilBrug } from "@/lib/ainoegler";
+
+import { byggAdapter } from "./adapter";
 import { STANDARDMODEL, erKendtModel } from "./modeller";
 import { AiFejl, type AiAdapter, type Leverandoer } from "./typer";
+
+export { byggAdapter };
 
 export * from "./typer";
 export * from "./modeller";
@@ -49,22 +52,20 @@ function platformLeverandoer(noegle: string): Leverandoer {
   return noegle.startsWith("sk-ant-") ? "anthropic" : "openai";
 }
 
-export function byggAdapter(
-  leverandoer: Leverandoer,
-  apiNoegle: string,
-): AiAdapter {
-  return leverandoer === "anthropic"
-    ? anthropicAdapter(apiNoegle)
-    : openaiAdapter(apiNoegle);
-}
-
 /**
  * Vælger nøgle og adapter for én generering.
  *
  * `harProeveKvote` afgøres af kalderen, som allerede har reserveret kvoten —
  * denne funktion bruger penge, den holder ikke regnskab.
+ *
+ * `brugerId` SKAL komme fra auth.getUser() på serveren. Den bruges til at
+ * hente brugerens egen nøgle, og et id fra browseren ville være det samme
+ * som at lade enhver bruge en andens nøgle.
  */
-export function vaelgNoegle(harProeveKvote: boolean): Noeglevalg {
+export async function vaelgNoegle(
+  brugerId: string,
+  harProeveKvote: boolean,
+): Promise<Noeglevalg> {
   if (harProeveKvote) {
     if (!PLATFORM_AI_KEY) {
       // Opsætningsfejl hos os, ikke hos brugeren. Skal fejle højlydt i
@@ -84,10 +85,23 @@ export function vaelgNoegle(harProeveKvote: boolean): Noeglevalg {
     };
   }
 
-  // Trin 6: her hentes og dekrypteres brugerens egen nøgle fra ai_keys,
-  // og brugerens valgte model slås op. Indtil da findes tabellen ikke,
-  // og alle uden prøvekvote tilbage lander samme sted.
-  throw new ManglerNoegle();
+  // Prøvekvoten er brugt. Så er det brugerens egen nøgle, der betaler.
+  //
+  // Nøglen dekrypteres HER og ingen andre steder i genereringen — den lever
+  // kun så længe, dette ene kald varer, og den forlader aldrig serveren.
+  const egen = await hentNoegleTilBrug(brugerId);
+
+  // Ingen kvote og ingen egen nøgle. Det er ikke en fejl, men en tilstand,
+  // brugeren kan komme ud af: ruten sender hende til indstillinger.
+  if (!egen) throw new ManglerNoegle();
+
+  return {
+    adapter: byggAdapter(egen.leverandoer, egen.apiNoegle),
+    // Værn mod en gemt model, der siden er taget af listen. Bedre at skrive
+    // teksten med standardmodellen end at fejle på et navn, vi ikke kender.
+    model: sikkerModel(egen.leverandoer, egen.model),
+    betaler: "user",
+  };
 }
 
 /** Værn mod et modelnavn, der ikke står på vores kuraterede liste. */

@@ -52,8 +52,9 @@ Manglen er reel og alvorlig: uden BYOK stopper appen for enhver bruger efter
 den femte tekst. `vaelgNoegle` kaster `ManglerNoegle`, og der er ingen vej
 videre i appen.
 
-**Halvvejs, pr. 02.09.2026.** Nøglen kan gemmes, afprøves og slettes — men
-genereringen bruger den ikke endnu.
+**Virker, pr. 02.09.2026.** Nøglen kan gemmes, afprøves og slettes, og
+genereringen bruger den. Hullet efter den femte tekst er lukket. Tilbage
+står opsætnings-wizarden og ChatGPT-vejen.
 
 Færdigt:
 
@@ -66,15 +67,15 @@ Færdigt:
   lagring, dekryptering og kald til Anthropic. **Undtagen sletningen**, som
   ikke er kørt igennem på en rigtig nøgle endnu.
 
+- **`vaelgNoegle` henter og bruger nøglen.** Dekryptering KUN server-side i
+  genererings-øjeblikket; nøglen sendes aldrig til klienten igen, kun
+  `key_hint`. Forbruget logges med `paid_by = 'user'`, og budgetloftet
+  spørges ikke, når brugeren betaler selv. Rate limiten gælder begge veje.
+  Afprøvet 02.09.2026 med tom prøvekvote og en rigtig nøgle, på både
+  `/api/generate` og `/api/regenerate-section`.
+
 Mangler:
 
-- **`vaelgNoegle` skal hente og bruge nøglen.** Det er dét, der lukker hullet:
-  indtil da kan brugeren gemme en nøgle, som genereringen ikke rører. Alt
-  maskineriet er der — `hentNoegleTilBrug` i `lib/ainoegler.ts` gør allerede
-  arbejdet. Dekryptering KUN server-side i genererings-øjeblikket; nøglen
-  sendes aldrig til klienten igen, kun `key_hint`.
-- Forbruget skal logges med `paid_by = 'user'`, og budgetloftet må IKKE
-  gælde, når brugeren betaler selv. Loftet beskytter platformens nøgle.
 - Opsætnings-wizard på dansk: trinvis guide til at oprette en nøgle hos
   Anthropic hhv. OpenAI, med anbefaling om forbrugsloft hos leverandøren.
   Indstillingssiden linker i dag direkte til leverandørens konsol — det er

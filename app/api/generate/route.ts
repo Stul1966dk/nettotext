@@ -122,12 +122,19 @@ export async function POST(request: Request) {
 
   let valg;
   try {
-    valg = vaelgNoegle(harKvote);
+    valg = await vaelgNoegle(user.id, harKvote);
   } catch (fejl) {
     if (harKvote) await frigivProeveTekst(user.id);
 
     if (fejl instanceof ManglerNoegle) {
       return afvis("mangler_noegle", 402);
+    }
+
+    // Den gemte nøgle kunne ikke læses — typisk fordi ENCRYPTION_KEY er en
+    // anden end dengang, den blev gemt. Brugeren skal bede om at indsætte
+    // nøglen igen, ikke om at prøve igen om lidt.
+    if (fejl instanceof AiFejl) {
+      return afvis(fejl.aarsag, 400);
     }
 
     console.error("Nøglevalg mislykkedes:", fejl);
@@ -241,7 +248,8 @@ export async function POST(request: Request) {
 
             const ialt = Date.now() - begyndt;
             console.log(
-              `[generate] ${bid.model} · planlægning ${foersteOrd ?? ialt} ms ` +
+              `[generate] ${bid.model} · betalt af ${valg.betaler} ` +
+                `· planlægning ${foersteOrd ?? ialt} ms ` +
                 `· skrivning ${ialt - (foersteOrd ?? ialt)} ms · i alt ${ialt} ms ` +
                 `· ${bid.inputTokens} ind / ${bid.outputTokens} ud`,
             );
