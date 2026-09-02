@@ -59,7 +59,21 @@ export function briefSkema(felter: InputFelt[]) {
       regel = z.string().refine((v) => tilladte.includes(v));
     }
 
-    form[felt.navn] = felt.paakraevet ? regel.pipe(z.string().min(1)) : regel;
+    // Et valgfrit felt må MANGLE, ikke bare være tomt. Formularen sender kun
+    // felter med indhold, så et tomt valgfrit felt kommer slet ikke med.
+    //
+    // Fejlen blev fundet 02.09.2026 og var ældre end det: den var skjult, så
+    // længe de valgfrie felter var forudfyldt med et eksempel, for så var de
+    // aldrig tomme. Ryddede man dem, blev hele genereringen afvist med
+    // "der var noget i briefen, vi ikke kunne bruge". Punktet om at fjerne
+    // eksempelteksten står på tjeklisten — uden denne rettelse ville det
+    // punkt have gjort appen ubrugelig for enhver, der lod et felt stå tomt.
+    // `.default("")` frem for bare `.optional()`: så bliver et manglende
+    // felt til en tom streng, og resten af koden slipper for at skelne
+    // mellem "ikke udfyldt" og "findes ikke".
+    form[felt.navn] = felt.paakraevet
+      ? regel.pipe(z.string().min(1))
+      : regel.optional().default("");
   }
 
   // .strict() — et felt, skabelonen ikke kender, er en fejl, ikke noget vi

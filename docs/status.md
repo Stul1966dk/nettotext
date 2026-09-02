@@ -29,18 +29,22 @@ så beskriver det en fortid, nogen tror er nutid.
 
 ## Trin 5 — Personalisering
 
-Teksterne skal lyde som brugerens virksomhed, uden at hun skriver det samme i
-hver eneste brief.
+**Færdig 02.09.2026.** Teksterne lyder nu som brugerens virksomhed, uden at
+hun skriver det samme i hver eneste brief.
 
-- `brand_profiles`-tabel: firmabeskrivelse, tone, forbudte ord, sprogprøve.
-  Én pr. bruger i V1.
-- `instructions`-tabel: gemte instruktioner, der genbruges på tværs af tekster.
-- `/app/indstillinger` — siden findes nu, med AI-forbindelsen. Profil og
-  brand-profil skal ind som egne afsnit på den.
-- Brand-profil og instruktioner ind i prompten som TYDELIGT AFGRÆNSEDE blokke.
-  CLAUDE.md regel 5 gælder uændret: de supplerer systemets regler og kan ikke
-  omdefinere dem. Samme behandling som briefen og som ønsket til et afsnit.
+- `brand_profiles` og `instructions` med RLS (migration 0013).
+- Brand-profil og gemte instruktioner som egne afsnit i `/app/indstillinger`.
+- Begge dele ind i prompten som TYDELIGT AFGRÆNSEDE blokke, både ved
+  generering og ved omskrivning af ét afsnit. CLAUDE.md regel 5 gælder
+  uændret: de supplerer systemets regler og kan ikke omdefinere dem.
 - Frit instruktionsfelt på brief-siden til det, der kun gælder én tekst.
+  Følger kladden og gemmes ikke derudover.
+
+Afprøvet ende til ende 02.09.2026: brand-profilen, den gemte instruktion og
+det frie felt kunne alle tre genfindes i den skrevne tekst.
+
+**Mangler stadig på siden:** profil-afsnittet (mailadresse, "slet min konto").
+Sletningen står på lanceringstjeklisten.
 
 ---
 

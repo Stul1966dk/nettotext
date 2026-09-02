@@ -7,6 +7,7 @@ import { hentBudgetstatus, skrivForbrug } from "@/lib/budget";
 import { harProeveKvote } from "@/lib/kvote";
 import { tagPladsIKoeen } from "@/lib/ratelimit";
 import { hentSkabelon } from "@/lib/skabeloner/hent";
+import { hentTilpasning } from "@/lib/personalisering";
 import { briefSkema } from "@/lib/skabeloner/typer";
 import { sanerHtml } from "@/lib/tekst/saner";
 import { udtraekMeta } from "@/lib/tekst/meta";
@@ -140,12 +141,17 @@ export async function POST(request: Request) {
     }
   }
 
+  // Samme personalisering som ved den oprindelige tekst. Ellers ville det
+  // omskrevne afsnit falde ud af tonen i resten.
+  const tilpasning = await hentTilpasning();
+
   const brugerbesked = byggOmskrivBesked(
     skabelon.input_fields,
     brief.data,
     blokke,
     indeks + 1,
     anmodning.data.instruktion ?? "",
+    tilpasning,
   );
 
   // --- Selve omskrivningen -------------------------------------------------

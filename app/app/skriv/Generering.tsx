@@ -251,6 +251,7 @@ export function Generering({
             skabelon: kladde.skabelon,
             indhold: {
               brief: kladde.brief,
+              instruktion: kladde.instruktion,
               html: kladde.html,
               blokke: kladde.blokke,
               titel: kladde.titel,
@@ -324,6 +325,7 @@ export function Generering({
           body: JSON.stringify({
             skabelon: kladde.skabelon,
             brief: kladde.brief,
+            instruktion: kladde.instruktion,
           }),
         });
 

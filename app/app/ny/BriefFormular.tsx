@@ -11,6 +11,9 @@ type Tekster = {
   valgfrit: string;
   knap: string;
   manglerFelter: string;
+  instruktion: string;
+  instruktionHjaelp: string;
+  instruktionPladsholder: string;
 };
 
 const feltKlasse =
@@ -45,8 +48,13 @@ export function BriefFormular({
       if (vaerdi) brief[felt.navn] = vaerdi;
     }
 
+    // Det frie ønske står UDEN FOR briefen: briefens felter kommer fra
+    // skabelonen og valideres mod den, og ønsket hører ikke til nogen
+    // teksttype. Se briefSkema i lib/skabeloner/typer.ts.
+    const instruktion = String(data.get("__instruktion") ?? "").trim();
+
     // Briefen rejser gennem browseren, ikke gennem databasen. Se kladde.ts.
-    gemKladde(nyKladde(skabelon, brief));
+    gemKladde(nyKladde(skabelon, brief, instruktion));
     router.push("/app/skriv");
   }
 
@@ -118,6 +126,40 @@ export function BriefFormular({
           )}
         </div>
       ))}
+
+      {/* Uden for løkken, fordi feltet ikke kommer fra skabelonen. Navnet
+          har to underscores foran, så det aldrig kan kollidere med et felt,
+          en teksttype selv har fundet på. */}
+      <div className="space-y-2">
+        <div className="flex items-baseline justify-between gap-4">
+          <label
+            htmlFor="__instruktion"
+            className="block text-sm font-medium text-gran"
+          >
+            {tekster.instruktion}
+          </label>
+          <span className="shrink-0 font-mono text-[0.65rem] uppercase tracking-widest text-gran-let">
+            {tekster.valgfrit}
+          </span>
+        </div>
+
+        <textarea
+          id="__instruktion"
+          name="__instruktion"
+          rows={3}
+          maxLength={1000}
+          placeholder={tekster.instruktionPladsholder}
+          aria-describedby="__instruktion-hjaelp"
+          className={`${feltKlasse} resize-y`}
+        />
+
+        <p
+          id="__instruktion-hjaelp"
+          className="text-sm leading-relaxed text-gran-let"
+        >
+          {tekster.instruktionHjaelp}
+        </p>
+      </div>
 
       {fejl && (
         <p

@@ -4,6 +4,7 @@ import { byggBrugerbesked } from "@/lib/ai/prompt";
 import { ManglerNoegle, vaelgNoegle, AiFejl } from "@/lib/ai";
 import { hentBudgetstatus, skrivForbrug } from "@/lib/budget";
 import { frigivProeveTekst, reserverProeveTekst } from "@/lib/kvote";
+import { hentTilpasning } from "@/lib/personalisering";
 import { hentSkabelon } from "@/lib/skabeloner/hent";
 import { afvis, ndjsonLinje, NDJSON_HEADERS } from "@/lib/api/ndjson";
 import { tagPladsIKoeen } from "@/lib/ratelimit";
@@ -37,6 +38,11 @@ export const maxDuration = 60;
 const anmodningSkema = z.object({
   skabelon: z.string().min(1).max(64),
   brief: z.record(z.string(), z.string()),
+  /**
+   * Det, der kun gælder DENNE ene tekst. Skrives på brief-siden og gemmes
+   * ikke: gemte ønsker hører til i instruktionerne i indstillinger.
+   */
+  instruktion: z.string().max(1000).optional(),
 });
 
 /**
@@ -170,7 +176,16 @@ export async function POST(request: Request) {
     }
   }
 
-  const brugerbesked = byggBrugerbesked(skabelon.input_fields, brief.data);
+  // Brand-profil og gemte instruktioner. Fejler opslaget, skrives teksten
+  // uden dem frem for slet ikke — se lib/personalisering.ts.
+  const tilpasning = await hentTilpasning();
+
+  const brugerbesked = byggBrugerbesked(
+    skabelon.input_fields,
+    brief.data,
+    tilpasning,
+    anmodning.data.instruktion ?? "",
+  );
 
   // --- Selve genereringen --------------------------------------------------
   const stream = new ReadableStream({

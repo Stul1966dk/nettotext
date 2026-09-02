@@ -65,6 +65,9 @@ export default async function NyTekstSide() {
           valgfrit: t("valgfrit"),
           knap: t("knap"),
           manglerFelter: t("manglerFelter"),
+          instruktion: t("instruktion"),
+          instruktionHjaelp: t("instruktionHjaelp"),
+          instruktionPladsholder: t("instruktionPladsholder"),
         }}
       />
     </div>

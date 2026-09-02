@@ -53,6 +53,7 @@ export default async function SkrivSide({
         id: gemt.id,
         skabelon: gemt.skabelon,
         brief: gemt.indhold.brief,
+        instruktion: gemt.indhold.instruktion ?? "",
         // Den rå strøm gemmes ikke på serveren. Den er kun interessant,
         // mens teksten bliver skrevet, og teksten er skrevet.
         tekst: "",

@@ -35,6 +35,12 @@ export type Kladde = {
   id: string;
   skabelon: string;
   brief: Brief;
+  /**
+   * Det frie ønske fra brief-siden, der kun gælder DENNE tekst.
+   * Følger med kladden, så en genskrivning efter et genindlæs bruger det
+   * samme — og forsvinder med kladden efter 48 timer.
+   */
+  instruktion: string;
   /** Den rå tekst, som den kom fra modellen. Vises kun som tekst. */
   tekst: string;
   /** Den sanerede HTML fra serveren. Kun DEN må vises som HTML. */
@@ -53,11 +59,16 @@ export type Kladde = {
 };
 
 /** En ny, tom kladde med sit eget id. */
-export function nyKladde(skabelon: string, brief: Brief): Kladde {
+export function nyKladde(
+  skabelon: string,
+  brief: Brief,
+  instruktion = "",
+): Kladde {
   return {
     id: crypto.randomUUID(),
     skabelon,
     brief,
+    instruktion,
     tekst: "",
     html: "",
     blokke: [],
@@ -101,6 +112,7 @@ export function hentKladde(): Kladde | null {
     return {
       ...kladde,
       id: kladde.id ?? crypto.randomUUID(),
+      instruktion: kladde.instruktion ?? "",
       blokke: Array.isArray(kladde.blokke) ? kladde.blokke : [],
       titel: kladde.titel ?? "",
       beskrivelse: kladde.beskrivelse ?? "",
