@@ -4,6 +4,11 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { gemKladde, nyKladde } from "@/lib/skabeloner/kladde";
+import {
+  STANDARD_STILTONE,
+  STILTONER,
+  stiltoneSkema,
+} from "@/lib/skabeloner/stiltone";
 import type { Brief, InputFelt } from "@/lib/skabeloner/typer";
 
 type Tekster = {
@@ -14,6 +19,10 @@ type Tekster = {
   instruktion: string;
   instruktionHjaelp: string;
   instruktionPladsholder: string;
+  stiltone: string;
+  stiltoneHjaelp: string;
+  /** Én label pr. værdi i STILTONER. */
+  stiltoneValg: Record<string, string>;
 };
 
 const feltKlasse =
@@ -53,8 +62,12 @@ export function BriefFormular({
     // teksttype. Se briefSkema i lib/skabeloner/typer.ts.
     const instruktion = String(data.get("__instruktion") ?? "").trim();
 
+    // Samme sted som ønsket, og af samme grund: stiltonen hører ikke til
+    // nogen bestemt teksttype. Den gælder dem alle, også dem der kommer.
+    const stiltone = stiltoneSkema.parse(data.get("__stiltone"));
+
     // Briefen rejser gennem browseren, ikke gennem databasen. Se kladde.ts.
-    gemKladde(nyKladde(skabelon, brief, instruktion));
+    gemKladde(nyKladde(skabelon, brief, instruktion, stiltone));
     router.push("/app/skriv");
   }
 
@@ -126,6 +139,39 @@ export function BriefFormular({
           )}
         </div>
       ))}
+
+      {/* Stiltonen står uden for løkken, fordi den gælder ALLE teksttyper,
+          også dem der ikke er skrevet endnu. Stod den i skabelonernes
+          input_fields, skulle hver ny migrationsfil gentage den. */}
+      <div className="space-y-2">
+        <label
+          htmlFor="__stiltone"
+          className="block text-sm font-medium text-gran"
+        >
+          {tekster.stiltone}
+        </label>
+
+        <select
+          id="__stiltone"
+          name="__stiltone"
+          defaultValue={STANDARD_STILTONE}
+          aria-describedby="__stiltone-hjaelp"
+          className={feltKlasse}
+        >
+          {STILTONER.map((vaerdi) => (
+            <option key={vaerdi} value={vaerdi}>
+              {tekster.stiltoneValg[vaerdi]}
+            </option>
+          ))}
+        </select>
+
+        <p
+          id="__stiltone-hjaelp"
+          className="text-sm leading-relaxed text-gran-let"
+        >
+          {tekster.stiltoneHjaelp}
+        </p>
+      </div>
 
       {/* Uden for løkken, fordi feltet ikke kommer fra skabelonen. Navnet
           har to underscores foran, så det aldrig kan kollidere med et felt,

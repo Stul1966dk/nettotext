@@ -1,13 +1,18 @@
 import { z } from "zod";
 
 import { ManglerNoegle, vaelgNoegle, AiFejl } from "@/lib/ai";
-import { byggOmskrivBesked, OMSKRIV_TILLAEG } from "@/lib/ai/prompt";
+import {
+  byggOmskrivBesked,
+  OMSKRIV_TILLAEG,
+  stiltoneTillaeg,
+} from "@/lib/ai/prompt";
 import { afvis, ndjsonLinje, NDJSON_HEADERS } from "@/lib/api/ndjson";
 import { hentBudgetstatus, skrivForbrug } from "@/lib/budget";
 import { harProeveKvote } from "@/lib/kvote";
 import { tagPladsIKoeen } from "@/lib/ratelimit";
 import { hentSkabelon } from "@/lib/skabeloner/hent";
 import { hentTilpasning } from "@/lib/personalisering";
+import { stiltoneSkema } from "@/lib/skabeloner/stiltone";
 import { briefSkema } from "@/lib/skabeloner/typer";
 import { sanerHtml } from "@/lib/tekst/saner";
 import { udtraekMeta } from "@/lib/tekst/meta";
@@ -51,6 +56,8 @@ const anmodningSkema = z.object({
   // ikke være længere, og jo kortere feltet er, jo mindre er der at gemme
   // et forsøg på at overtage prompten i.
   instruktion: z.string().max(500).optional(),
+  /** Samme stiltone som resten af teksten. Følger kladden. */
+  stiltone: stiltoneSkema,
 });
 
 export async function POST(request: Request) {
@@ -193,7 +200,9 @@ export async function POST(request: Request) {
         const bidder = valg.adapter.generateStream({
           // Systemprompten plus vores eget tillæg. Se OMSKRIV_TILLAEG:
           // det er systemets instruktion, ikke brugerens.
-          system: `${skabelon.system_prompt}\n\n${OMSKRIV_TILLAEG}`,
+          system: `${skabelon.system_prompt}\n\n${stiltoneTillaeg(
+            anmodning.data.stiltone,
+          )}\n\n${OMSKRIV_TILLAEG}`,
           bruger: brugerbesked,
           model: valg.model,
           // Ét afsnit, ikke en hel artikel.

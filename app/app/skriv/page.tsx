@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 
 import { hentKladdeVedId } from "@/lib/kladder";
 import type { Kladde } from "@/lib/skabeloner/kladde";
+import { STANDARD_STILTONE } from "@/lib/skabeloner/stiltone";
 
 import { Generering } from "./Generering";
 
@@ -54,6 +55,9 @@ export default async function SkrivSide({
         skabelon: gemt.skabelon,
         brief: gemt.indhold.brief,
         instruktion: gemt.indhold.instruktion ?? "",
+        // Kladder fra før stiltonen fandtes har den ikke. Så bruges
+        // standarden, ikke en fejl: teksten er allerede skrevet.
+        stiltone: gemt.indhold.stiltone ?? STANDARD_STILTONE,
         // Den rå strøm gemmes ikke på serveren. Den er kun interessant,
         // mens teksten bliver skrevet, og teksten er skrevet.
         tekst: "",

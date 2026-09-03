@@ -252,6 +252,7 @@ export function Generering({
             indhold: {
               brief: kladde.brief,
               instruktion: kladde.instruktion,
+              stiltone: kladde.stiltone,
               html: kladde.html,
               blokke: kladde.blokke,
               titel: kladde.titel,
@@ -326,6 +327,7 @@ export function Generering({
             skabelon: kladde.skabelon,
             brief: kladde.brief,
             instruktion: kladde.instruktion,
+            stiltone: kladde.stiltone,
           }),
         });
 
@@ -423,6 +425,7 @@ export function Generering({
             blokke: kladde.blokke,
             blokId,
             instruktion,
+            stiltone: kladde.stiltone,
           }),
         });
 

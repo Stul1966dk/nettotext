@@ -160,10 +160,18 @@ krævede vi-form, hvilket er forkert for en enkeltmandsvirksomhed.
 151 tegn, hvor prompten beder om 140 til 160. Ikke en fejl, men et mønster,
 der kan rettes med en linje i prompterne, hvis det bliver ved.
 
-Landingssiden er den sidste, og den har en beslutning i sig: hele
-systemprompten bygger på "intet salgssprog uden dækning", og en landingsside
-skal netop overbevise nogen om at gøre noget. Prompten skal skrives med den
-modsætning for øje.
+**Stiltone (03.09.2026).** Brugeren vælger nu i briefen, hvordan teksten skal
+lyde: nøgtern, imødekommende eller sælgende. Valget ligger i KODEN og ikke i
+skabelonerne, fordi der kommer mange flere teksttyper: feltet tegnes af
+formularen selv, og reglerne er et systemtillæg i `lib/ai/prompt.ts`. Hver ny
+teksttype arver det uden en linje i sin migrationsfil. Se `beslutninger.md`,
+også for det, afprøvningen viste om, hvor godt "sælgende" holder sig inden
+for briefen.
+
+Landingssiden er den sidste teksttype. Stiltonen tager en del af den
+beslutning, der før lå i den: en landingsside skrives med "sælgende" valgt,
+og prompten skal så kun tage sig af strukturen (én ting, der sælges, og en
+tydelig opfordring), ikke af hvor meget den må sælge.
 
 - **Den sidste teksttype:** landingssiden. Det er DATA, ikke kode
   — en migrationsfil med en systemprompt og nogle felter, ligesom de tre

@@ -81,6 +81,13 @@ export default async function NyTekstSide({ params }: Props) {
           instruktion: t("instruktion"),
           instruktionHjaelp: t("instruktionHjaelp"),
           instruktionPladsholder: t("instruktionPladsholder"),
+          stiltone: t("stiltone"),
+          stiltoneHjaelp: t("stiltoneHjaelp"),
+          stiltoneValg: {
+            noegtern: t("stiltoneNoegtern"),
+            imoedekommende: t("stiltoneImoedekommende"),
+            saelgende: t("stiltoneSaelgende"),
+          },
         }}
       />
     </div>

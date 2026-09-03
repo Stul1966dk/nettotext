@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { byggBrugerbesked } from "@/lib/ai/prompt";
+import { byggBrugerbesked, stiltoneTillaeg } from "@/lib/ai/prompt";
 import { ManglerNoegle, vaelgNoegle, AiFejl } from "@/lib/ai";
 import { hentBudgetstatus, skrivForbrug } from "@/lib/budget";
 import { frigivProeveTekst, reserverProeveTekst } from "@/lib/kvote";
@@ -11,6 +11,7 @@ import { tagPladsIKoeen } from "@/lib/ratelimit";
 import { delIBlokke, type Blok } from "@/lib/tekst/blokke";
 import { META_LOFT, udtraekMeta } from "@/lib/tekst/meta";
 import { sanerHtml } from "@/lib/tekst/saner";
+import { stiltoneSkema } from "@/lib/skabeloner/stiltone";
 import { briefSkema } from "@/lib/skabeloner/typer";
 import { createClient } from "@/lib/supabase/server";
 
@@ -43,6 +44,8 @@ const anmodningSkema = z.object({
    * ikke: gemte ønsker hører til i instruktionerne i indstillinger.
    */
   instruktion: z.string().max(1000).optional(),
+  /** Hvordan teksten skal lyde. Reglerne står i lib/ai/prompt.ts. */
+  stiltone: stiltoneSkema,
 });
 
 /**
@@ -227,7 +230,12 @@ export async function POST(request: Request) {
 
       try {
         const bidder = valg.adapter.generateStream({
-          system: skabelon.system_prompt,
+          // Skabelonens systemprompt plus stiltonen. Tillægget er VORES
+          // regler for, hvad brugerens valg betyder, og hører derfor til på
+          // systemets side af skellet i CLAUDE.md regel 5.
+          system: `${skabelon.system_prompt}\n\n${stiltoneTillaeg(
+            anmodning.data.stiltone,
+          )}`,
           bruger: brugerbesked,
           model: valg.model,
           maxTokens: 16000,

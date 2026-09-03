@@ -2,6 +2,7 @@ import "server-only";
 
 import { z } from "zod";
 
+import { stiltoneSkema } from "@/lib/skabeloner/stiltone";
 import { createClient } from "@/lib/supabase/server";
 
 /**
@@ -37,6 +38,8 @@ export const indholdSkema = z.object({
   brief: z.record(z.string(), z.string().max(2000)),
   /** Valgfri: kladder fra før trin 5 har den ikke. */
   instruktion: z.string().max(1000).optional(),
+  /** Valgfri: kladder fra før stiltonen fandtes har den ikke. */
+  stiltone: stiltoneSkema.optional(),
   html: z.string().max(200_000),
   blokke: z.array(blokSkema).max(40),
   titel: z.string().max(300),

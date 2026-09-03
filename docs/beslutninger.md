@@ -34,6 +34,48 @@ trin 8.
 
 ---
 
+## 2026-09-03 — Stiltone: brugeren vælger, hvordan teksten skal lyde
+
+**Tre faste valg på tværs af alle teksttyper:** nøgtern, imødekommende
+(standard) og sælgende. Ejerens valg, med den begrundelse at brugeren skal
+kunne genkende det samme valg, uanset hvad hun skriver, frem for at skulle
+sætte sig ind i en ny liste for hver teksttype.
+
+**Valget bor i KODEN, ikke i skabelonerne.** Det er den vigtigste beslutning
+her, og den blev truffet, fordi ejeren gjorde det klart, at der kommer mange
+flere teksttyper. Feltet tegnes af formularen selv (som det frie ønske), og
+reglerne ligger som systemtillæg i `lib/ai/prompt.ts` (som OMSKRIV_TILLAEG).
+**Derfor arver hver fremtidig teksttype stiltonen gratis**, uden en linje i
+sin migrationsfil, og en rettelse af reglerne sker ét sted. Havde den ligget i
+`input_fields`, skulle hver ny migration gentage den, og en rettelse skulle
+laves lige så mange steder, som der er teksttyper.
+
+**Det trækker en grænse, der er værd at kende:** en teksttypes EGNE regler er
+data i databasen; det, der gælder ALLE teksttyper, er kode. Sprogreglerne
+ligger i dag i den forkerte af de to kasser (kopieret ind i hver prompt), og
+bliver antallet af teksttyper stort, er det dem, der skal flyttes næste gang.
+
+**Stiltonen er systemets regler, ikke brugerens ord.**
+Brugeren vælger en værdi; hvad værdien BETYDER, bestemmer vi. Derfor ligger
+tillægget efter systemprompten og ikke i den blok, hvor brugerens eget indhold
+står (CLAUDE.md regel 5). Ellers ville "sælgende" i praksis være et felt, hvor
+brugeren kunne skrive sine egne regler for teksten.
+
+**Målt, ikke antaget: "sælgende" trak belægget med sig.**
+Første afprøvning med samme brief og to forskellige stiltoner viste den
+ønskede forskel (den sælgende sluttede med "læg den i kurven", den nøgterne
+med "kontakt os"), men den sælgende tilføjede også tre påstande, briefen ikke
+dækkede. En fælles regel mod at tilføje egenskaber og anbefalinger fjernede de
+groveste. **Et par bløde blev stående** ("enkel at bruge", "friskere smag"),
+og begge udgaver fandt på et råd om, hvordan varen bruges.
+**Konklusionen er ikke, at prompten skal skrives om igen.** Den er, at en
+systemprompt kan gøre den slags sjældnere, ikke umulig, og at
+gennemlæsningen før godkendelse er en del af produktet og ikke en formalitet.
+Hjælpeteksten under valget er formuleret derefter: den lover ikke, at en
+sælgende tekst ikke kan love for meget, den beder brugeren læse efter.
+
+---
+
 ## 2026-09-03 — Brandteksten må sige "jeg"
 
 **Vi-formen var en fejl i migration 0015, rettet i 0016.**

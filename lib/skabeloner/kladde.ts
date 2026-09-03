@@ -1,5 +1,6 @@
 import type { Blok } from "@/lib/tekst/blokke";
 
+import { STANDARD_STILTONE, type Stiltone } from "./stiltone";
 import type { Brief } from "./typer";
 
 /**
@@ -41,6 +42,11 @@ export type Kladde = {
    * samme — og forsvinder med kladden efter 48 timer.
    */
   instruktion: string;
+  /**
+   * Hvordan teksten skal lyde. Følger kladden, så en omskrivning af ét afsnit
+   * får samme tone som resten af teksten.
+   */
+  stiltone: Stiltone;
   /** Den rå tekst, som den kom fra modellen. Vises kun som tekst. */
   tekst: string;
   /** Den sanerede HTML fra serveren. Kun DEN må vises som HTML. */
@@ -63,12 +69,14 @@ export function nyKladde(
   skabelon: string,
   brief: Brief,
   instruktion = "",
+  stiltone: Stiltone = STANDARD_STILTONE,
 ): Kladde {
   return {
     id: crypto.randomUUID(),
     skabelon,
     brief,
     instruktion,
+    stiltone,
     tekst: "",
     html: "",
     blokke: [],
@@ -113,6 +121,7 @@ export function hentKladde(): Kladde | null {
       ...kladde,
       id: kladde.id ?? crypto.randomUUID(),
       instruktion: kladde.instruktion ?? "",
+      stiltone: kladde.stiltone ?? STANDARD_STILTONE,
       blokke: Array.isArray(kladde.blokke) ? kladde.blokke : [],
       titel: kladde.titel ?? "",
       beskrivelse: kladde.beskrivelse ?? "",
