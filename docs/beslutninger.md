@@ -34,6 +34,32 @@ trin 8.
 
 ---
 
+## 2026-09-03 — Brandteksten må sige "jeg"
+
+**Vi-formen var en fejl i migration 0015, rettet i 0016.**
+Prompten krævede vi-form. Målgruppen er mindre erhvervsdrivende, og mange af
+dem er én person; "vi" om en enkeltmandsvirksomhed lyder som en, der gerne vil
+virke større, end hun er. Reglen siger nu, at teksten skal stå i samme person
+som brugeren selv skriver i, med "vi" som reserve, hvis det ikke kan afgøres.
+Fundet under afprøvningen med en rigtig brand-profil, hvor modellen selv
+valgte "jeg" og altså gjorde det rigtige ved at overhøre reglen. Det er ikke
+noget at bygge videre på.
+
+**Rettelsen bruger `replace` på systemprompten, ikke en ny fuld prompt.**
+Tre linjer ændrer sig, og en hel prompt kopieret ind igen ville skjule, hvad
+der faktisk blev rettet. Prisen er, at en `replace`, der ikke rammer, ikke
+siger noget: derfor står der et `raise exception` bagefter, som får
+migrationen til at fejle højlydt, hvis teksten ikke blev fundet.
+
+**Sprogprøvens tone taber til husets regler, og det er med vilje.**
+Ejerens egen sprogprøve er sælgende ("booste din forretning"). Intet af det
+slap ind i teksten. Systemets forbud mod salgssprog uden dækning vinder over
+sprogprøvens tonefald. Det er den rigtige rangorden, men det er også en
+begrænsning, brugeren skal kende: sprogprøven kan flytte tonen et stykke, ikke
+hele vejen.
+
+---
+
 ## 2026-09-03 — Brandteksten: brand-profilen skifter rolle
 
 **Brand-profilen er en KILDE i brandteksten, ikke kun et tonefald.**

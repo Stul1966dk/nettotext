@@ -150,8 +150,15 @@ færdige" som et opdigtet eksempel, og briefen nævnte kun mindsteoplaget på 50
 Det er ikke en påstand om virksomheden, men det er et tal, reglen om belæg
 siger nej til. Hold øje med, om det gentager sig, før prompten strammes.
 
-**Ikke afprøvet endnu:** samspillet med en UDFYLDT brand-profil, som er den
-egentlige nyskabelse i denne teksttype. Ejerkontoens profil står tom.
+Samspillet med en udfyldt brand-profil er afprøvet 03.09.2026 med en bevidst
+tynd brief: oplysninger, der KUN stod i profilen, kom med i teksten, og hvor
+briefen sagde noget andet, vandt briefen. Sprogprøven blev ikke skrevet af.
+Afprøvningen fandt én fejl i prompten, rettet i migration 0016: brandteksten
+krævede vi-form, hvilket er forkert for en enkeltmandsvirksomhed.
+
+**Meta-beskrivelsen lander ofte lige under målet.** Tre målinger: 133, 137 og
+151 tegn, hvor prompten beder om 140 til 160. Ikke en fejl, men et mønster,
+der kan rettes med en linje i prompterne, hvis det bliver ved.
 
 Landingssiden er den sidste, og den har en beslutning i sig: hele
 systemprompten bygger på "intet salgssprog uden dækning", og en landingsside
