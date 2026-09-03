@@ -34,6 +34,60 @@ trin 8.
 
 ---
 
+## 2026-09-03 — Adminside: ejeren kan selv oprette teksttyper
+
+**Hvorfor nu:** arkitekturen har hele tiden sagt, at teksttyper er data, men
+data kunne kun skrives som SQL. Ejeren kunne altså ikke lave en teksttype
+uden en udvikler. Det er dét, der skal være muligt, hvis branchepakker skal
+give mening.
+
+**Prisen: prompterne forlader git, og det er en reel forringelse.**
+Migration 0004, 0006, 0010 og 0016 er tilsammen en skreven historie om,
+HVORFOR sprogreglerne ser ud, som de gør. Redigeres prompten i en formular,
+findes den historie ikke længere. `template_versions` er det billigste, der
+virker: før hver gemning lægges den nuværende udgave ned med tidspunkt og
+mailadresse. Det fanger HVAD der blev ændret, ikke HVORFOR. Beslutningen er
+truffet med åbne øjne: friheden til at rette en prompt uden en udvikler er
+mere værd end en begrundelse, der alligevel kun blev skrevet, når en
+udvikler var involveret.
+
+**Adgangen tjekkes to steder, og det er ikke dobbeltarbejde.**
+Layoutet under `/app/admin` beskytter SIDERNE. Server action'en tjekker igen,
+fordi et layout ikke beskytter en HANDLING: en server action kan kaldes
+direkte af enhver, der kender dens navn, og så er layoutet aldrig kørt.
+Rækkefølgen er hver gang: slå fast at det er adminen, hent eller skriv data
+bagefter (sikkerhedsreglernes punkt 6).
+
+**`notFound()` frem for en fejlbesked.** En almindelig bruger, der gætter på
+adressen, skal ikke få at vide, at der findes en adminside, hun ikke må se.
+
+**`template_versions` har RLS uden en eneste policy.** Tabellen er dermed
+lukket for alle, også for adminkontoens egen forbindelse. Den læses og
+skrives kun af serverkode med service_role. Her ligger hele grundlaget for,
+hvad modellen gør, og der er ingen grund til, at en browser nogensinde skal
+kunne røre det.
+
+**Feltbyggeren udleder det tekniske navn af spørgsmålet.**
+Brugeren skriver "Hvad skal siden sælge?" og får `hvad_skal_siden_saelge`.
+To undtagelser, begge med vilje: et felt, der ALLEREDE er gemt, beholder sit
+navn, når man omdøber spørgsmålet, fordi navnet er nøglen i gemte kladder.
+Og felter, der kopieres ind i en NY teksttype, regnes som nye, så en
+landingsside ikke ender med et felt, der hedder `produkt`.
+
+**Adressen kan ikke ændres efter oprettelsen.** Kladder og gemte tekster
+peger på den. En "omdøb"-funktion ville betyde, at et arbejde, brugeren ikke
+er færdig med, forsvandt under hænderne på hende.
+
+**Kladde og synlig.** En ny teksttype er usynlig for brugerne, indtil
+fluebenet sættes. Læse-policyen på `templates` viser i forvejen kun aktive
+rækker, så det virker af sig selv, uden en ny regel i databasen.
+
+**Prøven blev bestået af det, der blev bygget bagefter:** landingssiden er
+oprettet gennem adminsiden uden en linje SQL, gemt som kladde, afprøvet, og
+først derefter gjort synlig. Historikken har dens kladde-udgave.
+
+---
+
 ## 2026-09-03 — Stiltone: brugeren vælger, hvordan teksten skal lyde
 
 **Tre faste valg på tværs af alle teksttyper:** nøgtern, imødekommende

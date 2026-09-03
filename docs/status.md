@@ -121,7 +121,7 @@ allerede i `usage_log`. Der mangler tommel op/ned i editoren og ruten
 | Blogindlæg | færdig (trin 2) |
 | Produkttekst | færdig 03.09.2026 (migration 0014) |
 | Brandtekst | færdig 03.09.2026 (migration 0015) |
-| Landingsside | **mangler** |
+| Landingsside | færdig 03.09.2026, oprettet gennem adminsiden |
 
 Produktteksten kostede én kodeændring: `/app/ny` havde teksttypen skrevet ind
 i koden og henter den nu fra adressen, så `/app/ny` er blevet et valg mellem
@@ -168,10 +168,15 @@ teksttype arver det uden en linje i sin migrationsfil. Se `beslutninger.md`,
 også for det, afprøvningen viste om, hvor godt "sælgende" holder sig inden
 for briefen.
 
-Landingssiden er den sidste teksttype. Stiltonen tager en del af den
-beslutning, der før lå i den: en landingsside skrives med "sælgende" valgt,
-og prompten skal så kun tage sig af strukturen (én ting, der sælges, og en
-tydelig opfordring), ikke af hvor meget den må sælge.
+Landingssiden blev den første teksttype uden en migrationsfil. Den er lavet
+gennem adminsiden: felterne kopieret fra produktteksten og rettet til,
+prompten skrevet i formularen, gemt som kladde, afprøvet, og først derefter
+gjort synlig for brugerne. Stiltonen tog en del af beslutningen på forhånd:
+siden skrives med "sælgende" valgt, så prompten kun skal tage sig af
+strukturen.
+
+**Dermed er alle fire teksttyper fra trin 7 færdige.** Tilbage i trinnet:
+idégenerering og kildemateriale.
 
 - **Den sidste teksttype:** landingssiden. Det er DATA, ikke kode
   — en migrationsfil med en systemprompt og nogle felter, ligesom de tre
@@ -292,6 +297,13 @@ i dag, med de fire teksttyper fra trin 7.
 
 Besluttet 30.08.2026. Ejeren har brug for ét sted at se, hvordan det går —
 uden at åbne Supabase og skrive SQL.
+
+**Påbegyndt 03.09.2026 med teksttyperne.** `/app/admin/teksttyper` kan
+oprette og rette teksttyper: navn, beskrivelse, systemprompt og felterne i
+briefen, med kladde-tilstand og historik over tidligere udgaver
+(`template_versions`, migration 0017). Adgangen ligger i et layout under
+`/app/admin` og kræver `ADMIN_EMAIL`. **Tallene nedenfor mangler stadig** —
+det er den anden halvdel af siden.
 
 **Adressen på adminkontoen står IKKE i repoet.** Den ligger i miljøvariablen
 `ADMIN_EMAIL`, både i `.env.local` og hos Vercel. Begrundelsen er den samme
