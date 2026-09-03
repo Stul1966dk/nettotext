@@ -18,6 +18,26 @@ import { createClient } from "@/lib/supabase/server";
  * betyde, at data blev hentet uden om RLS for en, der måske ikke måtte se dem
  * (sikkerhedsreglernes punkt 6).
  */
+
+/**
+ * Er DENNE mailadresse adminens?
+ *
+ * Findes ved siden af `hentAdmin`, fordi /app-layoutet allerede HAR slået
+ * brugeren op og ikke skal gøre det en gang til, bare for at afgøre om et
+ * link skal vises. Adressen skal komme fra `auth.getUser()`, aldrig fra
+ * noget browseren har sendt.
+ *
+ * Brug den kun til at vise eller skjule. Skal adgang afgøres, er det
+ * `hentAdmin()`, der gælder: den slår selv brugeren op og stoler ikke på,
+ * at kalderen har gjort det rigtigt.
+ */
+export function erAdmin(email: string | undefined): boolean {
+  const tilladt = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+  if (!tilladt) return false;
+
+  return email?.trim().toLowerCase() === tilladt;
+}
+
 export async function hentAdmin(): Promise<{ id: string; email: string } | null> {
   const tilladt = process.env.ADMIN_EMAIL?.trim().toLowerCase();
 

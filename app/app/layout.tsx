@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
+import { erAdmin } from "@/lib/admin";
 import { createClient } from "@/lib/supabase/server";
 import { logUd } from "./actions";
 
@@ -24,6 +25,12 @@ export default async function AppLayout({
     redirect("/log-ind");
   }
 
+  // Kun adminkontoen ser linket. Brugeren er allerede slået op ovenfor, så
+  // adressen genbruges frem for at spørge Supabase en gang til. Selve
+  // adgangen afgøres i /app/admin-layoutet og ikke her: et skjult link er en
+  // oprydning, ikke en spærring.
+  const visAdminlink = erAdmin(user.email);
+
   const t = await getTranslations("app");
 
   return (
@@ -36,6 +43,15 @@ export default async function AppLayout({
 
           <div className="flex items-center gap-4">
             <span className="truncate text-sm text-gran-let">{user.email}</span>
+            {visAdminlink && (
+              <Link
+                href="/app/admin"
+                className="rounded-lg px-2 py-1.5 text-sm text-gran underline underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-gran"
+              >
+                {t("administration")}
+              </Link>
+            )}
+
             <Link
               href="/app/indstillinger"
               className="rounded-lg px-2 py-1.5 text-sm text-gran underline underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-gran"

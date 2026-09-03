@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
-import { hentAdmin } from "@/lib/admin";
 import { LEVERANDOER_NAVN } from "@/lib/ai/modeller";
 import { hentNoegleInfo } from "@/lib/ainoegler";
 import { hentKladder, kladdeNavn, timerTilbage } from "@/lib/kladder";
@@ -33,10 +32,6 @@ export default async function Dashboard() {
   // kunne sige det ærligt, når prøveteksterne er brugt: enten skriver hun på
   // sin egen regning nu, eller også mangler hun at sætte nøglen op.
   const noegle = tilbage === 0 ? await hentNoegleInfo() : null;
-
-  // Kun adminkontoen ser linket. Selve adgangen afgøres i /app/admin-layoutet
-  // og ikke her: et skjult link er ikke en spærring, kun en oprydning.
-  const admin = await hentAdmin();
 
   // Udløbne kladder er allerede filtreret fra af RLS. Se migration 0011.
   const kladder = (await hentKladder()).map((kladde) => ({
@@ -112,23 +107,12 @@ export default async function Dashboard() {
         />
       </section>
 
-      <div className="flex flex-wrap items-center gap-4">
-        <Link
-          href="/app/ny"
-          className="inline-block rounded-lg bg-gran px-6 py-3 font-medium text-bund outline-none focus-visible:ring-2 focus-visible:ring-gran focus-visible:ring-offset-2 focus-visible:ring-offset-bund"
-        >
-          {t("nyTekst")}
-        </Link>
-
-        {admin && (
-          <Link
-            href="/app/admin"
-            className="text-sm text-gran-let underline outline-none focus-visible:ring-2 focus-visible:ring-gran"
-          >
-            {t("administration")}
-          </Link>
-        )}
-      </div>
+      <Link
+        href="/app/ny"
+        className="inline-block rounded-lg bg-gran px-6 py-3 font-medium text-bund outline-none focus-visible:ring-2 focus-visible:ring-gran focus-visible:ring-offset-2 focus-visible:ring-offset-bund"
+      >
+        {t("nyTekst")}
+      </Link>
     </div>
   );
 }
