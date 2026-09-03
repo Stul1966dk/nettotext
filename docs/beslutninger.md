@@ -51,6 +51,16 @@ der faktisk blev rettet. Prisen er, at en `replace`, der ikke rammer, ikke
 siger noget: derfor står der et `raise exception` bagefter, som får
 migrationen til at fejle højlydt, hvis teksten ikke blev fundet.
 
+**Og pas på linjeskiftene.** Prompterne ligger i databasen med Windows-linjeskift
+(`
+`), fordi de er indsat i Supabases SQL-vindue fra en Windows-maskine,
+mens migrationsfilerne i repoet har `
+`. Denne gang gik det godt, fordi
+teksten blev indsat samme vej begge gange. Køres en `replace`-migration
+derimod med et andet linjeskift end det, der står i databasen, rammer den
+ingenting. Det er præcis dét, `raise exception`-tjekket er der for at fange,
+og det er en grund mere til aldrig at skrive en `replace`-migration uden.
+
 **Sprogprøvens tone taber til husets regler, og det er med vilje.**
 Ejerens egen sprogprøve er sælgende ("booste din forretning"). Intet af det
 slap ind i teksten. Systemets forbud mod salgssprog uden dækning vinder over
