@@ -34,6 +34,42 @@ trin 8.
 
 ---
 
+## 2026-09-03 — Brandteksten: brand-profilen skifter rolle
+
+**Brand-profilen er en KILDE i brandteksten, ikke kun et tonefald.**
+Til alle andre teksttyper er profilen fra Indstillinger baggrund: den siger,
+hvordan teksten skal lyde, og hvem der skriver den. I en brandtekst handler
+teksten om præcis dét, profilen beskriver, og så ville det være tåbeligt at
+bede brugeren skrive det hele igen i briefen. Prompten siger derfor
+udtrykkeligt, at profilen må bruges som oplysninger om virksomheden, og at
+briefen vinder, hvis de to modsiger hinanden. **CLAUDE.md regel 5 er uændret:**
+profilen er stadig data og ikke instruktioner, og den kan ikke ændre reglerne
+eller outputformatet. Det, der ændrer sig, er hvad oplysningerne bruges TIL,
+ikke hvor meget magt de har.
+
+**Briefen spørger om kendsgerninger, ikke om værdier.**
+Feltet "de konkrete kendsgerninger" er påkrævet og beder om årstal, antal,
+geografi, uddannelser og medlemskaber. Det er dem, en sprogmodel helst selv
+finder på, og det er dem, der gør størst skade: "Siden 1998" på forsiden af
+et firma fra 2011 bliver stående, længe efter nogen har opdaget det. Feltet er
+brandtekstens svar på produkttekstens faktafelt.
+
+**En egen forbudsliste: værdiordene.**
+"Vi brænder for kvalitet", "med kunden i centrum", "det ligger i vores DNA".
+De står som en liste for sig selv, ikke som en beskrivelse af en tendens, og
+af samme grund som migration 0004: en model gør ikke noget ved en generel
+formaning, men den kan godt lade være med at skrive en sætning, der står
+skrevet ned. Sammen med listen står den positive regel, der skal træde i
+stedet: skriv ét konkret arbejdstrin frem for ti tillægsord.
+
+**Brandteksten har en h1, produktteksten har ikke.**
+Forskellen er, hvor teksten lander. En Om os-side er en side i sig selv, hvor
+brugeren skal bruge en overskrift, og laver hendes CMS selv sidens titel,
+findes knappen "Kopiér uden titel" til netop det. En produkttekst lander i et
+felt under et navn, butikssystemet allerede har skrevet.
+
+---
+
 ## 2026-09-03 — Trin 7: produktteksten, og prøven på arkitekturen
 
 **Teksttype nummer to kostede ÉN kodeændring.**

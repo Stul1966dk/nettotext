@@ -120,7 +120,7 @@ allerede i `usage_log`. Der mangler tommel op/ned i editoren og ruten
 |---|---|
 | Blogindlæg | færdig (trin 2) |
 | Produkttekst | færdig 03.09.2026 (migration 0014) |
-| Brandtekst | **mangler** |
+| Brandtekst | færdig 03.09.2026 (migration 0015) |
 | Landingsside | **mangler** |
 
 Produktteksten kostede én kodeændring: `/app/ny` havde teksttypen skrevet ind
@@ -138,8 +138,28 @@ holdt sig inden for briefens tal, skrev ingen h1 og fik sin faktaliste. To
 sproglige smuttere i den skrevne tekst ("læsvogn", "grenar") er noteret som
 noget at holde øje med, ikke som en fejl i koden.
 
-- **De øvrige teksttyper:** brandtekst og landingsside. Det er DATA, ikke kode
-  — en migrationsfil med en systemprompt og nogle felter, ligesom de to
+Brandteksten kostede ingen kodeændring overhovedet, kun en migrationsfil.
+Den bruger brand-profilen fra trin 5 som kilde til, hvem virksomheden er, og
+har sin egen forbudsliste mod værdiord. Se `beslutninger.md`.
+
+Afprøvet 03.09.2026 med en brief om et bogtrykkeri: alle årstal og antal i
+teksten kunne genfindes i briefen, ingen værdiord slap igennem, og h1 og
+"Kopiér uden titel" var på plads, som de skal være for denne teksttype.
+**Ét tal blev fundet på:** modellen skrev "når 500 stk. allerede ligger
+færdige" som et opdigtet eksempel, og briefen nævnte kun mindsteoplaget på 50.
+Det er ikke en påstand om virksomheden, men det er et tal, reglen om belæg
+siger nej til. Hold øje med, om det gentager sig, før prompten strammes.
+
+**Ikke afprøvet endnu:** samspillet med en UDFYLDT brand-profil, som er den
+egentlige nyskabelse i denne teksttype. Ejerkontoens profil står tom.
+
+Landingssiden er den sidste, og den har en beslutning i sig: hele
+systemprompten bygger på "intet salgssprog uden dækning", og en landingsside
+skal netop overbevise nogen om at gøre noget. Prompten skal skrives med den
+modsætning for øje.
+
+- **Den sidste teksttype:** landingssiden. Det er DATA, ikke kode
+  — en migrationsfil med en systemprompt og nogle felter, ligesom de tre
   første. Det er derfor, formularen bygges dynamisk ud fra
   `templates.input_fields`.
 - **Idégenerering:** `POST /api/ideas`. Forslag til emner, før briefen skrives.
