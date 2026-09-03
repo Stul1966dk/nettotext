@@ -1,6 +1,6 @@
 # Status — hvad mangler i version 1
 
-Sidst opdateret: **2. september 2026**, midt i BYOK.
+Sidst opdateret: **3. september 2026**, midt i trin 7.
 
 Dokumentet holder byggeplanen i `teknisk-oplaeg-v1.md` op mod, hvad der
 faktisk står i koden og databasen. Byggeplanen er en plan; det her er en
@@ -88,8 +88,7 @@ Mangler:
 
 **BYOK blev bygget før trin 5, og det var den rigtige rækkefølge.**
 Personalisering gør gode tekster bedre; nøglen var forskellen på, om nogen
-overhovedet kunne bruge værktøjet efter den femte tekst. Trin 5 er nu det
-næste.
+overhovedet kunne bruge værktøjet efter den femte tekst.
 
 ---
 
@@ -115,9 +114,33 @@ allerede i `usage_log`. Der mangler tommel op/ned i editoren og ruten
 
 ## Trin 7 — Resten af indholdet
 
-- **De øvrige teksttyper:** produkttekst, brandtekst, landingsside. Det er
-  DATA, ikke kode — en migrationsfil med en systemprompt og nogle felter,
-  ligesom blogindlægget. Det er derfor, formularen bygges dynamisk ud fra
+**Påbegyndt 03.09.2026 med produktteksten.**
+
+| Teksttype | Status |
+|---|---|
+| Blogindlæg | færdig (trin 2) |
+| Produkttekst | færdig 03.09.2026 (migration 0014) |
+| Brandtekst | **mangler** |
+| Landingsside | **mangler** |
+
+Produktteksten kostede én kodeændring: `/app/ny` havde teksttypen skrevet ind
+i koden og henter den nu fra adressen, så `/app/ny` er blevet et valg mellem
+typer og `/app/ny/produkttekst` er briefen. Editoren, blokkene, omskrivningen
+af ét afsnit og eksporten virkede uændret. Arkitekturen fra trin 2 holdt.
+
+To ting adskiller produktteksten fra blogindlægget, begge med vilje: den
+skriver ingen h1, fordi webshoppen selv sætter varens navn, og dens felter er
+ikke forudfyldt med eksempeltekst. Begrundelserne står i `beslutninger.md`.
+
+Afprøvet ende til ende 03.09.2026 med en rigtig brief: generering, blokke,
+omskrivning af ét afsnit, kladden på serveren og eksport til Word. Teksten
+holdt sig inden for briefens tal, skrev ingen h1 og fik sin faktaliste. To
+sproglige smuttere i den skrevne tekst ("læsvogn", "grenar") er noteret som
+noget at holde øje med, ikke som en fejl i koden.
+
+- **De øvrige teksttyper:** brandtekst og landingsside. Det er DATA, ikke kode
+  — en migrationsfil med en systemprompt og nogle felter, ligesom de to
+  første. Det er derfor, formularen bygges dynamisk ud fra
   `templates.input_fields`.
 - **Idégenerering:** `POST /api/ideas`. Forslag til emner, før briefen skrives.
 - **Kildemateriale:** `POST /api/fetch-source`. Kræver SSRF-beskyttelsen fra

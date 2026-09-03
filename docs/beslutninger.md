@@ -34,6 +34,70 @@ trin 8.
 
 ---
 
+## 2026-09-03 — Trin 7: produktteksten, og prøven på arkitekturen
+
+**Teksttype nummer to kostede ÉN kodeændring.**
+`/app/ny` havde `blogindlaeg` skrevet ind i koden, og teksttypen kommer nu fra
+adressen i stedet (`/app/ny/produkttekst`). Alt andet virkede uændret:
+formularen tegnede sig selv ud fra `input_fields`, og editoren, blokkene,
+omskrivningen af ét afsnit og eksporten så ingen forskel. Det var netop dét,
+beslutningen fra trin 2 om at gøre teksttyper til DATA blev truffet for.
+
+**Sprogreglerne er kopieret ordret ind i den nye prompt, ikke delt.**
+Blogindlæggets regler om tone, tegnsætning, forbudte vendinger og belæg er
+dyrt betalt (migration 0004, 0006 og 0010), og produktteksten skal ikke lære
+dem forfra. Alternativet var at samle dem ét sted og sætte prompten sammen i
+koden, og det blev valgt fra: prompter er data i databasen, og en teksttype
+skal kunne afvige fra en fælles regel uden at ændre på alle de andre.
+**Det koster os noget senere:** finder vi en ny vending, der skal forbydes,
+skal den skrives ind i hver teksttypes prompt. Med fire teksttyper er det til
+at overskue. Bliver det til branchepakker med tyve, skal beslutningen tages op
+igen.
+
+**Produktteksten har ingen h1.**
+Webshoppen sætter selv varens navn som sidens overskrift, og en h1 mere ville
+give produktsiden to. Det er den samme afvejning som i migration 0006, hvor
+blogindlægget fik sin h1 tilbage, bare med det modsatte svar: en artikel
+lander i et CMS, hvor brugeren selv sætter titlen ind, mens en produkttekst
+lander i et felt UNDER et navn, butikssystemet allerede har skrevet.
+Blokopdelingen kan godt lide det. Kladden får sit navn fra meta-titlen i
+stedet for fra titelblokken, hvilket `kladdeNavn` allerede kunne.
+
+**Fakta-feltet er påkrævet.**
+Det er det eneste sted, teksten kan hente mål, materialer, priser og
+garantier, og prompten har forbud mod at finde på dem. Uden feltet ville
+resultatet blive en tekst uden ét eneste konkret tal, og så er den ikke værd
+at sætte på en produktside. Hellere et felt mere at udfylde end en tekst, der
+ikke kan bruges.
+
+**Ingen forudfyldt eksempeltekst i de nye felter.**
+Blogindlæggets felter er fyldt med et malerfirma i Brønderslev, og det står
+på tjeklisten som noget, der skal væk inden lanceringen, fordi rigtige
+brugere sender eksemplet af sted som deres egen brief. Den gæld skal ikke
+vokse med hver ny teksttype. Eksemplerne står derfor som pladsholdere, der
+forsvinder, så snart man skriver. Det gør også, at produktteksten afprøver
+rettelsen fra 02.09: et tomt valgfrit felt må ikke vælte genereringen.
+
+**"Kopiér uden titel" vises kun, når teksten HAR en titel.**
+Knappen og forklaringen under den blev bygget til blogindlægget, hvor
+brugerens CMS ofte selv sætter sidens overskrift. På en produkttekst er der
+ingen titel at udelade, så knappen gjorde nøjagtig det samme som "Kopiér
+HTML", og forklaringen lovede noget, der ikke passede. Begge dele skjules nu,
+når teksten ingen titelblok har. Første gang en ny teksttype fik den gamle
+brugerflade til at lyve en lille smule, og formentlig ikke den sidste.
+
+**Beskrivelsen af teksttypen ligger i databasen, ikke i sprogfilen.**
+`templates` har fået kolonnen `description`. Med to typer skal brugeren
+vælge, og et valg mellem to navne uden forklaring er et dårligt valg.
+Teksten hører til i skabelonen af samme grund som felterne gør: en ny
+teksttype skal kunne beskrive sig selv uden at nogen retter i appen. Det er
+en bevidst undtagelse fra "alle UI-tekster i sprogfiler" — det her er
+indhold, ikke brugerflade, på samme måde som feltlabels allerede er det.
+Skal NettoText en dag have `/en`, skal skabelonerne oversættes som data;
+`templates` har allerede en `language`-kolonne til det.
+
+---
+
 ## 2026-09-02 — Trin 5: personalisering
 
 **To tabeller, fordi det er to slags ting.**

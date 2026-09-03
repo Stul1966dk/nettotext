@@ -180,6 +180,10 @@
   },
   "ny": {
     "titel": "Ny tekst — NettoText",
+    "vaelgTitel": "Vælg teksttype — NettoText",
+    "vaelgOverskrift": "Hvad skal der skrives?",
+    "vaelgForklaring": "Vælg typen først. Så får du de felter, netop den slags tekst skal bruge.",
+    "teksttype": "Teksttype",
     "overskrift": "Ny tekst",
     "forklaring": "Udfyld briefen. Jo mere konkret du er, jo mindre skal du rette bagefter.",
     "paakraevet": "Skal udfyldes",
@@ -188,6 +192,8 @@
     "manglerFelter": "Udfyld de felter, der er markeret \"skal udfyldes\".",
     "ingenSkabelon": "Teksttypen findes ikke. Kør migrationsfilerne i supabase/migrations, hvis databasen er ny.",
     "tilbage": "Tilbage til dashboardet",
+    "tilbageTilValg": "Vælg en anden teksttype",
+    "skiftType": "Skift teksttype",
     "instruktion": "Noget særligt til lige denne tekst (valgfrit)",
     "instruktionHjaelp": "Gælder kun denne ene tekst og bliver ikke gemt. Skal noget gælde hver gang, hører det til under Indstillinger.",
     "instruktionPladsholder": "F.eks.: nævn at vi har åbent på lørdage i november"

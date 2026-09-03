@@ -641,6 +641,14 @@ export function Generering({
   }
 
   const erFaerdig = status === "faerdig" && html;
+
+  // Ikke alle teksttyper skriver en titel. Produktteksten gør det med vilje
+  // ikke, fordi webshoppen selv sætter varens navn som sidens overskrift.
+  // Uden en titel ville "Kopiér uden titel" gøre nøjagtig det samme som
+  // "Kopiér HTML", og forklaringen under knapperne ville love noget, der
+  // ikke passer. Så vises de ikke.
+  const harTitel = blokke.some((blok) => blok.slags === "titel");
+
   const knapKlasser =
     "rounded-lg border border-kant px-4 py-2 text-sm text-gran outline-none focus-visible:ring-2 focus-visible:ring-gran";
 
@@ -789,15 +797,19 @@ export function Generering({
                 {kopieret === "html" ? tekster.kopieret : tekster.kopier}
               </button>
 
-              <button
-                type="button"
-                onClick={() => kopier("uden-titel", samlHtml(udenTitel(blokke)))}
-                className={knapKlasser}
-              >
-                {kopieret === "uden-titel"
-                  ? tekster.kopieret
-                  : tekster.kopierUdenTitel}
-              </button>
+              {harTitel && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    kopier("uden-titel", samlHtml(udenTitel(blokke)))
+                  }
+                  className={knapKlasser}
+                >
+                  {kopieret === "uden-titel"
+                    ? tekster.kopieret
+                    : tekster.kopierUdenTitel}
+                </button>
+              )}
 
               <button
                 type="button"
@@ -831,9 +843,11 @@ export function Generering({
               </Link>
             </div>
 
-            <p className="text-xs leading-relaxed text-gran-let">
-              {tekster.kopierForklaring}
-            </p>
+            {harTitel && (
+              <p className="text-xs leading-relaxed text-gran-let">
+                {tekster.kopierForklaring}
+              </p>
+            )}
 
             {eksportFejl && (
               <p

@@ -43,6 +43,22 @@ export const skabelonSkema = z.object({
 export type Skabelon = z.infer<typeof skabelonSkema>;
 
 /**
+ * En teksttype, som den ser ud på listen, hvor brugeren vælger.
+ *
+ * Bevidst uden `system_prompt` og `input_fields`: listen skal kun bruge navn
+ * og beskrivelse, og en prompt på flere tusinde tegn pr. række har intet at
+ * gøre i den forespørgsel.
+ */
+export const skabelonIListenSkema = z.object({
+  slug: z.string().min(1),
+  name: z.string().min(1),
+  /** Kan mangle: en teksttype fra for migration 0014 har ingen beskrivelse. */
+  description: z.string().nullable().default(null),
+});
+
+export type SkabelonIListen = z.infer<typeof skabelonIListenSkema>;
+
+/**
  * Bygger et Zod-skema for selve briefen ud fra skabelonens felter.
  *
  * Bruges i API-ruten, så et felt, der ikke findes i skabelonen — eller en
