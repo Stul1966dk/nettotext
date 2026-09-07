@@ -194,6 +194,14 @@ rettes som alt andet.
   07.09.2026 alle står som "tekst", også de omskrivninger, der ligger blandt
   dem — det kan ikke rettes bagefter.
 
+Afprøvet ende til ende 07.09.2026 på en rigtig konto: fem forslag på 7-11
+sekunder, og et klik lagde emne og vinkel op i feltet. To ting blev rettet i
+prompten undervejs — se `beslutninger.md`. Afprøvningen viste også, at den
+forudfyldte eksempeltekst i briefen styrer forslagene: med malerfirmaets
+eksempel stående handlede alle fem forslag om trævinduer, uanset hvad der
+stod i emnefeltet. Det er endnu en grund til at fjerne eksempelteksten, som
+tjeklisten allerede kræver.
+
 Tilbage i trinnet:
 
 - **Kildemateriale:** `POST /api/fetch-source`. Kræver SSRF-beskyttelsen fra

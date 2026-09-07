@@ -19,7 +19,7 @@ trin 8.
 - [ ] **Kobl `nettotext.com` på** i Vercel → Settings → Domains — og skift derefter **Site URL** i Supabase → Authentication → URL Configuration til det nye domæne. Sker det ikke, peger login-mailens link stadig på `.vercel.app`.
 - [ ] **Sæt ejerkontoens prøvekvote tilbage.** Den står på 1.000.000 for at kunne teste frit under udviklingen. Beslut inden lancering, om ejerkontoen fortsat skal være speciel — og hvis ikke, sæt den til 5 som alle andre.
 - [ ] **Efterse beløbene i opsætnings-guiden.** `messages/da.json` → `opsaetning.koster` siger, at en kort tekst koster under en krone, og at mindstebeløbet hos leverandøren er 5 dollars. Begge dele bestemmer leverandøren og kan ændre sig. Tjek dem, inden guiden vises for rigtige brugere.
-- [ ] **Fjern eksempelteksten fra brief-felterne**, eller lav den om til en "Udfyld med eksempel"-knap. (Det er nu ufarligt at gøre: indtil 02.09.2026 ville et tomt valgfrit felt få hele genereringen afvist — se rettelsen i `briefSkema`.) Felterne i `templates.input_fields` er forudfyldt med et malerfirma i Brønderslev. Det er praktisk under test, men rigtige brugere vil sende eksemplet af sted som deres egen brief uden at opdage det.
+- [ ] **Fjern eksempelteksten fra brief-felterne**, eller lav den om til en "Udfyld med eksempel"-knap. (Det er nu ufarligt at gøre: indtil 02.09.2026 ville et tomt valgfrit felt få hele genereringen afvist — se rettelsen i `briefSkema`.) Felterne i `templates.input_fields` er forudfyldt med et malerfirma i Brønderslev. Det er praktisk under test, men rigtige brugere vil sende eksemplet af sted som deres egen brief uden at opdage det. **Og fra 07.09.2026 styrer den også idéforslagene:** afprøvningen viste, at fem forslag handlede om trævinduer, selvom der stod "træterrasser" i emnefeltet — resten af den forudfyldte brief handlede om malerfirmaet. Ryddes felterne, rammer forslagene plet.
 - [ ] **Sæt et forbrugsloft på platformens AI-nøgle hos Anthropic.** `DAILY_BUDGET_DKK` er bygget (30.08.2026), så leverandørens loft er ikke længere den eneste bremse — men det er stadig den sidste. Appens loft kan kun tælle det, appen selv sender af sted; en lækket nøgle kan det ikke stoppe.
 - [ ] **Sæt `ADMIN_EMAIL`** i `.env.local` og hos Vercel, når adminsiden bygges. Adressen står bevidst ikke i repoet — se afsnittet om adminsiden i `docs/status.md`.
 - [x] **`ENCRYPTION_KEY` er sat hos Vercel** (Production og Preview, 24.08.2026). Bekræftet 03.09.2026. **Mangler stadig:** at få bekræftet, at værdien hos Vercel er den SAMME som i `.env.local`. Lokal og produktion deler database, så en nøgle, der er gemt lokalt, kun kan læses i produktionen, hvis de to værdier er ens. Prøven er "Test forbindelsen" på det deployede site. Er de forskellige, skal Vercels værdi rettes til den lokale, og det skal ske NU, mens ingen andre har gemt en nøgle. Gælder fortsat ethvert nyt miljø. **Skift den ALDRIG efter idriftsættelse** — så kan allerede gemte nøgler ikke læses igen, og alle brugere skal indtaste deres på ny.
@@ -76,6 +76,13 @@ maskinformat: begynder modellen at svare på en anden måde, får brugeren
 "der kom ingen forslag tilbage, vi kunne læse" i stedet for en liste.
 Alternativet — at kræve JSON — ville betyde et nyt begreb i adapterlaget for
 begge leverandører, og det er for meget maskineri til fem linjer.
+
+**Afprøvet ende til ende 07.09.2026.** Fem forslag kom tilbage på under ti
+sekunder, de fulgte briefen, og et klik lagde emne og vinkel op i feltet, hvor
+de kan rettes. Afprøvningen rettede to ting i prompten: modellen skrev anden
+gang alle emner med lille begyndelsesbogstav, og den lod brand-profilen
+bestemme, hvad teksten skulle handle om, i stedet for briefen. Begge dele
+står nu udtrykkeligt i systembeskeden.
 
 **`usage_log` fik en kolonne, der siger hvad kaldet var** (`slags`: tekst,
 afsnit eller ideer). Uden den ville adminsidens tal for skrevne tekster tælle
