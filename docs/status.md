@@ -1,6 +1,6 @@
 # Status — hvad mangler i version 1
 
-Sidst opdateret: **3. september 2026**, midt i trin 7.
+Sidst opdateret: **7. september 2026**, midt i trin 7.
 
 Dokumentet holder byggeplanen i `teknisk-oplaeg-v1.md` op mod, hvad der
 faktisk står i koden og databasen. Byggeplanen er en plan; det her er en
@@ -175,14 +175,27 @@ gjort synlig for brugerne. Stiltonen tog en del af beslutningen på forhånd:
 siden skrives med "sælgende" valgt, så prompten kun skal tage sig af
 strukturen.
 
-**Dermed er alle fire teksttyper fra trin 7 færdige.** Tilbage i trinnet:
-idégenerering og kildemateriale.
+**Dermed er alle fire teksttyper fra trin 7 færdige.**
 
-- **Den sidste teksttype:** landingssiden. Det er DATA, ikke kode
-  — en migrationsfil med en systemprompt og nogle felter, ligesom de tre
-  første. Det er derfor, formularen bygges dynamisk ud fra
-  `templates.input_fields`.
-- **Idégenerering:** `POST /api/ideas`. Forslag til emner, før briefen skrives.
+**Idégenerering: færdig 07.09.2026 (migration 0018).** Knappen "Foreslå
+emner" står ved det felt, forslagene fylder ud, og giver fem emner med en
+vinkel til hver. Klikker man på et, ryger det op i feltet, hvor det kan
+rettes som alt andet.
+
+- `POST /api/ideas` med samme tjek som resten (login, rate limit, hvem
+  betaler, budgetloft). Det koster IKKE en prøvetekst, og der bruges den
+  billigste model hos leverandøren. Begrundelserne står i `beslutninger.md`.
+- Hvilket felt knappen hører til, er DATA: flaget `idefelt` på feltet i
+  `templates.input_fields`, sat gennem feltbyggeren på adminsiden. Kun
+  blogindlægget har det — man har ikke brug for forslag til, hvad ens eget
+  produkt hedder.
+- `usage_log` fik kolonnen `slags`, så adminsidens tal for skrevne tekster
+  ikke tæller forslag og omskrivninger med. Bemærk at rækkerne fra FØR
+  07.09.2026 alle står som "tekst", også de omskrivninger, der ligger blandt
+  dem — det kan ikke rettes bagefter.
+
+Tilbage i trinnet:
+
 - **Kildemateriale:** `POST /api/fetch-source`. Kræver SSRF-beskyttelsen fra
   CLAUDE.md regel 8: kun http/https, timeout 10 sek., maks. 2 MB, og private
   eller interne IP-adresser blokeret.

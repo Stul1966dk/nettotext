@@ -139,6 +139,34 @@ export function standardValgbarModel(leverandoer: Leverandoer): string {
     : (valgbare[0]?.id ?? "");
 }
 
+/**
+ * Den billigste model, vi kender prisen på hos leverandøren.
+ *
+ * Bruges til idéforslagene. Fem linjer med emner har ikke brug for husets
+ * bedste sprog, og det tekniske oplæg peger selv på det: en billig model til
+ * idégenerering og en topmodel til selve teksten. Betaler brugeren med sin
+ * egen nøgle, er det hendes penge, vi sparer — også hvis hun har valgt den
+ * dyre model til teksterne.
+ *
+ * Rangeringen lægger ind- og udpris sammen. Det er ikke en nøjagtig
+ * omkostning — den afhænger af, hvor meget der skrives — men det er nok til
+ * at skelne to modeller fra hinanden i den samme liste.
+ *
+ * Returnerer null, hvis ingen model hos leverandøren har en pris. Så er der
+ * ikke noget at spare på en oplyst måde, og kalderen bruger den model,
+ * nøglevalget allerede har fundet.
+ */
+export function billigsteModel(leverandoer: Leverandoer): string | null {
+  const medPris = valgbareModeller(leverandoer);
+  if (medPris.length === 0) return null;
+
+  return medPris.reduce((billigst, model) =>
+    model.pris!.ind + model.pris!.ud < billigst.pris!.ind + billigst.pris!.ud
+      ? model
+      : billigst,
+  ).id;
+}
+
 export function erKendtModel(leverandoer: Leverandoer, id: string): boolean {
   return MODELLER[leverandoer].some((m) => m.id === id);
 }

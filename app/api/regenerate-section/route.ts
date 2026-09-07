@@ -249,6 +249,7 @@ export async function POST(request: Request) {
             await skrivForbrug({
               brugerId: user.id,
               skabelon: skabelon.slug,
+              slags: "afsnit",
               leverandoer: valg.adapter.leverandoer,
               model: forbrug.model,
               betaler: valg.betaler,

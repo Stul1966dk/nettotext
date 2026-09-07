@@ -83,6 +83,8 @@ export default async function RedigerTeksttype({ params }: Props) {
       "hjaelpetekst",
       "pladsholder",
       "paakraevet",
+      "idefelt",
+      "idefeltHjaelp",
       "aktiv",
       "aktivHjaelp",
       "gem",

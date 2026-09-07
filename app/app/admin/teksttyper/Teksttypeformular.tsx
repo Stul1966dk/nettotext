@@ -100,6 +100,25 @@ export function Teksttypeformular({
     })),
   );
 
+  /**
+   * Kun ÉT felt kan tage imod idéforslag, så et nyt valg slår det gamle fra.
+   *
+   * Alternativet — at lade to felter være markeret og lade briefen vælge det
+   * første — ville betyde, at afkrydsningen på det andet felt ikke gjorde
+   * noget. En afkrydsning, der ikke gør noget, er værre end ingen.
+   */
+  function saetIdefelt(key: string, til: boolean) {
+    setRaekker((forrige) =>
+      forrige.map((raekke) => ({
+        ...raekke,
+        felt: {
+          ...raekke.felt,
+          idefelt: til && raekke.key === key ? true : undefined,
+        },
+      })),
+    );
+  }
+
   function opdater(key: string, aendring: Partial<InputFelt>) {
     setRaekker((forrige) =>
       forrige.map((raekke) =>
@@ -406,7 +425,9 @@ export function Teksttypeformular({
                     max={4000}
                     value={raekke.felt.maxLaengde ?? 200}
                     onChange={(e) =>
-                      opdater(raekke.key, { maxLaengde: Number(e.target.value) })
+                      opdater(raekke.key, {
+                        maxLaengde: Number(e.target.value),
+                      })
                     }
                     className={feltKlasse}
                   />
@@ -497,6 +518,28 @@ export function Teksttypeformular({
                 />
                 {tekster.paakraevet}
               </label>
+
+              {/* Et valgfelt kan ikke fyldes ud med et forslag — der står
+                  faste muligheder i en rullemenu. Så vises afkrydsningen
+                  ikke, frem for at love en knap, der ikke virker. */}
+              {raekke.felt.type !== "valg" && (
+                <div className="space-y-2">
+                  <label className="flex items-center gap-3 text-sm text-gran">
+                    <input
+                      type="checkbox"
+                      checked={raekke.felt.idefelt ?? false}
+                      onChange={(e) =>
+                        saetIdefelt(raekke.key, e.target.checked)
+                      }
+                      className="h-4 w-4 accent-gran"
+                    />
+                    {tekster.idefelt}
+                  </label>
+                  <p className="text-sm leading-relaxed text-gran-let">
+                    {tekster.idefeltHjaelp}
+                  </p>
+                </div>
+              )}
             </div>
           ))}
         </div>

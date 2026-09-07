@@ -34,6 +34,59 @@ trin 8.
 
 ---
 
+## 2026-09-07 — Idéforslag: fem emner, før briefen skrives
+
+**Hvorfor nu:** briefen begynder med et tomt felt og spørgsmålet "hvad skal
+indlægget handle om?". Det er dét spørgsmål, en mindre erhvervsdrivende går i
+stå på — ikke resten af formularen.
+
+**Hvilket felt forslagene fylder ud, er DATA.** Feltet hedder "emne" i
+blogindlægget, "produkt" i produktteksten og "virksomheden" i brandteksten.
+En knap, der kendte navnet fra koden, ville gætte forkert ved den første
+branchepakke. Derfor et flag på selve feltet (`idefelt`), som ejeren sætter i
+feltbyggeren, og en knap, der kun findes, hvis flaget er sat.
+
+**Kun blogindlægget har flaget.** Man har ikke brug for forslag til, hvad ens
+eget produkt hedder, eller hvad ens egen virksomhed laver. Skal landingssiden
+eller en senere teksttype have knappen, sættes flaget gennem adminsiden — det
+kræver ingen kode.
+
+**Forslag koster ikke en prøvetekst.** Samme afvejning som ved omskrivning af
+ét afsnit (30.08.2026): en bruger, der brænder en af sine fem prøvetekster af
+på at kigge på en liste, når aldrig frem til at prøve produktet. Kvoten LÆSES
+for at afgøre, hvem der betaler, og trækkes ikke. Rate limit'en er til
+gengæld den samme og deles med genereringen — ellers var knappen vejen udenom.
+
+**Den billigste model, ikke brugerens valgte.** Det tekniske oplæg peger selv
+på det: billig model til idégenerering, topmodel til teksten. Fem linjer med
+emner har ikke brug for husets bedste sprog, og betaler brugeren selv, er det
+hendes penge, vi sparer. `billigsteModel()` rangerer på ind- plus udpris og
+springer modeller uden pris over — de kan alligevel ikke tælles med i
+budgetloftet.
+
+**Vi gætter ikke, når vi ikke ved noget.** Er både briefen og brand-profilen
+tomme, afvises kaldet med en besked om at skrive et par ord først. Fem
+forslag ud af ingenting ville være fem gæt om branchen — og de ville se
+lige så troværdige ud som de rigtige.
+
+**Formatet er "emne | vinkel", én idé pr. linje, og parseren renser frem for
+at afvise.** Nummerering, punkttegn og anførselstegn pilles af; linjer uden
+lodret streg springes over. Prisen er, at vi læser et tekstformat frem for et
+maskinformat: begynder modellen at svare på en anden måde, får brugeren
+"der kom ingen forslag tilbage, vi kunne læse" i stedet for en liste.
+Alternativet — at kræve JSON — ville betyde et nyt begreb i adapterlaget for
+begge leverandører, og det er for meget maskineri til fem linjer.
+
+**`usage_log` fik en kolonne, der siger hvad kaldet var** (`slags`: tekst,
+afsnit eller ideer). Uden den ville adminsidens tal for skrevne tekster tælle
+idéforslag med. **Det har faktisk været forkert siden omskrivningen blev
+bygget** — et omskrevet afsnit blev logget som en tekst. De gamle rækker kan
+ikke rettes: der står ikke noget i dem, der afslører hvad de var. Tallene fra
+før 07.09.2026 er derfor lidt for høje på "tekster", og det skal med, når
+adminsidens tal bliver læst.
+
+---
+
 ## 2026-09-03 — Adminside: ejeren kan selv oprette teksttyper
 
 **Hvorfor nu:** arkitekturen har hele tiden sagt, at teksttyper er data, men

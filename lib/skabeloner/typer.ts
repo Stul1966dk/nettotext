@@ -26,6 +26,19 @@ export const inputFeltSkema = z.object({
    * bestemmer sit eget eksempel — ligesom den bestemmer sine felter.
    */
   standard: z.string().optional(),
+  /**
+   * Er det HER felt, idéforslagene skal fylde ud?
+   *
+   * Højst ét felt pr. teksttype. Flaget står i skabelonen og ikke i koden,
+   * fordi feltet hedder noget forskelligt fra teksttype til teksttype:
+   * blogindlægget har "emne", produktteksten "produkt", brandteksten
+   * "virksomheden". En knap, der skulle gætte hvilket felt den fylder ud,
+   * ville gætte forkert ved den første branchepakke.
+   *
+   * Uden flaget er der ingen knap. Det er det rigtige svar for de fleste
+   * teksttyper: man behøver ikke forslag til, hvad ens eget produkt hedder.
+   */
+  idefelt: z.boolean().optional(),
   valg: z
     .array(z.object({ vaerdi: z.string().min(1), label: z.string().min(1) }))
     .optional(),
@@ -98,3 +111,41 @@ export function briefSkema(felter: InputFelt[]) {
 }
 
 export type Brief = Record<string, string>;
+
+/**
+ * Feltet, idéforslagene fylder ud — eller null, hvis teksttypen ikke har et.
+ *
+ * Er der ved en fejl markeret flere, vinder det første. En knap pr. felt
+ * ville være at bygge videre på en fejl i dataene frem for at rette den.
+ */
+export function findIdefelt(felter: InputFelt[]): InputFelt | null {
+  // Et valgfelt kan ikke fyldes ud med et forslag — der er en rullemenu med
+  // faste muligheder. Er flaget alligevel sat på et, springes det over frem
+  // for at give brugeren en knap, der ikke gør noget.
+  return felter.find((felt) => felt.idefelt && felt.type !== "valg") ?? null;
+}
+
+/**
+ * Briefen, som den ser ud MIDT i udfyldningen.
+ *
+ * Idéforslagene bygger på det, brugeren har skrevet indtil videre, og på det
+ * tidspunkt er de påkrævede felter typisk tomme — det er jo dét, hun mangler
+ * hjælp til. Derfor et skema for sig: samme felter og samme længdegrænser
+ * som `briefSkema`, men intet er påkrævet.
+ *
+ * `.strict()` gælder stadig. Et felt, skabelonen ikke kender, er en fejl —
+ * også når briefen kun er halvt udfyldt.
+ */
+export function delvisBriefSkema(felter: InputFelt[]) {
+  const form: Record<string, z.ZodType<string>> = {};
+
+  for (const felt of felter) {
+    form[felt.navn] = z
+      .string()
+      .max(felt.maxLaengde ?? 2000)
+      .optional()
+      .default("");
+  }
+
+  return z.object(form).strict();
+}

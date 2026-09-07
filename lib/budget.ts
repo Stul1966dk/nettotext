@@ -86,9 +86,24 @@ export async function hentBudgetstatus(): Promise<Budgetstatus> {
  * den er betalt. En manglende logpost betyder, at dagens forbrug tælles for
  * lavt, og det skal ses i serverloggen — ikke af brugeren.
  */
+/**
+ * Hvad kaldet var: en hel tekst, ét omskrevet afsnit eller fem idéforslag.
+ *
+ * Uden feltet ville adminsidens tal for "skrevne tekster" tælle omskrivninger
+ * og idéforslag med. Det er ikke et lille skævt tal: den samme tekst kan
+ * sagtens udløse fem omskrivninger, og forslagene kommer FØR teksten og
+ * bliver måske aldrig til en.
+ *
+ * Feltet er påkrævet med vilje. En standardværdi ville betyde, at den næste
+ * rute, der bruger penge, blev talt som en tekst, fordi nogen glemte at
+ * tage stilling.
+ */
+export type Forbrugsslags = "tekst" | "afsnit" | "ideer";
+
 export async function skrivForbrug(post: {
   brugerId: string;
   skabelon: string;
+  slags: Forbrugsslags;
   leverandoer: Leverandoer;
   model: string;
   betaler: Betaler;
@@ -112,6 +127,7 @@ export async function skrivForbrug(post: {
   const { error } = await supabase.from("usage_log").insert({
     user_id: post.brugerId,
     template_slug: post.skabelon,
+    slags: post.slags,
     provider: post.leverandoer,
     model: post.model,
     paid_by: post.betaler,

@@ -20,6 +20,31 @@ type Props = {
   params: Promise<{ slug: string }>;
 };
 
+/**
+ * Fejlkategorierne fra /api/ideas. Ruten svarer med en kategori, aldrig med
+ * en besked — beskederne står i sprogfilen, som alt andet i UI'et.
+ */
+const IDE_FEJLNOEGLER = [
+  "ikke_logget_ind",
+  "ugyldig_anmodning",
+  "ugyldig_brief",
+  "ukendt_skabelon",
+  "ingen_ideer",
+  "mangler_grundlag",
+  "mangler_noegle",
+  "budget_opbrugt",
+  "for_mange_kald",
+  "ugyldig_noegle",
+  "tom_saldo",
+  "rate_limit",
+  "tomt_svar",
+  "for_lang",
+  "afvist",
+  "serverfejl",
+  "ukendt",
+  "netvaerk",
+] as const;
+
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("ny");
   return { title: t("titel") };
@@ -28,6 +53,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function NyTekstSide({ params }: Props) {
   const { slug } = await params;
   const t = await getTranslations("ny");
+  const ideFejl = await getTranslations("ny.ideFejl");
   const skabelon = await hentSkabelon(slug);
 
   if (!skabelon) {
@@ -88,6 +114,14 @@ export default async function NyTekstSide({ params }: Props) {
             imoedekommende: t("stiltoneImoedekommende"),
             saelgende: t("stiltoneSaelgende"),
           },
+          ideKnap: t("ideKnap"),
+          ideIgen: t("ideIgen"),
+          ideHenter: t("ideHenter"),
+          ideHjaelp: t("ideHjaelp"),
+          ideOverskrift: t("ideOverskrift"),
+          ideFejl: Object.fromEntries(
+            IDE_FEJLNOEGLER.map((noegle) => [noegle, ideFejl(noegle)]),
+          ),
         }}
       />
     </div>
