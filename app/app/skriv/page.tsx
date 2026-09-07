@@ -90,6 +90,8 @@ export default async function SkrivSide({
             nyTekst: t("nyTekst"),
             planlaegger: t("planlaegger"),
             skriver: t("skriver"),
+            skriverProcent: t.raw("skriverProcent") as string,
+            fremskridtForklaring: t("fremskridtForklaring"),
             faerdig: t("faerdig"),
             visHtml: t("visHtml"),
             visTekst: t("visTekst"),

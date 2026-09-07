@@ -34,6 +34,44 @@ trin 8.
 
 ---
 
+## 2026-09-07 — Teksten vises ikke, mens den skrives. Bjælken gør det
+
+**Ejerens beslutning.** Den rå strøm rullede forbi som monospace-tekst med
+HTML-tags i. Den er ikke til at læse, mens den bliver til, og den er slet
+ikke til at vurdere. Nu står der en bjælke, og teksten vises, når den er hel.
+
+**Streamingen er uændret.** Det er kun VISNINGEN, der venter. Serveren
+streamer stadig, teksten samles stadig undervejs, og kladden gemmes stadig
+løbende — så et afbrudt netværk koster det samme som før, nemlig ingenting.
+
+**Prisen: det tidlige indtryk forsvinder.** Man kunne før se efter tre
+linjer, om tonen var helt gal, og afbryde. Det kan man ikke længere. Det er
+en reel forringelse for ejeren, der læser korrektur på prompterne — og en
+forbedring for den erhvervsdrivende, produktet er skrevet til, som ikke skal
+sidde og stirre på halve HTML-tags.
+
+**Bjælken er et skøn, og det står der.** Procenten er tegn modtaget divideret
+med, hvor mange tegn den valgte længde plejer at fylde. Tallene er målt
+(4.300 og 3.750 tegn for "mellem"), ikke regnet ud, og de står ét sted i
+`lib/tekst/fremskridt.ts`. Under bjælken står der, at det er et skøn og ikke
+en nedtælling — samme regel som for kvote og kladde-udløb: hellere en ærlig
+usikkerhed end et præcist tal, der er opdigtet.
+
+**To ting, der gør skønnet ærligt frem for pænt.** Bjælken bygger på tegn og
+ikke på tid — en bjælke, der kryber efter uret, viser det samme, uanset om
+modellen skriver eller står stille. Og den når aldrig 100 % af sig selv: den
+stopper ved 95 og venter, til teksten faktisk er hel.
+
+**Teksttyper uden `laengde`-felt får en bjælke uden procent.** Målet kendes
+ikke, og så er det ærligere at vise bevægelse end et tal. Det gælder også,
+hvis en fremtidig teksttype bruger andre værdier end kort/mellem/langt.
+
+**Meta-felterne dukker stadig op midtvejs.** De er ikke selve teksten, og de
+er de to felter, brugeren oftest vil rette i. Skal de også vente, er det en
+linje at ændre.
+
+---
+
 ## 2026-09-07 — Eksempelteksterne flyttede til ejerens egen niche
 
 **Hvorfor:** eksemplerne handlede om et malerfirma i Vendsyssel. Det er en

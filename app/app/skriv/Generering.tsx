@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { laesNdjson } from "@/lib/api/laesStream";
 import { gemKladde, hentKladde, type Kladde } from "@/lib/skabeloner/kladde";
 import { delIBlokke, type Blok } from "@/lib/tekst/blokke";
+import { fremskridtProcent, maalTegn } from "@/lib/tekst/fremskridt";
 import { samlHtml, tilMarkdown, udenTitel } from "@/lib/tekst/markdown";
 
 import { Blokkort, type BlokkortTekster } from "./Blokkort";
@@ -15,6 +16,8 @@ type Tekster = BlokkortTekster & {
   nyTekst: string;
   planlaegger: string;
   skriver: string;
+  skriverProcent: string;
+  fremskridtForklaring: string;
   faerdig: string;
   visHtml: string;
   visTekst: string;
@@ -193,6 +196,8 @@ export function Generering({
 }) {
   const [status, setStatus] = useState<Status>("starter");
   const [tekst, setTekst] = useState("");
+  /** Hvor mange tegn teksten forventes at fylde. Null: så ingen procent. */
+  const [maal, setMaal] = useState<number | null>(null);
   const [html, setHtml] = useState("");
   const [blokke, setBlokke] = useState<Blok[]>([]);
   const [titel, setTitel] = useState("");
@@ -305,6 +310,9 @@ export function Generering({
 
       setStatus("starter");
       setTekst("");
+      // Bjælken bygger på brugerens eget valg af længde. Har teksttypen ikke
+      // et laengde-felt, bliver det null, og bjælken viser ingen procent.
+      setMaal(maalTegn(kladde.brief.laengde));
       setHtml("");
       setBlokke([]);
       setTitel("");
@@ -528,7 +536,8 @@ export function Generering({
     felt?: HTMLInputElement | HTMLTextAreaElement | null,
   ) {
     try {
-      if (!navigator.clipboard) throw new Error("Ingen adgang til udklipsholder");
+      if (!navigator.clipboard)
+        throw new Error("Ingen adgang til udklipsholder");
 
       await navigator.clipboard.writeText(vaerdi);
       setMarkeret(false);
@@ -652,6 +661,17 @@ export function Generering({
   // ikke passer. Så vises de ikke.
   const harTitel = blokke.some((blok) => blok.slags === "titel");
 
+  // Skønnet over, hvor langt vi er. Null betyder "vi ved det ikke" — så
+  // viser bjælken bevægelse uden at påstå et tal. Se lib/tekst/fremskridt.ts.
+  const procent = fremskridtProcent(tekst.length, maal);
+
+  // Før det første ord er der intet at måle på. En smal bjælke, der venter,
+  // er ærligere end en tom — der ER sat noget i gang.
+  //
+  // Bjælken går aldrig tilbage: de første tegn giver typisk 1 %, og en
+  // bjælke, der skrumper, når teksten begynder, ser ud som om noget gik galt.
+  const bredde = Math.max(4, status === "starter" ? 4 : (procent ?? 60));
+
   const knapKlasser =
     "rounded-lg border border-kant px-4 py-2 text-sm text-gran outline-none focus-visible:ring-2 focus-visible:ring-gran";
 
@@ -663,7 +683,10 @@ export function Generering({
         className="font-mono text-xs uppercase tracking-widest text-gran-let"
       >
         {status === "starter" && tekster.planlaegger}
-        {status === "skriver" && tekster.skriver}
+        {status === "skriver" &&
+          (procent === null
+            ? tekster.skriver
+            : tekster.skriverProcent.replace("{procent}", String(procent)))}
         {status === "faerdig" && tekster.faerdig}
       </p>
 
@@ -747,14 +770,49 @@ export function Generering({
       )}
 
       {/*
-        Mens teksten bliver skrevet, vises den rå strøm som TEKST. React
-        escaper den, så intet af det modellen skriver kan udføres. Først når
-        teksten er hel og saneret på serveren, vises den som HTML.
+        Mens teksten bliver skrevet, vises den IKKE. Beslutningen er ejerens
+        (07.09.2026): en halvskreven tekst, der ruller forbi, er ikke til at
+        læse og ikke til at vurdere. I stedet en bjælke, der siger, hvor langt
+        vi er.
+
+        Teksten samles stadig undervejs og gemmes i kladden. Det er kun
+        visningen, der venter, til teksten er hel og saneret på serveren.
       */}
-      {!erFaerdig && tekst && (
-        <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-2xl border border-kant bg-kort p-6 font-mono text-sm leading-relaxed text-gran">
-          {tekst}
-        </pre>
+      {!erFaerdig && !fejl && (
+        <div className="space-y-3 rounded-2xl border border-kant bg-kort p-6">
+          <div
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            /* Før det første ord er der ingen procent at melde — og
+               "0 %" ville være en påstand om, at der ikke sker noget.
+               Skærmlæseren får den samme besked som skærmen. */
+            aria-valuenow={
+              status === "starter" ? undefined : (procent ?? undefined)
+            }
+            aria-valuetext={
+              status === "starter"
+                ? tekster.planlaegger
+                : procent === null
+                  ? tekster.skriver
+                  : tekster.skriverProcent.replace("{procent}", String(procent))
+            }
+            className="h-2 w-full overflow-hidden rounded-full bg-bund"
+          >
+            <div
+              className={`h-full rounded-full bg-rav transition-[width] duration-700 ease-out motion-reduce:transition-none ${
+                status === "starter"
+                  ? "animate-pulse motion-reduce:animate-none"
+                  : ""
+              }`}
+              style={{ width: `${bredde}%` }}
+            />
+          </div>
+
+          <p className="text-sm leading-relaxed text-gran-let">
+            {tekster.fremskridtForklaring}
+          </p>
+        </div>
       )}
 
       {erFaerdig && (
