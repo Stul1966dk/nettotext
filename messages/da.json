@@ -238,7 +238,7 @@
     "planlaegger": "Planlægger teksten. Der går typisk 10-20 sekunder, før de første ord kommer.",
     "skriver": "Skriver …",
     "skriverProcent": "Skriver … {procent} %",
-    "fremskridtForklaring": "Teksten vises, når den er hel. Bjælken er et skøn ud fra den længde, du har valgt — ikke en nedtælling.",
+    "fremskridtForklaring": "Vent et øjeblik, mens teksten skrives færdig",
     "faerdig": "Teksten er skrevet.",
     "kopier": "Kopiér HTML",
     "kopierFelt": "Kopiér",

@@ -53,9 +53,13 @@ sidde og stirre på halve HTML-tags.
 **Bjælken er et skøn, og det står der.** Procenten er tegn modtaget divideret
 med, hvor mange tegn den valgte længde plejer at fylde. Tallene er målt
 (4.300 og 3.750 tegn for "mellem"), ikke regnet ud, og de står ét sted i
-`lib/tekst/fremskridt.ts`. Under bjælken står der, at det er et skøn og ikke
-en nedtælling — samme regel som for kvote og kladde-udløb: hellere en ærlig
-usikkerhed end et præcist tal, der er opdigtet.
+`lib/tekst/fremskridt.ts`.
+
+Linjen under bjælken forklarede oprindeligt, at procenten var et skøn og
+ikke en nedtælling. Ejeren har valgt den korte "Vent et øjeblik, mens teksten
+skrives færdig" i stedet. Forbeholdet står dermed ikke længere på skærmen —
+til gengæld lover bjælken heller ikke noget: den kryber ikke efter uret, og
+den når aldrig 100 % af sig selv.
 
 **To ting, der gør skønnet ærligt frem for pænt.** Bjælken bygger på tegn og
 ikke på tid — en bjælke, der kryber efter uret, viser det samme, uanset om
