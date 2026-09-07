@@ -19,7 +19,7 @@ trin 8.
 - [ ] **Kobl `nettotext.com` på** i Vercel → Settings → Domains — og skift derefter **Site URL** i Supabase → Authentication → URL Configuration til det nye domæne. Sker det ikke, peger login-mailens link stadig på `.vercel.app`.
 - [ ] **Sæt ejerkontoens prøvekvote tilbage.** Den står på 1.000.000 for at kunne teste frit under udviklingen. Beslut inden lancering, om ejerkontoen fortsat skal være speciel — og hvis ikke, sæt den til 5 som alle andre.
 - [ ] **Efterse beløbene i opsætnings-guiden.** `messages/da.json` → `opsaetning.koster` siger, at en kort tekst koster under en krone, og at mindstebeløbet hos leverandøren er 5 dollars. Begge dele bestemmer leverandøren og kan ændre sig. Tjek dem, inden guiden vises for rigtige brugere.
-- [ ] **Fjern eksempelteksten fra brief-felterne**, eller lav den om til en "Udfyld med eksempel"-knap. (Det er nu ufarligt at gøre: indtil 02.09.2026 ville et tomt valgfrit felt få hele genereringen afvist — se rettelsen i `briefSkema`.) Felterne i `templates.input_fields` er forudfyldt med et malerfirma i Brønderslev. Det er praktisk under test, men rigtige brugere vil sende eksemplet af sted som deres egen brief uden at opdage det. **Og fra 07.09.2026 styrer den også idéforslagene:** afprøvningen viste, at fem forslag handlede om trævinduer, selvom der stod "træterrasser" i emnefeltet — resten af den forudfyldte brief handlede om malerfirmaet. Ryddes felterne, rammer forslagene plet.
+- [ ] **Fjern eksempelteksten fra brief-felterne**, eller lav den om til en "Udfyld med eksempel"-knap. (Det er nu ufarligt at gøre: indtil 02.09.2026 ville et tomt valgfrit felt få hele genereringen afvist — se rettelsen i `briefSkema`.) Felterne i `templates.input_fields` var forudfyldt med et malerfirma i Brønderslev og handler fra 07.09.2026 om ejerens egen niche (migration 0019) — hvilket gør punktet her MERE presserende, ikke mindre: nu er eksemplet ejerens egen forretning. Det er praktisk under test, men rigtige brugere vil sende eksemplet af sted som deres egen brief uden at opdage det. **Og fra 07.09.2026 styrer den også idéforslagene:** afprøvningen viste, at fem forslag handlede om trævinduer, selvom der stod "træterrasser" i emnefeltet — resten af den forudfyldte brief handlede om malerfirmaet. Ryddes felterne, rammer forslagene plet.
 - [ ] **Sæt et forbrugsloft på platformens AI-nøgle hos Anthropic.** `DAILY_BUDGET_DKK` er bygget (30.08.2026), så leverandørens loft er ikke længere den eneste bremse — men det er stadig den sidste. Appens loft kan kun tælle det, appen selv sender af sted; en lækket nøgle kan det ikke stoppe.
 - [ ] **Sæt `ADMIN_EMAIL`** i `.env.local` og hos Vercel, når adminsiden bygges. Adressen står bevidst ikke i repoet — se afsnittet om adminsiden i `docs/status.md`.
 - [x] **`ENCRYPTION_KEY` er sat hos Vercel** (Production og Preview, 24.08.2026). Bekræftet 03.09.2026. **Mangler stadig:** at få bekræftet, at værdien hos Vercel er den SAMME som i `.env.local`. Lokal og produktion deler database, så en nøgle, der er gemt lokalt, kun kan læses i produktionen, hvis de to værdier er ens. Prøven er "Test forbindelsen" på det deployede site. Er de forskellige, skal Vercels værdi rettes til den lokale, og det skal ske NU, mens ingen andre har gemt en nøgle. Gælder fortsat ethvert nyt miljø. **Skift den ALDRIG efter idriftsættelse** — så kan allerede gemte nøgler ikke læses igen, og alle brugere skal indtaste deres på ny.
@@ -31,6 +31,32 @@ trin 8.
 - [ ] **Byg "slet min konto"** (GDPR, CLAUDE.md regel 9). Alle brugerens rækker i alle tabeller, `ai_keys` inklusive. De fleste tabeller har `on delete cascade` mod `auth.users`, så meget er gjort — der mangler en knap, en rute og en bekræftelse.
 - [ ] **Privatlivspolitik** på `/da/privatliv` (GDPR, jf. teknisk oplæg afsnit 5).
 - [ ] **Opdatér brandnavnet** i `design/design-3-vaerksted.html` til NettoText.
+
+---
+
+## 2026-09-07 — Eksempelteksterne flyttede til ejerens egen niche
+
+**Hvorfor:** eksemplerne handlede om et malerfirma i Vendsyssel. Det er en
+god prøveklud for en dansk håndværkstekst, men ejeren kan ikke VURDERE en
+tekst om trævinduer — man skal kende emnet for at se, hvornår en sætning er
+forkert. Eksemplerne handler nu om affiliate-sider inden for fitness og
+hjemmetræning og om webtekster for mindre virksomheder, som er dét, ejeren
+selv laver.
+
+**Kun `pladsholder` og `standard` er rørt.** Ingen systemprompter, ingen
+feltnavne, ingen felttyper. Feltnavne er nøgler i gemte kladder, og en
+ændring dér ville rive kladderne fra hinanden.
+
+**Det lukker ikke tjeklistens punkt om eksempelteksten — det skærper det.**
+Den forudfyldte tekst skal stadig fjernes før lancering. Den er bare blevet
+farligere at glemme: en rigtig bruger, der ikke opdager den, sender nu
+ejerens egen forretning af sted som sin egen brief.
+
+**Rettet undervejs:** landingssidens felt for nøgleord foreslog
+"vandrestøvle dame, vandtæt, ruskind" — produkttekstens eksempel. Det har
+stået der, siden landingssiden blev lavet ved at kopiere produkttekstens
+felter, og det er værd at huske, næste gang en teksttype bliver til ved
+kopiering.
 
 ---
 
