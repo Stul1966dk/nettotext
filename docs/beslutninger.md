@@ -16,7 +16,7 @@ trin 8.
 - [ ] **Fjern `noindex`.** `app/layout.tsx` → slet linjen `robots: { index: false, follow: false }` i `metadata`. Uden det bliver siden aldrig fundet af Google.
 - [ ] **Åbn for brugere.** Supabase → Authentication → Sign In / Providers → slå "Allow new users to sign up" til igen (eller tilføj godkendt-liste).
 - [ ] **Sæt koden ind i login-mailen.** Supabase → Authentication → Email Templates → Magic Link skal indeholde `{{ .Token }}`, ellers står der ingen kode i mailen, og kodefeltet på login-siden kan ikke bruges. Linket virker uanset hvad, så login går ikke i stykker imens — men trinnet skal gøres, FØR de første testbrugere får at vide, at de kan bruge en kode. Skabelonen er den samme, der skal skrives på dansk i punktet herunder.
-- [ ] **Egen SMTP + dansk login-mail.** Skal på plads INDEN de første testbrugere — ikke først ved lancering. Supabases indbyggede mailservice sender kun til adresser knyttet til vores egen Supabase-konto, og skabelonerne kan ikke redigeres uden egen SMTP. Sæt Resend op (gratis til 3.000 mails/md.), og skift derefter Magic Link-skabelonen til dansk med `{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=email` — den form virker også, når mailen åbnes på en anden enhed end den, linket blev bestilt fra.
+- [ ] **Flyt login-mailen til en nettotext.com-afsender.** Indtil videre sendes den fra `su-media.dk` via Simply.com (se beslutningen 12.09.2026). Det virker, men testbrugerne får en mail fra et firmanavn, de ikke kender. Når `nettotext.com` er koblet på: opret en postkasse (eller sæt Resend op), sæt SPF og DKIM for domænet, og skift så BÅDE afsenderadressen i Supabase → Authentication → SMTP Settings OG `Site URL`. Skiftes afsenderen uden SPF/DKIM på det nye domæne, lander login-mailen i spam — og så kan ingen logge ind.
 - [ ] **Kobl `nettotext.com` på** i Vercel → Settings → Domains — og skift derefter **Site URL** i Supabase → Authentication → URL Configuration til det nye domæne. Sker det ikke, peger login-mailens link stadig på `.vercel.app`.
 - [ ] **Sæt ejerkontoens prøvekvote tilbage.** Den står på 1.000.000 for at kunne teste frit under udviklingen. Beslut inden lancering, om ejerkontoen fortsat skal være speciel — og hvis ikke, sæt den til 5 som alle andre.
 - [ ] **Efterse beløbene i opsætnings-guiden.** `messages/da.json` → `opsaetning.koster` siger, at en kort tekst koster under en krone, og at mindstebeløbet hos leverandøren er 5 dollars. Begge dele bestemmer leverandøren og kan ændre sig. Tjek dem, inden guiden vises for rigtige brugere.
@@ -32,6 +32,34 @@ trin 8.
 - [ ] **Byg "slet min konto"** (GDPR, CLAUDE.md regel 9). Alle brugerens rækker i alle tabeller, `ai_keys` inklusive. De fleste tabeller har `on delete cascade` mod `auth.users`, så meget er gjort — der mangler en knap, en rute og en bekræftelse.
 - [ ] **Privatlivspolitik** på `/da/privatliv` (GDPR, jf. teknisk oplæg afsnit 5).
 - [ ] **Opdatér brandnavnet** i `design/design-3-vaerksted.html` til NettoText.
+
+---
+
+## 2026-09-12 — Login-mailen sendes fra su-media.dk indtil videre
+
+**Hvorfor nu.** Supabases indbyggede mailservice kan ikke sende til andre
+end vores egen konto, og skabelonen kan ikke rettes — så koden fra
+beslutningen herunder kan ikke komme ud i mailen uden egen SMTP.
+`nettotext.com` har endnu ingen mailopsætning, så ejerens eksisterende
+domæne bruges som midlertidig postkasse.
+
+**Valget: Simply.com, ikke Resend endnu.** `su-media.dk` har mail hos
+Simply (`smtp.simply.com`, port 587, STARTTLS), og domænets SPF-record
+tillader allerede Simply at sende på dets vegne. Det koster ingen ny konto
+og ingen DNS-ændring. Resend står stadig som planen for nettotext.com.
+
+**Reglen der ikke må brydes: afsenderen skal være `@su-media.dk`.** Sendes
+der fra en `@nettotext.com`-adresse gennem Simplys server, mangler
+nettotext.com en SPF-record, og mailen ryger i spam. Afsendernavnet må
+gerne være "NettoText" — det er adressen, der skal passe til serveren.
+
+**Prisen: testbrugerne får en mail fra et firma, de ikke kender.** Det er
+til at bære i en lukket test med håndplukkede brugere. Det er IKKE til at
+bære ved lancering, og derfor står skiftet på tjeklisten ovenfor.
+
+**SMTP kan skiftes når som helst.** Den er kun en postkasse, appen låner —
+konti, sessioner og gemte AI-nøgler røres ikke. Skiftet består af to felter
+i Supabase og en ny afsenderadresse.
 
 ---
 
