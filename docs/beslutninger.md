@@ -95,6 +95,11 @@ interval, Supabase kan indstilles til — så en ændring i dashboardet kan
 aldrig spærre for login igen. Feltet har derfor heller ingen pladsholder,
 der lover et bestemt antal cifre.
 
+**De 8 cifre bliver stående.** Ejerens valg 12.09.2026: en længere kode er
+sværere at gætte, og den skal kun tastes én gang. Sæt den ikke ned til 6
+for at gøre den pænere at se på — det er en sikkerhedsindstilling, ikke en
+designdetalje.
+
 ---
 
 ## 2026-09-07 — Teksten vises ikke, mens den skrives. Bjælken gør det
