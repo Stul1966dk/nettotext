@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { logFejl } from "@/lib/fejl";
 import { byggDocx, filnavn } from "@/lib/tekst/docx";
 import { createClient } from "@/lib/supabase/server";
 
@@ -74,7 +75,7 @@ export async function POST(request: Request) {
       },
     });
   } catch (fejl) {
-    console.error("Word-eksport mislykkedes:", fejl);
+    await logFejl("POST /api/export/docx", fejl, { bruger: user.id });
     return Response.json({ slags: "fejl", aarsag: "serverfejl" }, { status: 500 });
   }
 }

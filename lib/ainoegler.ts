@@ -2,6 +2,7 @@ import "server-only";
 
 import { byggAdapter } from "@/lib/ai";
 import { AiFejl, type Leverandoer } from "@/lib/ai/typer";
+import { logFejl } from "@/lib/fejl";
 import { dekrypter, krypter, noegleHint } from "@/lib/kryptering";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/server-service";
@@ -207,7 +208,7 @@ export async function hentNoegleTilBrug(brugerId: string): Promise<{
     // Dekrypteringen fejler, hvis rækken er ændret, eller hvis ENCRYPTION_KEY
     // er en anden end dengang nøglen blev gemt. Begge dele er alvorlige og
     // hører til i loggen — brugeren skal blot bede om at indsætte nøglen igen.
-    console.error("Kunne ikke dekryptere brugerens AI-nøgle:", fejl);
+    await logFejl("lib/ainoegler · dekryptering", fejl, { bruger: brugerId });
     throw new AiFejl("ugyldig_noegle", "Den gemte nøgle kunne ikke læses.");
   }
 }

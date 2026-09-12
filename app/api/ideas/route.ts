@@ -3,6 +3,7 @@ import { z } from "zod";
 import { ManglerNoegle, vaelgNoegle, AiFejl, billigsteModel } from "@/lib/ai";
 import { byggIdeBesked, IDE_SYSTEM } from "@/lib/ai/prompt";
 import { hentBudgetstatus, skrivForbrug } from "@/lib/budget";
+import { logFejl } from "@/lib/fejl";
 import { harProeveKvote } from "@/lib/kvote";
 import { hentTilpasning, profilErTom } from "@/lib/personalisering";
 import { tagPladsIKoeen } from "@/lib/ratelimit";
@@ -104,7 +105,7 @@ export async function POST(request: Request) {
       return Response.json({ aarsag: "for_mange_kald" }, { status: 429 });
     }
   } catch (fejl) {
-    console.error("Rate limit-tjek mislykkedes:", fejl);
+    await logFejl("POST /api/ideas · rate limit", fejl, { bruger: user.id });
     return Response.json({ aarsag: "serverfejl" }, { status: 500 });
   }
 
@@ -123,7 +124,7 @@ export async function POST(request: Request) {
       return Response.json({ aarsag: fejl.aarsag }, { status: 400 });
     }
 
-    console.error("Nøglevalg mislykkedes:", fejl);
+    await logFejl("POST /api/ideas · nøglevalg", fejl, { bruger: user.id });
     return Response.json({ aarsag: "serverfejl" }, { status: 500 });
   }
 
@@ -139,7 +140,7 @@ export async function POST(request: Request) {
         return Response.json({ aarsag: "budget_opbrugt" }, { status: 503 });
       }
     } catch (fejl) {
-      console.error("Budgettjek mislykkedes:", fejl);
+      await logFejl("POST /api/ideas · budgettjek", fejl, { bruger: user.id });
       return Response.json({ aarsag: "serverfejl" }, { status: 500 });
     }
   }
@@ -187,7 +188,7 @@ export async function POST(request: Request) {
         outputTokens: svar.outputTokens,
       });
     } catch (fejl) {
-      console.error("Kunne ikke føre forbrug til protokols:", fejl);
+      await logFejl("POST /api/ideas · forbrugslog", fejl, { bruger: user.id });
     }
 
     const ideer = udtraekIdeer(svar.tekst);
@@ -204,7 +205,13 @@ export async function POST(request: Request) {
   } catch (fejl) {
     // Loggen må se detaljerne; browseren får kun en kategori. Rå fejltekster
     // kan indeholde dele af nøglen eller af brugerens brief.
-    console.error("Idéforslag mislykkedes:", fejl);
+    await logFejl("POST /api/ideas · idéforslag", fejl, {
+      bruger: user.id,
+      ekstra: {
+        skabelon: skabelon.slug,
+        leverandoer: valg.adapter.leverandoer,
+      },
+    });
 
     const aarsag = fejl instanceof AiFejl ? fejl.aarsag : "ukendt";
     return Response.json({ aarsag }, { status: 502 });

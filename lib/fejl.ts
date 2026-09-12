@@ -121,9 +121,13 @@ type Muligheder = {
 /**
  * Skriv en fejl til loggen.
  *
- * `sted` er stedet, som et menneske kender det: "POST /api/generate",
- * "lib/kvote". Det er den kolonne, man skimmer adminsiden efter, så skriv
- * det samme sted på samme måde hver gang.
+ * `sted` er stedet, som et menneske kender det, og formen er fast:
+ * ruten eller filen, en midterprik, og hvad der mislykkedes —
+ * "POST /api/generate · budgettjek", "lib/budget · usage_log".
+ *
+ * Formen er ikke pynt. Det er den kolonne, adminsiden skimmes efter, og
+ * første del er den, ens fejl kan samles på senere. Skriv derfor samme
+ * sted på samme måde hver gang.
  *
  * Kast aldrig fra denne funktion. Kaldere gør ofte:
  *

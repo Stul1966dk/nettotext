@@ -66,6 +66,12 @@ retter det som en forglemmelse.
 **Ryddes efter 30 dage** af pg_cron, ti minutter efter kladde-oprydningen.
 Lang nok til at se et mønster, kort nok til ikke at blive et arkiv.
 
+**Alle 30 steder i koden, der før kun sagde det til Vercels logs, skriver
+nu i tabellen.** Seks API-ruter, indstillingernes server actions og tre
+filer i `lib/`. `sted` har en fast form — rute eller fil, midterprik, hvad
+der mislykkedes: "POST /api/generate · budgettjek". Første del er den, ens
+fejl kan samles på, den dag der bliver behov for gruppering.
+
 **Fejl inde i browseren logges IKKE.** De kræver en offentlig rute, og en
 offentlig rute, der skriver i en tabel, skal beskyttes mod at blive fyldt
 med skrald. Serverfejlene er dér, de dyre ting sker. Det andet kan komme

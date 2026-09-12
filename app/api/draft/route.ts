@@ -5,6 +5,7 @@ import {
   indholdSkema,
   sletKladdePaaServer,
 } from "@/lib/kladder";
+import { logFejl } from "@/lib/fejl";
 import { createClient } from "@/lib/supabase/server";
 
 /**
@@ -58,7 +59,7 @@ export async function PUT(request: Request) {
   } catch (fejl) {
     // Kladden står stadig i browserens localStorage, så brugeren mister
     // ingenting lige nu. Fejlen hører til i loggen, ikke på skærmen.
-    console.error("Kunne ikke gemme kladde:", fejl);
+    await logFejl("PUT /api/draft · gem kladde", fejl, { bruger: user.id });
     return svar("serverfejl", 500);
   }
 
@@ -86,7 +87,7 @@ export async function DELETE(request: Request) {
   try {
     await sletKladdePaaServer(anmodning.data.id);
   } catch (fejl) {
-    console.error("Kunne ikke slette kladde:", fejl);
+    await logFejl("DELETE /api/draft · slet kladde", fejl, { bruger: user.id });
     return svar("serverfejl", 500);
   }
 

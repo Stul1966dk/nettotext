@@ -8,6 +8,7 @@ import {
 } from "@/lib/ai/prompt";
 import { afvis, ndjsonLinje, NDJSON_HEADERS } from "@/lib/api/ndjson";
 import { hentBudgetstatus, skrivForbrug } from "@/lib/budget";
+import { logFejl } from "@/lib/fejl";
 import { harProeveKvote } from "@/lib/kvote";
 import { tagPladsIKoeen } from "@/lib/ratelimit";
 import { hentSkabelon } from "@/lib/skabeloner/hent";
@@ -107,7 +108,7 @@ export async function POST(request: Request) {
       return afvis("for_mange_kald", 429);
     }
   } catch (fejl) {
-    console.error("Rate limit-tjek mislykkedes:", fejl);
+    await logFejl("POST /api/regenerate-section · rate limit", fejl, { bruger: user.id });
     return afvis("serverfejl", 500);
   }
 
@@ -127,7 +128,7 @@ export async function POST(request: Request) {
       return afvis(fejl.aarsag, 400);
     }
 
-    console.error("Nøglevalg mislykkedes:", fejl);
+    await logFejl("POST /api/regenerate-section · nøglevalg", fejl, { bruger: user.id });
     return afvis("serverfejl", 500);
   }
 
@@ -143,7 +144,7 @@ export async function POST(request: Request) {
         return afvis("budget_opbrugt", 503);
       }
     } catch (fejl) {
-      console.error("Budgettjek mislykkedes:", fejl);
+      await logFejl("POST /api/regenerate-section · budgettjek", fejl, { bruger: user.id });
       return afvis("serverfejl", 500);
     }
   }
@@ -239,7 +240,13 @@ export async function POST(request: Request) {
           controller.enqueue(ndjsonLinje({ slags: "faerdig", html }));
         }
       } catch (fejl) {
-        console.error("Omskrivning mislykkedes:", fejl);
+        await logFejl("POST /api/regenerate-section · omskrivning", fejl, {
+          bruger: user.id,
+          ekstra: {
+            skabelon: skabelon.slug,
+            leverandoer: valg.adapter.leverandoer,
+          },
+        });
 
         const aarsag = fejl instanceof AiFejl ? fejl.aarsag : "ukendt";
         controller.enqueue(ndjsonLinje({ slags: "fejl", aarsag }));
@@ -257,7 +264,7 @@ export async function POST(request: Request) {
               outputTokens: forbrug.outputTokens,
             });
           } catch (fejl) {
-            console.error("Kunne ikke føre forbrug til protokols:", fejl);
+            await logFejl("POST /api/regenerate-section · forbrugslog", fejl, { bruger: user.id });
           }
         }
 

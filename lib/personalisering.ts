@@ -2,6 +2,7 @@ import "server-only";
 
 import { z } from "zod";
 
+import { logFejl } from "@/lib/fejl";
 import { createClient } from "@/lib/supabase/server";
 
 /**
@@ -162,7 +163,7 @@ export async function hentTilpasning(): Promise<Tilpasning> {
       instruktioner: instruktioner.map((i) => i.indhold),
     };
   } catch (fejl) {
-    console.error("Kunne ikke hente personalisering:", fejl);
+    await logFejl("lib/personalisering", fejl);
     return { brand: null, instruktioner: [] };
   }
 }

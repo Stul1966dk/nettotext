@@ -3,6 +3,7 @@ import { z } from "zod";
 import { byggBrugerbesked, stiltoneTillaeg } from "@/lib/ai/prompt";
 import { ManglerNoegle, vaelgNoegle, AiFejl } from "@/lib/ai";
 import { hentBudgetstatus, skrivForbrug } from "@/lib/budget";
+import { logFejl } from "@/lib/fejl";
 import { frigivProeveTekst, reserverProeveTekst } from "@/lib/kvote";
 import { hentTilpasning } from "@/lib/personalisering";
 import { hentSkabelon } from "@/lib/skabeloner/hent";
@@ -120,7 +121,7 @@ export async function POST(request: Request) {
       return afvis("for_mange_kald", 429);
     }
   } catch (fejl) {
-    console.error("Rate limit-tjek mislykkedes:", fejl);
+    await logFejl("POST /api/generate · rate limit", fejl, { bruger: user.id });
     return afvis("serverfejl", 500);
   }
 
@@ -146,7 +147,7 @@ export async function POST(request: Request) {
       return afvis(fejl.aarsag, 400);
     }
 
-    console.error("Nøglevalg mislykkedes:", fejl);
+    await logFejl("POST /api/generate · nøglevalg", fejl, { bruger: user.id });
     return afvis("serverfejl", 500);
   }
 
@@ -174,7 +175,7 @@ export async function POST(request: Request) {
 
       // Kan vi ikke føre regnskab, bruger vi ikke penge. Samme afvejning som
       // i lib/kvote.ts.
-      console.error("Budgettjek mislykkedes:", fejl);
+      await logFejl("POST /api/generate · budgettjek", fejl, { bruger: user.id });
       return afvis("serverfejl", 500);
     }
   }
@@ -310,7 +311,13 @@ export async function POST(request: Request) {
 
         // Loggen må se detaljerne. Browseren får kun en kategori: rå
         // fejltekster kan indeholde dele af nøglen eller af brugerens tekst.
-        console.error("Generering mislykkedes:", fejl);
+        await logFejl("POST /api/generate · generering", fejl, {
+          bruger: user.id,
+          ekstra: {
+            skabelon: skabelon.slug,
+            leverandoer: valg.adapter.leverandoer,
+          },
+        });
 
         const aarsag = fejl instanceof AiFejl ? fejl.aarsag : "ukendt";
         controller.enqueue(linje({ slags: "fejl", aarsag }));
@@ -330,7 +337,7 @@ export async function POST(request: Request) {
               outputTokens: forbrug.outputTokens,
             });
           } catch (fejl) {
-            console.error("Kunne ikke føre forbrug til protokols:", fejl);
+            await logFejl("POST /api/generate · forbrugslog", fejl, { bruger: user.id });
           }
         }
 

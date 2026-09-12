@@ -2,6 +2,7 @@ import "server-only";
 
 import { beregnPrisDkk } from "@/lib/ai/pris";
 import type { Betaler, Leverandoer } from "@/lib/ai";
+import { logFejl } from "@/lib/fejl";
 import { createServiceClient } from "@/lib/supabase/server-service";
 
 /**
@@ -115,10 +116,12 @@ export async function skrivForbrug(post: {
   if (pris === null) {
     // Modellen står uden pris i lib/ai/modeller.ts. Så tæller kaldet ikke med
     // i dagens forbrug, og loftet er tilsvarende for løst. Det skal larme.
-    console.error(
-      `[budget] Ingen pris kendt for modellen ${post.model}. ` +
-        "Forbruget logges som 0 kr., og budgetloftet tæller for lavt. " +
-        "Tilføj prisen i lib/ai/modeller.ts.",
+    await logFejl(
+      "lib/budget · manglende pris",
+      `Ingen pris kendt for modellen ${post.model}. Forbruget logges som ` +
+        "0 kr., og budgetloftet tæller for lavt. Tilføj prisen i " +
+        "lib/ai/modeller.ts.",
+      { bruger: post.brugerId, ekstra: { model: post.model } },
     );
   }
 
@@ -137,6 +140,9 @@ export async function skrivForbrug(post: {
   });
 
   if (error) {
-    console.error("[budget] Kunne ikke skrive i usage_log:", error.message);
+    await logFejl("lib/budget · usage_log", error.message, {
+      bruger: post.brugerId,
+      ekstra: { model: post.model, skabelon: post.skabelon },
+    });
   }
 }

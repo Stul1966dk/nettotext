@@ -11,6 +11,7 @@ import {
   sletNoegle,
   testNoegle,
 } from "@/lib/ainoegler";
+import { logFejl } from "@/lib/fejl";
 import { tagPladsIKoeen } from "@/lib/ratelimit";
 import { createClient } from "@/lib/supabase/server";
 
@@ -95,7 +96,7 @@ export async function POST(request: Request) {
     try {
       await opdaterModel(user.id, anmodning.data.model);
     } catch (f) {
-      console.error("Kunne ikke skifte model:", f);
+      await logFejl("POST /api/keys · skift model", f, { bruger: user.id });
       return fejl("serverfejl", 500);
     }
 
@@ -113,7 +114,7 @@ export async function POST(request: Request) {
   try {
     pladsIKoeen = await tagPladsIKoeen(user.id);
   } catch (f) {
-    console.error("Kunne ikke tjekke rate limit:", f);
+    await logFejl("POST /api/keys · rate limit", f, { bruger: user.id });
     return fejl("serverfejl", 500);
   }
 
@@ -141,7 +142,7 @@ export async function POST(request: Request) {
       await gemNoegle(user.id, leverandoer, model, noegle);
     } catch (f) {
       if (f instanceof AiFejl) return fraLeverandoeren(f);
-      console.error("Kunne ikke gemme AI-nøgle:", f);
+      await logFejl("POST /api/keys · gem nøgle", f, { bruger: user.id });
       return fejl("serverfejl", 500);
     }
 
@@ -157,7 +158,7 @@ export async function POST(request: Request) {
     await markerValideret(user.id);
   } catch (f) {
     if (f instanceof AiFejl) return fraLeverandoeren(f);
-    console.error("Kunne ikke teste AI-nøgle:", f);
+    await logFejl("POST /api/keys · test nøgle", f, { bruger: user.id });
     return fejl("serverfejl", 500);
   }
 
@@ -175,7 +176,7 @@ export async function DELETE() {
   try {
     await sletNoegle(user.id);
   } catch (f) {
-    console.error("Kunne ikke slette AI-nøgle:", f);
+    await logFejl("DELETE /api/keys · slet nøgle", f, { bruger: user.id });
     return fejl("serverfejl", 500);
   }
 

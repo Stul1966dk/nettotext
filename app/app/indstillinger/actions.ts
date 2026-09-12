@@ -13,6 +13,7 @@ import {
   sletInstruktion,
   tilfoejInstruktion,
 } from "@/lib/personalisering";
+import { logFejl } from "@/lib/fejl";
 import { createClient } from "@/lib/supabase/server";
 
 /**
@@ -81,7 +82,7 @@ export async function gemBrandprofilAction(
   try {
     await gemBrandprofil(bruger.id, profil.data);
   } catch (fejl) {
-    console.error("Kunne ikke gemme brand-profil:", fejl);
+    await logFejl("Server action · gem brand-profil", fejl, { bruger: bruger.id });
     return { ok: false, besked: t("fejlUkendt") };
   }
 
@@ -110,7 +111,7 @@ export async function tilfoejInstruktionAction(
   try {
     await tilfoejInstruktion(bruger.id, indhold.data);
   } catch (fejl) {
-    console.error("Kunne ikke gemme instruktion:", fejl);
+    await logFejl("Server action · gem instruktion", fejl, { bruger: bruger.id });
     return { ok: false, besked: t("fejlUkendt") };
   }
 
@@ -129,7 +130,7 @@ export async function sletInstruktionAction(data: FormData): Promise<void> {
     // Ejerskabet afgøres af RLS. Et id, hun ikke ejer, rammer ingenting.
     await sletInstruktion(id.data);
   } catch (fejl) {
-    console.error("Kunne ikke slette instruktion:", fejl);
+    await logFejl("Server action · slet instruktion", fejl, { bruger: bruger.id });
   }
 
   revalidatePath("/app/indstillinger");
