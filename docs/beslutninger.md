@@ -72,6 +72,18 @@ filer i `lib/`. `sted` har en fast form — rute eller fil, midterprik, hvad
 der mislykkedes: "POST /api/generate · budgettjek". Første del er den, ens
 fejl kan samles på, den dag der bliver behov for gruppering.
 
+**Adminsiden: `/app/admin/fejl`, og tallet står PÅ adminforsiden.** Ikke
+bag et klik — vi har fravalgt at blive ringet op, så tallet skal i det
+mindste møde en, der alligevel er forbi. Det tæller "det seneste døgn" og
+ikke "i dag": et døgn er det samme hele året og kræver ingen stillingtagen
+til tidszoner og sommertid. Kan tabellen ikke læses, siger siden det højt
+i stedet for at vise et nul, der ligner fred og ro.
+
+**Adgangen er den, der allerede fandtes.** Siden ligger under
+`/app/admin`-layoutet, som kalder `hentAdmin()` og viser notFound() til
+alle andre. Adminkontoen står fortsat KUN i miljøvariablen `ADMIN_EMAIL` —
+adressen skrives ikke ind i koden, heller ikke for den her side.
+
 **Fejl inde i browseren logges IKKE.** De kræver en offentlig rute, og en
 offentlig rute, der skriver i en tabel, skal beskyttes mod at blive fyldt
 med skrald. Serverfejlene er dér, de dyre ting sker. Det andet kan komme

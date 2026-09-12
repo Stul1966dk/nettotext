@@ -103,7 +103,7 @@ Begrundelserne står i `beslutninger.md`.
 | Forbrugslog (`usage_log`) | færdig (30.08.2026) |
 | Globalt dagligt budgetloft | færdig (30.08.2026) |
 | Rate limit pr. bruger | færdig (30.08.2026) |
-| Fejlovervågning | egen fejllog valgt frem for Sentry (12.09.2026): tabel og `lib/fejl.ts` bygget, adminside mangler |
+| Fejlovervågning | færdig 12.09.2026 — egen fejllog frem for Sentry: `error_log`, `lib/fejl.ts` og `/app/admin/fejl` |
 | Feedback-widget | **mangler** |
 
 Feedback er halvt forberedt: kolonnerne `feedback` og `feedback_comment` står

@@ -366,6 +366,18 @@
     "fejlGem": "Teksttypen kunne ikke gemmes. Prøv igen om lidt.",
     "fejlUkendt": "Der var noget i formularen, vi ikke kunne bruge. Se felterne igennem.",
     "forsideTitel": "Administration — NettoText",
-    "forside": "Administration"
+    "forside": "Administration",
+    "fejlTitel": "Fejl — NettoText",
+    "fejlOverskrift": "Fejl",
+    "fejlForklaring": "Fejl på serveren, nyeste først. Der står aldrig tekstindhold her — kun hvad der gik galt, hvor, og hvem det ramte. Rækkerne slettes automatisk efter 30 dage.",
+    "fejlKortForklaring": "Hvad der er gået galt på serveren. Loggen ligger i vores egen database — intet sendes videre til andre.",
+    "fejlDoegn": "{antal, plural, =0 {Ingen fejl} one {# fejl} other {# fejl}} i det seneste døgn",
+    "fejlIalt": "{antal} i loggen i alt",
+    "fejlTalUkendt": "Tallene kunne ikke hentes. Det er i sig selv værd at kigge på.",
+    "fejlIngen": "Ingen fejl i loggen. Rækker ældre end 30 dage slettes automatisk, så en tom log kan også betyde, at der ikke er sket noget den seneste måned.",
+    "fejlBruger": "bruger {id}",
+    "fejlSpor": "Teknisk spor",
+    "fejlAfkortet": "Viser de {antal} nyeste. Resten ligger i loggen, indtil den ryddes.",
+    "tilbageAdmin": "Tilbage til administration"
   }
 }
