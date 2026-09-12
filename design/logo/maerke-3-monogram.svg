@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="NettoText">
-  <rect width="64" height="64" rx="14" fill="#1C3A31"/>
-  <path d="M17 15h9l21 34h-9z" fill="#D9A441"/>
-  <rect x="17" y="15" width="9" height="34" fill="#F3F4F0"/>
-  <rect x="38" y="15" width="9" height="34" fill="#F3F4F0"/>
-</svg>

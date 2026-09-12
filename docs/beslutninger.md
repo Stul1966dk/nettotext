@@ -13,6 +13,7 @@ Opdateres løbende — se "Arbejdsform" i CLAUDE.md.
 Åbne punkter, der bevidst er sat på pause. Gennemgå listen, når vi nærmer os
 trin 8.
 
+- [ ] **Tegn et PNG-ikon til Apple-enheder.** `app/icon.svg` dækker browserfanen, men iOS' "føj til hjemmeskærm" og enkelte ældre browsere kræver et PNG (`app/apple-icon.png`, 180×180). Uden det viser iPhone et gråt skærmbillede i stedet for mærket.
 - [ ] **Fjern `noindex`.** `app/layout.tsx` → slet linjen `robots: { index: false, follow: false }` i `metadata`. Uden det bliver siden aldrig fundet af Google.
 - [ ] **Åbn for brugere.** Supabase → Authentication → Sign In / Providers → slå "Allow new users to sign up" til igen (eller tilføj godkendt-liste).
 - [ ] **Sæt koden ind i login-mailen.** Supabase → Authentication → Email Templates → Magic Link skal indeholde `{{ .Token }}`, ellers står der ingen kode i mailen, og kodefeltet på login-siden kan ikke bruges. Linket virker uanset hvad, så login går ikke i stykker imens — men trinnet skal gøres, FØR de første testbrugere får at vide, at de kan bruge en kode. Skabelonen er den samme, der skal skrives på dansk i punktet herunder.
@@ -32,6 +33,34 @@ trin 8.
 - [ ] **Byg "slet min konto"** (GDPR, CLAUDE.md regel 9). Alle brugerens rækker i alle tabeller, `ai_keys` inklusive. De fleste tabeller har `on delete cascade` mod `auth.users`, så meget er gjort — der mangler en knap, en rute og en bekræftelse.
 - [ ] **Privatlivspolitik** på `/da/privatliv` (GDPR, jf. teknisk oplæg afsnit 5).
 - [ ] **Opdatér brandnavnet** i `design/design-3-vaerksted.html` til NettoText.
+
+---
+
+## 2026-09-12 — Logoet er Stemplet. Favicon'et er en forenklet udgave
+
+**Ejerens valg** mellem tre forslag (se `design/logo-forslag.html`, som
+bliver stående som optegnelse): et N i det skæve stempel med dobbelt kant —
+samme motiv som GODKENDT-stemplet. Valgt fra: tre tekstlinjer med en
+rav-linje ("Afsnittet") og et geometrisk N ("Monogrammet").
+
+**Mærket er tegnet i `currentColor`.** `components/Maerke.tsx` arver farven
+fra teksten ved siden af, så det samme mærke virker på lys og mørk bund
+uden en ekstra fil. Det står tre steder: forsiden, login-siden og
+app-headeren — alle tre med `text-stempel`.
+
+**Ordmærket er ikke tegnet med. Det er rigtig tekst.** Så passer skriften
+altid med resten af siden, skærmlæsere læser navnet, og der er ingen
+logofil at holde opdateret, hvis navnet ændrer sig.
+
+**Favicon'et er IKKE det samme mærke.** Den dobbelte kant klumper sammen ved
+16 px, og en ramme uden fladefarve forsvinder i en mørk browser. `app/icon.svg`
+er derfor det samme skæve stempel som en UDFYLDT flade med et udsparet N, og
+den vender farverne om ved `prefers-color-scheme: dark` — begge varianter
+bruger kun palettens farver. Ændres mærket, skal icon.svg ændres med; det
+står som en note i begge filer.
+
+**Next.js' standardikon er slettet.** `app/favicon.ico` var Vercel-trekanten.
+Den lå og vandt over vores eget ikon i nogle browsere.
 
 ---
 

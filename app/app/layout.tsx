@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
+import { Maerke } from "@/components/Maerke";
 import { erAdmin } from "@/lib/admin";
 import { createClient } from "@/lib/supabase/server";
 import { logUd } from "./actions";
@@ -37,7 +38,8 @@ export default async function AppLayout({
     <div className="flex min-h-full flex-1 flex-col">
       <header className="border-b border-kant bg-kort">
         <div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-4 px-6 py-4">
-          <span className="font-mono text-xs uppercase tracking-widest text-gran-let">
+          <span className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-gran-let">
+            <Maerke className="text-stempel" />
             NettoText
           </span>
 
