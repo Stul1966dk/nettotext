@@ -13,7 +13,6 @@ Opdateres løbende — se "Arbejdsform" i CLAUDE.md.
 Åbne punkter, der bevidst er sat på pause. Gennemgå listen, når vi nærmer os
 trin 8.
 
-- [ ] **Tegn et PNG-ikon til Apple-enheder.** `app/icon.svg` dækker browserfanen, men iOS' "føj til hjemmeskærm" og enkelte ældre browsere kræver et PNG (`app/apple-icon.png`, 180×180). Uden det viser iPhone et gråt skærmbillede i stedet for mærket.
 - [ ] **Fjern `noindex`.** `app/layout.tsx` → slet linjen `robots: { index: false, follow: false }` i `metadata`. Uden det bliver siden aldrig fundet af Google.
 - [ ] **Åbn for brugere.** Supabase → Authentication → Sign In / Providers → slå "Allow new users to sign up" til igen (eller tilføj godkendt-liste).
 - [ ] **Sæt koden ind i login-mailen.** Supabase → Authentication → Email Templates → Magic Link skal indeholde `{{ .Token }}`, ellers står der ingen kode i mailen, og kodefeltet på login-siden kan ikke bruges. Linket virker uanset hvad, så login går ikke i stykker imens — men trinnet skal gøres, FØR de første testbrugere får at vide, at de kan bruge en kode. Skabelonen er den samme, der skal skrives på dansk i punktet herunder.
@@ -61,6 +60,14 @@ står som en note i begge filer.
 
 **Next.js' standardikon er slettet.** `app/favicon.ico` var Vercel-trekanten.
 Den lå og vandt over vores eget ikon i nogle browsere.
+
+**iOS har fået sit eget ikon.** `app/apple-icon.png` (180×180) til "føj til
+hjemmeskærm", som ikke kan bruge SVG. Det er en tredje udgave af motivet:
+stemplet på en fuld bund-farvet flade, UDEN gennemsigtighed og UDEN runde
+hjørner — iOS lægger selv sin maske henover, og en gennemsigtig baggrund
+bliver til sort. Filen er rasteriseret fra `design/logo/apple-ikon.svg` med
+`sharp`, som allerede fulgte med Next.js. Ændres mærket, skal PNG'en tegnes
+om fra den SVG.
 
 ---
 
