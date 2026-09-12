@@ -15,7 +15,6 @@ type Tekster = {
   knap: string;
   sender: string;
   kodeLabel: string;
-  kodePladsholder: string;
   kodeKnap: string;
   kodeTjekker: string;
   sendIgen: string;
@@ -93,11 +92,10 @@ function Forloeb({
               type="text"
               inputMode="numeric"
               pattern="[0-9]*"
-              maxLength={6}
+              maxLength={10}
               required
               autoFocus
               autoComplete="one-time-code"
-              placeholder={tekster.kodePladsholder}
               aria-describedby={kodeSvar ? "kode-svar" : undefined}
               className="w-full rounded-lg border border-kant bg-kort px-4 py-3 font-mono text-lg tracking-[0.4em] text-gran outline-none focus-visible:ring-2 focus-visible:ring-gran"
             />

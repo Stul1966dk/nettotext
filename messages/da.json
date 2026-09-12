@@ -19,7 +19,6 @@
     "knap": "Send kode",
     "sender": "Sender …",
     "kodeLabel": "Kode fra mailen",
-    "kodePladsholder": "6 cifre",
     "kodeKnap": "Log ind",
     "kodeTjekker": "Tjekker …",
     "sendIgen": "Send en ny kode",
@@ -30,7 +29,7 @@
     "nogetGikGalt": "Vi kunne ikke sende koden lige nu. Prøv igen om lidt.",
     "linkVirkedeIkke": "Linket virkede ikke. Det er enten udløbet eller brugt før — bed om et nyt herunder.",
     "lukketTest": "NettoText er i lukket test. Kun konti, der er oprettet på forhånd, kan logge ind.",
-    "ugyldigKode": "Koden består af seks cifre. Tjek den i mailen, og prøv igen.",
+    "ugyldigKode": "Koden er cifrene fra mailen. Tast dem alle, uden mellemrum.",
     "kodenVirkedeIkke": "Koden passer ikke — eller den er udløbet. Bed om en ny herunder."
   },
   "app": {

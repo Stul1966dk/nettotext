@@ -88,6 +88,13 @@ dele: "Skriv koden herunder — eller klik på linket i mailen."
 **Forkert kode og ukendt adresse får samme svar.** Præcis som trin 1: ellers
 kunne siden bruges til at afgøre, om en mailadresse har en konto.
 
+**Længden på koden står i Supabase, ikke i koden.** Projektet sender
+8-cifrede koder (Authentication → Email OTP Length). Appen krævede først
+præcis 6 og afviste dem alle. Den tager nu 6-10 cifre, som er hele det
+interval, Supabase kan indstilles til — så en ændring i dashboardet kan
+aldrig spærre for login igen. Feltet har derfor heller ingen pladsholder,
+der lover et bestemt antal cifre.
+
 ---
 
 ## 2026-09-07 — Teksten vises ikke, mens den skrives. Bjælken gør det

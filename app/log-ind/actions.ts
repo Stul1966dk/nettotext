@@ -9,8 +9,12 @@ import { createClient } from "@/lib/supabase/server";
 
 const emailSkema = z.email();
 
-/** Koden fra login-mailen: seks cifre, hverken flere eller færre. */
-const kodeSkema = z.string().regex(/^\d{6}$/);
+/**
+ * Koden fra login-mailen. Længden bestemmes i Supabase (Email OTP Length)
+ * og er 6-10 cifre — derfor låser vi den ikke fast her. Ændres den i
+ * dashboardet, skal login blive ved med at virke.
+ */
+const kodeSkema = z.string().regex(/^\d{6,10}$/);
 
 export type LogIndSvar =
   | { status: "sendt"; besked: string }
