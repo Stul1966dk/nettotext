@@ -35,6 +35,44 @@ trin 8.
 
 ---
 
+## 2026-09-12 — Egen fejllog i stedet for Sentry
+
+**Ejerens valg.** Trin 6 havde Sentry stående som "mangler". Ejeren vil
+ikke have flere tredjeparter ind i projektet, og fejl skal ikke sendes ud
+af huset. I stedet: tabellen `error_log` (migration 0020) og
+`lib/fejl.ts`, læst af adminen på en side, der bygges bagefter.
+
+**Hvad vi giver afkald på, og det er ikke ingenting.** Sentry ringer, når
+noget brænder — det her venter på, at nogen kigger. Derfor skal adminsiden
+vise "fejl i dag" på forsiden og ikke gemme tallet bag et klik. Der er
+heller ingen gruppering: sker den samme fejl 200 gange, står den 200 gange.
+Og går databasen ned, logges intet — dér er Vercels egne logs sidste udvej.
+Derfor kalder `logFejl` ALTID `console.error` først og skriver bagefter.
+
+**Tre ting i koden findes udelukkende for at holde regel 9.** Fejlobjektet
+køres aldrig gennem JSON.stringify — en fejl fra AI-leverandøren kan have
+hele forespørgslen hængende på sig, og den indeholder brugerens brief; der
+tages kun beskeden og en eventuel fejlkode. Alt saneres for nøglemønstre,
+også de ekstra felter, fordi en nøgle kan være havnet inde i en fejlbesked
+fra leverandøren. Og strenge over 200 tegn i `ekstra` kastes væk, fordi
+længden i sig selv lugter af indhold.
+
+**Tabellen har ingen policies, og det er en beslutning.** RLS er slået til
+uden en eneste policy: så er svaret nej til alle almindelige brugere.
+Kun `service_role` kommer ind — `lib/fejl.ts` skriver, adminsiden læser
+EFTER admin-tjekket. Det står skrevet i migrationsfilen, så ingen senere
+retter det som en forglemmelse.
+
+**Ryddes efter 30 dage** af pg_cron, ti minutter efter kladde-oprydningen.
+Lang nok til at se et mønster, kort nok til ikke at blive et arkiv.
+
+**Fejl inde i browseren logges IKKE.** De kræver en offentlig rute, og en
+offentlig rute, der skriver i en tabel, skal beskyttes mod at blive fyldt
+med skrald. Serverfejlene er dér, de dyre ting sker. Det andet kan komme
+senere, hvis der viser sig behov.
+
+---
+
 ## 2026-09-12 — Logoet er Stemplet. Favicon'et er en forenklet udgave
 
 **Ejerens valg** mellem tre forslag (se `design/logo-forslag.html`, som
