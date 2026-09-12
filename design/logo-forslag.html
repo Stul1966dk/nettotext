@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NettoText — tre forslag til logo og favicon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bund:#F3F4F0; --gran:#1C3A31; --gran-let:#4C6A60;
+    --stempel:#1E5C46; --rav:#D9A441; --kort:#FFFFFF; --kant:#DDE0D8;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bund); color:var(--gran);
+    font-family:'IBM Plex Sans',system-ui,sans-serif; font-size:15px; line-height:1.6;
+    padding:48px 24px 72px;
+  }
+  .side{max-width:860px;margin:0 auto}
+  .overskrift{font-size:28px;font-weight:700;letter-spacing:-0.01em;margin:0}
+  .manchet{color:var(--gran-let);margin:10px 0 0;max-width:60ch}
+  .mono{font-family:'IBM Plex Mono',monospace}
+
+  .kort{
+    background:var(--kort); border:1px solid var(--kant); border-radius:16px;
+    padding:28px; margin-top:28px;
+  }
+  .nummer{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--rav)}
+  .navn{font-size:20px;font-weight:600;margin:6px 0 0}
+  .hvorfor{color:var(--gran-let);margin:8px 0 0;max-width:62ch}
+
+  .raekke{display:flex;flex-wrap:wrap;gap:28px;margin-top:24px;align-items:flex-start}
+  .felt{border:1px solid var(--kant);border-radius:12px;padding:18px 20px;background:var(--bund)}
+  .felt.moerk{background:var(--gran);border-color:var(--gran)}
+  .feltnavn{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--gran-let);margin:0 0 12px}
+  .felt.moerk .feltnavn{color:#9FB3AB}
+
+  /* Logo-låsen: mærke + ordmærke, som i app-headeren */
+  .laas{display:flex;align-items:center;gap:10px}
+  .maerke{display:block;--flade:var(--gran);--tegn:var(--bund);--accent:var(--rav);--streg:var(--stempel)}
+  .omvendt .maerke{--flade:var(--bund);--tegn:var(--gran);--streg:var(--bund)}
+  .ord{font-size:19px;font-weight:700;letter-spacing:-0.01em;color:var(--gran)}
+  .omvendt .ord{color:var(--bund)}
+  .ord .let{color:var(--gran-let);font-weight:600}
+  .omvendt .ord .let{color:#9FB3AB}
+  .ord.stempelskrift{font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}
+
+  /* Faneblad-attrap */
+  .browser{width:260px;border-radius:10px 10px 0 0;overflow:hidden;border:1px solid var(--kant);border-bottom:none}
+  .browserlinje{background:#E6E7E2;padding:8px 8px 0;display:flex}
+  .fane{background:#fff;border-radius:8px 8px 0 0;padding:8px 12px;display:flex;align-items:center;gap:8px;font-size:12px;color:#3B3B3B;width:100%}
+  .browser.moerk{border-color:#3A3A3A}
+  .browser.moerk .browserlinje{background:#202124}
+  .browser.moerk .fane{background:#35363A;color:#E8EAED}
+  .browserkrop{height:26px;background:#fff;border:1px solid var(--kant);border-top:none;border-radius:0 0 10px 10px}
+  .browser.moerk + .browserkrop{background:#292A2D;border-color:#3A3A3A}
+
+  .stoerrelser{display:flex;align-items:flex-end;gap:20px}
+  .stoerrelse{text-align:center}
+  .stoerrelse span{display:block;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--gran-let);margin-top:8px}
+
+  .dom{margin-top:18px;padding-top:16px;border-top:1px solid var(--kant);color:var(--gran-let);font-size:14px;max-width:62ch}
+  .dom strong{color:var(--gran)}
+</style>
+</head>
+<body>
+<div class="side">
+
+  <h1 class="overskrift">Tre forslag til logo og favicon</h1>
+  <p class="manchet">
+    Alle tre holder sig til Værksted-farverne og IBM Plex. Mærket er tegnet som SVG,
+    så det er skarpt i alle størrelser. Ordmærket bliver stående som rigtig tekst i
+    appen — så passer skriften altid, og skærmlæsere kan læse navnet.
+  </p>
+
+  <!-- ============================ 1 ============================ -->
+  <section class="kort">
+    <p class="nummer">Forslag 1</p>
+    <h2 class="navn">Stemplet</h2>
+    <p class="hvorfor">
+      Bygger direkte på designsystemets signatur: det skæve GODKENDT-stempel med
+      dobbelt kant. Mærket er et N i stempelrammen, og ordmærket er sat i mono som
+      et stempelaftryk. Det er det mest særprægede af de tre — og det mest sarte,
+      når det bliver småt.
+    </p>
+
+    <div class="raekke">
+      <div class="felt">
+        <p class="feltnavn">På lys bund</p>
+        <div class="laas">
+          <svg class="maerke" width="30" height="30" viewBox="0 0 64 64" aria-hidden="true">
+            <g transform="rotate(-6 32 32)">
+              <rect x="8" y="14" width="48" height="36" rx="5" fill="none" stroke="var(--streg)" stroke-width="3"/>
+              <rect x="13" y="19" width="38" height="26" rx="3" fill="none" stroke="var(--streg)" stroke-width="1.5"/>
+              <path d="M25 23h4l10 13V23h4v18h-4L29 28v13h-4z" fill="var(--streg)"/>
+            </g>
+          </svg>
+          <span class="ord stempelskrift">NettoText</span>
+        </div>
+      </div>
+
+      <div class="felt moerk omvendt">
+        <p class="feltnavn">På mørk bund</p>
+        <div class="laas">
+          <svg class="maerke" width="30" height="30" viewBox="0 0 64 64" aria-hidden="true">
+            <g transform="rotate(-6 32 32)">
+              <rect x="8" y="14" width="48" height="36" rx="5" fill="none" stroke="var(--streg)" stroke-width="3"/>
+              <rect x="13" y="19" width="38" height="26" rx="3" fill="none" stroke="var(--streg)" stroke-width="1.5"/>
+              <path d="M25 23h4l10 13V23h4v18h-4L29 28v13h-4z" fill="var(--streg)"/>
+            </g>
+          </svg>
+          <span class="ord stempelskrift">NettoText</span>
+        </div>
+      </div>
+
+      <div class="felt">
+        <p class="feltnavn">Mærket alene</p>
+        <div class="stoerrelser">
+          <div class="stoerrelse">
+            <svg class="maerke" width="64" height="64" viewBox="0 0 64 64" aria-hidden="true">
+              <g transform="rotate(-6 32 32)">
+                <rect x="8" y="14" width="48" height="36" rx="5" fill="none" stroke="var(--streg)" stroke-width="3"/>
+                <rect x="13" y="19" width="38" height="26" rx="3" fill="none" stroke="var(--streg)" stroke-width="1.5"/>
+                <path d="M25 23h4l10 13V23h4v18h-4L29 28v13h-4z" fill="var(--streg)"/>
+              </g>
+            </svg>
+            <span>64 px</span>
+          </div>
+          <div class="stoerrelse">
+            <svg class="maerke" width="32" height="32" viewBox="0 0 64 64" aria-hidden="true">
+              <g transform="rotate(-6 32 32)">
+                <rect x="8" y="14" width="48" height="36" rx="5" fill="none" stroke="var(--streg)" stroke-width="3"/>
+                <rect x="13" y="19" width="38" height="26" rx="3" fill="none" stroke="var(--streg)" stroke-width="1.5"/>
+                <path d="M25 23h4l10 13V23h4v18h-4L29 28v13h-4z" fill="var(--streg)"/>
+              </g>
+            </svg>
+            <span>32 px</span>
+          </div>
+          <div class="stoerrelse">
+            <svg class="maerke" width="16" height="16" viewBox="0 0 64 64" aria-hidden="true">
+              <g transform="rotate(-6 32 32)">
+                <rect x="8" y="14" width="48" height="36" rx="5" fill="none" stroke="var(--streg)" stroke-width="3"/>
+                <rect x="13" y="19" width="38" height="26" rx="3" fill="none" stroke="var(--streg)" stroke-width="1.5"/>
+                <path d="M25 23h4l10 13V23h4v18h-4L29 28v13h-4z" fill="var(--streg)"/>
+              </g>
+            </svg>
+            <span>16 px</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="raekke">
+      <div>
+        <div class="browser">
+          <div class="browserlinje"><div class="fane">
+            <svg class="maerke" width="16" height="16" viewBox="0 0 64 64" aria-hidden="true">
+              <g transform="rotate(-6 32 32)">
+                <rect x="8" y="14" width="48" height="36" rx="5" fill="none" stroke="var(--streg)" stroke-width="3"/>
+                <rect x="13" y="19" width="38" height="26" rx="3" fill="none" stroke="var(--streg)" stroke-width="1.5"/>
+                <path d="M25 23h4l10 13V23h4v18h-4L29 28v13h-4z" fill="var(--streg)"/>
+              </g>
+            </svg>
+            NettoText
+          </div></div>
+        </div>
+        <div class="browserkrop"></div>
+      </div>
+      <div>
+        <div class="browser moerk"><div class="browserlinje"><div class="fane">
+          <svg class="maerke" width="16" height="16" viewBox="0 0 64 64" aria-hidden="true">
+            <g transform="rotate(-6 32 32)">
+              <rect x="8" y="14" width="48" height="36" rx="5" fill="none" stroke="var(--streg)" stroke-width="3"/>
+              <rect x="13" y="19" width="38" height="26" rx="3" fill="none" stroke="var(--streg)" stroke-width="1.5"/>
+              <path d="M25 23h4l10 13V23h4v18h-4L29 28v13h-4z" fill="var(--streg)"/>
+            </g>
+          </svg>
+          NettoText
+        </div></div></div>
+        <div class="browserkrop"></div>
+      </div>
+    </div>
+
+    <p class="dom">
+      <strong>Min vurdering:</strong> flottest i stort format, svagest i fanen. Den
+      dobbelte kant klumper sammen ved 16 px, og et mærke uden fladefarve forsvinder
+      i en mørk browser. Vælger du den, skal favicon'et forenkles til rammen med ét N.
+    </p>
+  </section>
+
+  <!-- ============================ 2 ============================ -->
+  <section class="kort">
+    <p class="nummer">Forslag 2</p>
+    <h2 class="navn">Afsnittet</h2>
+    <p class="hvorfor">
+      Tre tekstlinjer, hvor den sidste er kort og i rav — et færdigt afsnit. Det
+      siger "tekst" uden at skrive det, og rav-linjen er præcis den sparsomme accent,
+      designsystemet tillader. Kraftige former, ingen tynde streger.
+    </p>
+
+    <div class="raekke">
+      <div class="felt">
+        <p class="feltnavn">På lys bund</p>
+        <div class="laas">
+          <svg class="maerke" width="30" height="30" viewBox="0 0 64 64" aria-hidden="true">
+            <rect width="64" height="64" rx="14" fill="var(--flade)"/>
+            <rect x="15" y="16.5" width="34" height="7" rx="3.5" fill="var(--tegn)"/>
+            <rect x="15" y="28.5" width="27" height="7" rx="3.5" fill="var(--tegn)"/>
+            <rect x="15" y="40.5" width="17" height="7" rx="3.5" fill="var(--accent)"/>
+          </svg>
+          <span class="ord">NettoText</span>
+        </div>
+      </div>
+
+      <div class="felt moerk omvendt">
+        <p class="feltnavn">På mørk bund</p>
+        <div class="laas">
+          <svg class="maerke" width="30" height="30" viewBox="0 0 64 64" aria-hidden="true">
+            <rect width="64" height="64" rx="14" fill="var(--flade)"/>
+            <rect x="15" y="16.5" width="34" height="7" rx="3.5" fill="var(--tegn)"/>
+            <rect x="15" y="28.5" width="27" height="7" rx="3.5" fill="var(--tegn)"/>
+            <rect x="15" y="40.5" width="17" height="7" rx="3.5" fill="var(--accent)"/>
+          </svg>
+          <span class="ord">NettoText</span>
+        </div>
+      </div>
+
+      <div class="felt">
+        <p class="feltnavn">Mærket alene</p>
+        <div class="stoerrelser">
+          <div class="stoerrelse">
+            <svg class="maerke" width="64" height="64" viewBox="0 0 64 64" aria-hidden="true">
+              <rect width="64" height="64" rx="14" fill="var(--flade)"/>
+              <rect x="15" y="16.5" width="34" height="7" rx="3.5" fill="var(--tegn)"/>
+              <rect x="15" y="28.5" width="27" height="7" rx="3.5" fill="var(--tegn)"/>
+              <rect x="15" y="40.5" width="17" height="7" rx="3.5" fill="var(--accent)"/>
+            </svg>
+            <span>64 px</span>
+          </div>
+          <div class="stoerrelse">
+            <svg class="maerke" width="32" height="32" viewBox="0 0 64 64" aria-hidden="true">
+              <rect width="64" height="64" rx="14" fill="var(--flade)"/>
+              <rect x="15" y="16.5" width="34" height="7" rx="3.5" fill="var(--tegn)"/>
+              <rect x="15" y="28.5" width="27" height="7" rx="3.5" fill="var(--tegn)"/>
+              <rect x="15" y="40.5" width="17" height="7" rx="3.5" fill="var(--accent)"/>
+            </svg>
+            <span>32 px</span>
+          </div>
+          <div class="stoerrelse">
+            <svg class="maerke" width="16" height="16" viewBox="0 0 64 64" aria-hidden="true">
+              <rect width="64" height="64" rx="14" fill="var(--flade)"/>
+              <rect x="15" y="16.5" width="34" height="7" rx="3.5" fill="var(--tegn)"/>
+              <rect x="15" y="28.5" width="27" height="7" rx="3.5" fill="var(--tegn)"/>
+              <rect x="15" y="40.5" width="17" height="7" rx="3.5" fill="var(--accent)"/>
+            </svg>
+            <span>16 px</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="raekke">
+      <div>
+        <div class="browser"><div class="browserlinje"><div class="fane">
+          <svg class="maerke" width="16" height="16" viewBox="0 0 64 64" aria-hidden="true">
+            <rect width="64" height="64" rx="14" fill="var(--flade)"/>
+            <rect x="15" y="16.5" width="34" height="7" rx="3.5" fill="var(--tegn)"/>
+            <rect x="15" y="28.5" width="27" height="7" rx="3.5" fill="var(--tegn)"/>
+            <rect x="15" y="40.5" width="17" height="7" rx="3.5" fill="var(--accent)"/>
+          </svg>
+          NettoText
+        </div></div></div>
+        <div class="browserkrop"></div>
+      </div>
+      <div>
+        <div class="browser moerk"><div class="browserlinje"><div class="fane">
+          <svg class="maerke" width="16" height="16" viewBox="0 0 64 64" aria-hidden="true">
+            <rect width="64" height="64" rx="14" fill="#1C3A31"/>
+            <rect x="15" y="16.5" width="34" height="7" rx="3.5" fill="#F3F4F0"/>
+            <rect x="15" y="28.5" width="27" height="7" rx="3.5" fill="#F3F4F0"/>
+            <rect x="15" y="40.5" width="17" height="7" rx="3.5" fill="#D9A441"/>
+          </svg>
+          NettoText
+        </div></div></div>
+        <div class="browserkrop"></div>
+      </div>
+    </div>
+
+    <p class="dom">
+      <strong>Min vurdering:</strong> den sikreste. Den holder helt ned i 16 px, den
+      har en egen silhuet blandt tyve andre faner, og rav-linjen gør den til vores og
+      ikke en generisk notesblok. Det er den, jeg ville vælge.
+    </p>
+  </section>
+
+  <!-- ============================ 3 ============================ -->
+  <section class="kort">
+    <p class="nummer">Forslag 3</p>
+    <h2 class="navn">Monogrammet</h2>
+    <p class="hvorfor">
+      Et N tegnet som geometri — to lodrette stave og en skrå i rav, som var den
+      trukket med en lineal. Mest klassisk firmamærke af de tre, og det eneste, der
+      bærer initialen med sig.
+    </p>
+
+    <div class="raekke">
+      <div class="felt">
+        <p class="feltnavn">På lys bund</p>
+        <div class="laas">
+          <svg class="maerke" width="30" height="30" viewBox="0 0 64 64" aria-hidden="true">
+            <rect width="64" height="64" rx="14" fill="var(--flade)"/>
+            <path d="M17 15h9l21 34h-9z" fill="var(--accent)"/>
+            <rect x="17" y="15" width="9" height="34" fill="var(--tegn)"/>
+            <rect x="38" y="15" width="9" height="34" fill="var(--tegn)"/>
+          </svg>
+          <span class="ord"><span class="let">Netto</span>Text</span>
+        </div>
+      </div>
+
+      <div class="felt moerk omvendt">
+        <p class="feltnavn">På mørk bund</p>
+        <div class="laas">
+          <svg class="maerke" width="30" height="30" viewBox="0 0 64 64" aria-hidden="true">
+            <rect width="64" height="64" rx="14" fill="var(--flade)"/>
+            <path d="M17 15h9l21 34h-9z" fill="var(--accent)"/>
+            <rect x="17" y="15" width="9" height="34" fill="var(--tegn)"/>
+            <rect x="38" y="15" width="9" height="34" fill="var(--tegn)"/>
+          </svg>
+          <span class="ord"><span class="let">Netto</span>Text</span>
+        </div>
+      </div>
+
+      <div class="felt">
+        <p class="feltnavn">Mærket alene</p>
+        <div class="stoerrelser">
+          <div class="stoerrelse">
+            <svg class="maerke" width="64" height="64" viewBox="0 0 64 64" aria-hidden="true">
+              <rect width="64" height="64" rx="14" fill="var(--flade)"/>
+              <path d="M17 15h9l21 34h-9z" fill="var(--accent)"/>
+              <rect x="17" y="15" width="9" height="34" fill="var(--tegn)"/>
+              <rect x="38" y="15" width="9" height="34" fill="var(--tegn)"/>
+            </svg>
+            <span>64 px</span>
+          </div>
+          <div class="stoerrelse">
+            <svg class="maerke" width="32" height="32" viewBox="0 0 64 64" aria-hidden="true">
+              <rect width="64" height="64" rx="14" fill="var(--flade)"/>
+              <path d="M17 15h9l21 34h-9z" fill="var(--accent)"/>
+              <rect x="17" y="15" width="9" height="34" fill="var(--tegn)"/>
+              <rect x="38" y="15" width="9" height="34" fill="var(--tegn)"/>
+            </svg>
+            <span>32 px</span>
+          </div>
+          <div class="stoerrelse">
+            <svg class="maerke" width="16" height="16" viewBox="0 0 64 64" aria-hidden="true">
+              <rect width="64" height="64" rx="14" fill="var(--flade)"/>
+              <path d="M17 15h9l21 34h-9z" fill="var(--accent)"/>
+              <rect x="17" y="15" width="9" height="34" fill="var(--tegn)"/>
+              <rect x="38" y="15" width="9" height="34" fill="var(--tegn)"/>
+            </svg>
+            <span>16 px</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="raekke">
+      <div>
+        <div class="browser"><div class="browserlinje"><div class="fane">
+          <svg class="maerke" width="16" height="16" viewBox="0 0 64 64" aria-hidden="true">
+            <rect width="64" height="64" rx="14" fill="var(--flade)"/>
+            <path d="M17 15h9l21 34h-9z" fill="var(--accent)"/>
+            <rect x="17" y="15" width="9" height="34" fill="var(--tegn)"/>
+            <rect x="38" y="15" width="9" height="34" fill="var(--tegn)"/>
+          </svg>
+          NettoText
+        </div></div></div>
+        <div class="browserkrop"></div>
+      </div>
+      <div>
+        <div class="browser moerk"><div class="browserlinje"><div class="fane">
+          <svg class="maerke" width="16" height="16" viewBox="0 0 64 64" aria-hidden="true">
+            <rect width="64" height="64" rx="14" fill="#1C3A31"/>
+            <path d="M17 15h9l21 34h-9z" fill="#D9A441"/>
+            <rect x="17" y="15" width="9" height="34" fill="#F3F4F0"/>
+            <rect x="38" y="15" width="9" height="34" fill="#F3F4F0"/>
+          </svg>
+          NettoText
+        </div></div></div>
+        <div class="browserkrop"></div>
+      </div>
+    </div>
+
+    <p class="dom">
+      <strong>Min vurdering:</strong> tydelig i fanen og nem at kende igen, men et N i
+      en kasse er også det, tusind andre firmaer har. Den siger ikke noget om, hvad
+      værktøjet laver.
+    </p>
+  </section>
+
+  <p class="dom" style="border:none;margin-top:32px">
+    Vælg ét nummer, så sætter jeg det ind: mærket som <span class="mono">app/icon.svg</span>
+    (fanen), i app-headeren og på login-siden. Vil du have noget ændret først — farve,
+    hældning, tykkelse — så sig hvilket og hvad.
+  </p>
+
+</div>
+</body>
+</html>

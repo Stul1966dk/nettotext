@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="NettoText">
+  <rect width="64" height="64" rx="14" fill="#1C3A31"/>
+  <rect x="15" y="16.5" width="34" height="7" rx="3.5" fill="#F3F4F0"/>
+  <rect x="15" y="28.5" width="27" height="7" rx="3.5" fill="#F3F4F0"/>
+  <rect x="15" y="40.5" width="17" height="7" rx="3.5" fill="#D9A441"/>
+</svg>
