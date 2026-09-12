@@ -1,6 +1,6 @@
 # Status — hvad mangler i version 1
 
-Sidst opdateret: **7. september 2026**, midt i trin 7.
+Sidst opdateret: **12. september 2026**, midt i trin 7.
 
 Dokumentet holder byggeplanen i `teknisk-oplaeg-v1.md` op mod, hvad der
 faktisk står i koden og databasen. Byggeplanen er en plan; det her er en
@@ -20,7 +20,7 @@ så beskriver det en fortid, nogen tror er nutid.
 | Trin | Indhold | Status |
 |---|---|---|
 | 0 | Fundament, Supabase, Vercel, sprogstruktur | færdig |
-| 1 | Login med magic link, RLS på `profiles` | færdig |
+| 1 | Login med kode i samme fane (link som reserve), RLS på `profiles` | færdig |
 | 2 | Første generering, streaming, adapterlag, prøvekvote | færdig |
 | 3 | Editor: blokke, meta-felter, omskrivning, eksport | færdig |
 | 4 | Kladder: localStorage, `drafts` med 48 timers udløb, pg_cron | færdig |

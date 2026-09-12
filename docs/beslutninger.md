@@ -15,6 +15,7 @@ trin 8.
 
 - [ ] **Fjern `noindex`.** `app/layout.tsx` → slet linjen `robots: { index: false, follow: false }` i `metadata`. Uden det bliver siden aldrig fundet af Google.
 - [ ] **Åbn for brugere.** Supabase → Authentication → Sign In / Providers → slå "Allow new users to sign up" til igen (eller tilføj godkendt-liste).
+- [ ] **Sæt koden ind i login-mailen.** Supabase → Authentication → Email Templates → Magic Link skal indeholde `{{ .Token }}`, ellers står der ingen kode i mailen, og kodefeltet på login-siden kan ikke bruges. Linket virker uanset hvad, så login går ikke i stykker imens — men trinnet skal gøres, FØR de første testbrugere får at vide, at de kan bruge en kode. Skabelonen er den samme, der skal skrives på dansk i punktet herunder.
 - [ ] **Egen SMTP + dansk login-mail.** Skal på plads INDEN de første testbrugere — ikke først ved lancering. Supabases indbyggede mailservice sender kun til adresser knyttet til vores egen Supabase-konto, og skabelonerne kan ikke redigeres uden egen SMTP. Sæt Resend op (gratis til 3.000 mails/md.), og skift derefter Magic Link-skabelonen til dansk med `{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=email` — den form virker også, når mailen åbnes på en anden enhed end den, linket blev bestilt fra.
 - [ ] **Kobl `nettotext.com` på** i Vercel → Settings → Domains — og skift derefter **Site URL** i Supabase → Authentication → URL Configuration til det nye domæne. Sker det ikke, peger login-mailens link stadig på `.vercel.app`.
 - [ ] **Sæt ejerkontoens prøvekvote tilbage.** Den står på 1.000.000 for at kunne teste frit under udviklingen. Beslut inden lancering, om ejerkontoen fortsat skal være speciel — og hvis ikke, sæt den til 5 som alle andre.
@@ -31,6 +32,33 @@ trin 8.
 - [ ] **Byg "slet min konto"** (GDPR, CLAUDE.md regel 9). Alle brugerens rækker i alle tabeller, `ai_keys` inklusive. De fleste tabeller har `on delete cascade` mod `auth.users`, så meget er gjort — der mangler en knap, en rute og en bekræftelse.
 - [ ] **Privatlivspolitik** på `/da/privatliv` (GDPR, jf. teknisk oplæg afsnit 5).
 - [ ] **Opdatér brandnavnet** i `design/design-3-vaerksted.html` til NettoText.
+
+---
+
+## 2026-09-12 — Login med kode i samme fane. Linket bliver liggende
+
+**Ejerens observation.** Login-linket åbner en ny fane. Man skriver sin
+adresse ét sted og bliver logget ind et andet — og sidder tilbage med to
+faner, hvor den ene er død. Det er forvirrende.
+
+**Nu: kode først.** Login-siden beder om mailadressen, sender en kode, og
+beder om koden i SAMME fane. Ingen ny fane, ingen død fane.
+`verifyOtp({ type: "email" })` gør nøjagtig det samme som callback-ruten —
+det er samme engangskode, bare tastet i stedet for klikket.
+
+**Linket er ikke fjernet, og skal ikke fjernes.** Mailen indeholder begge
+dele, og `/auth/callback` står uændret. Åbnes mailen på telefonen, mens
+koden blev bestilt på computeren, er linket den eneste vej ind. Tages
+linket ud, mister vi den vej.
+
+**Prisen: mailen skal ændres, før koden findes.** Supabases standard-
+skabelon sender kun et link. Indtil `{{ .Token }}` står i Magic Link-
+skabelonen (på tjeklisten ovenfor), står der ingen kode i mailen, og
+kodefeltet er blindt. Derfor beholder login-siden begge veje og siger begge
+dele: "Skriv koden herunder — eller klik på linket i mailen."
+
+**Forkert kode og ukendt adresse får samme svar.** Præcis som trin 1: ellers
+kunne siden bruges til at afgøre, om en mailadresse har en konto.
 
 ---
 

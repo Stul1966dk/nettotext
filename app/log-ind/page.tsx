@@ -57,6 +57,12 @@ export default async function LogIndSide({ searchParams }: Props) {
             pladsholder: t("pladsholder"),
             knap: t("knap"),
             sender: t("sender"),
+            kodeLabel: t("kodeLabel"),
+            kodePladsholder: t("kodePladsholder"),
+            kodeKnap: t("kodeKnap"),
+            kodeTjekker: t("kodeTjekker"),
+            sendIgen: t("sendIgen"),
+            andenAdresse: t("andenAdresse"),
           }}
         />
 
