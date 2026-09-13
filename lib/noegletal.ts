@@ -97,3 +97,61 @@ export async function hentFordeling(): Promise<Fordeling[]> {
     kroner: tal(r.kroner),
   }));
 }
+
+/**
+ * En feedback-kommentar, som adminsiden viser den.
+ *
+ * BEMÆRK HVAD DER IKKE ER MED: `user_id`. Det er ikke fordi det ville være
+ * umuligt at hente — som admin med `service_role` kan alt hentes. Det er en
+ * beslutning: kommentaren skal bruges til at gøre teksterne bedre, og til
+ * dét er det ligegyldigt, hvem der skrev den. Hentes den ikke, kan den heller
+ * ikke komme til at stå på skærmen ved en fejl.
+ */
+export type Kommentar = {
+  id: string;
+  dato: string;
+  skabelon: string;
+  /** 1 = tommel op, -1 = tommel ned. Samme værdier som i widgetten. */
+  svar: number;
+  tekst: string;
+};
+
+/**
+ * Hvor mange kommentarer forsiden viser. Lavt med vilje: bliver det til en
+ * lang liste, holder man op med at læse den, og så er vi tilbage ved at
+ * samle noget ind, ingen kigger på.
+ */
+export const KOMMENTAR_GRAENSE = 10;
+
+/**
+ * De nyeste feedback-kommentarer.
+ *
+ * Det ENESTE sted i NettoText, hvor tekst skrevet af en bruger kan læses af
+ * andre end hende selv. Det er en bevidst undtagelse fra CLAUDE.md regel 9,
+ * truffet 13.09.2026, og den hviler på to ting: kommentaren er skrevet
+ * FRIVILLIGT til os, og vi gemte den alligevel — at gemme noget, man aldrig
+ * læser, er sværere at forsvare end at bruge det til dét, det blev givet til.
+ *
+ * Privatlivspolitikken skal sige, at kommentarer læses. Punktet står på
+ * tjeklisten i docs/beslutninger.md.
+ */
+export async function hentKommentarer(): Promise<Kommentar[]> {
+  const supabase = createServiceClient();
+
+  const { data, error } = await supabase
+    .from("usage_log")
+    .select("id, created_at, template_slug, feedback, feedback_comment")
+    .not("feedback_comment", "is", null)
+    .order("created_at", { ascending: false })
+    .limit(KOMMENTAR_GRAENSE);
+
+  if (error || !data) return [];
+
+  return data.map((r) => ({
+    id: String(r.id),
+    dato: String(r.created_at),
+    skabelon: String(r.template_slug ?? ""),
+    svar: tal(r.feedback),
+    tekst: String(r.feedback_comment ?? ""),
+  }));
+}

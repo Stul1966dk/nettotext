@@ -31,8 +31,36 @@ trin 8.
 - [ ] **Tjek at lange tekster når at blive færdige.** `/api/generate` har `maxDuration = 60`. Vercels loft afhænger af abonnement. Timer "Langt — ca. 1.400 ord" ud i produktion, er der to knapper: hæv `maxDuration` (kræver det rigtige abonnement), eller sænk `effort` i `lib/ai/anthropic.ts`.
 - [ ] **Byg "slet min konto"** (GDPR, CLAUDE.md regel 9). Alle brugerens rækker i alle tabeller, `ai_keys` inklusive. De fleste tabeller har `on delete cascade` mod `auth.users`, så meget er gjort — der mangler en knap, en rute og en bekræftelse.
 - [ ] **Få betingelserne og kildefunktionen set efter af en advokat.** Vurderingen bag beslutningen 13.09.2026 er lavet uden jurist. Den er holdbar nok til at bygge på, men før der kommer betalende brugere, skal to ting efterses: at brugerbetingelserne siger, at brugeren selv vælger sine kilder og selv står inde for de oplysninger, hun godkender — og at ansvarslinjerne i briefen og editoren er formuleret, så de holder.
-- [ ] **Privatlivspolitik** på `/da/privatliv` (GDPR, jf. teknisk oplæg afsnit 5).
+- [ ] **Privatlivspolitik** på `/da/privatliv` (GDPR, jf. teknisk oplæg afsnit 5). **Skal udtrykkeligt nævne feedback-kommentarerne:** de gemmes permanent i `usage_log` og læses på adminsiden. Det er det eneste sted, hvor tekst skrevet af en bruger kan læses af andre end hende selv, og det skal stå i politikken, ikke kun i koden. Se beslutningen 13.09.2026.
 - [ ] **Opdatér brandnavnet** i `design/design-3-vaerksted.html` til NettoText.
+
+---
+
+## 2026-09-13 — Feedback-kommentarerne vises på adminsiden
+
+Kommentarerne blev gemt fra første dag og kunne ikke læses nogen steder i
+appen. Det var den dårligste af alle muligheder, og grunden er ikke kun
+praktisk: **GDPR siger, at man ikke må gemme mere, end man har brug for.** At
+gemme noget, man aldrig læser, er sværere at forsvare end at bruge det til
+dét, det blev givet til. Enten skulle de vises, eller også skulle
+kommentarfeltet fjernes.
+
+**Ejeren valgte at vise dem.** Kommentaren er dét, der gør feedback brugbar:
+en tommel ned siger, at noget var galt, kommentaren siger hvad.
+
+**Det er en bevidst undtagelse fra regel 9**, og den eneste. Alle andre
+steder gælder det uændret, at brugernes tekst ikke gemmes og ikke kan læses
+af os — heller ikke som admin. Undtagelsen hviler på, at kommentaren er
+skrevet FRIVILLIGT til os og med det formål.
+
+**To ting holder undtagelsen så lille som muligt.** `user_id` hentes ikke —
+ikke fordi det ville være umuligt, men fordi det er uden betydning for, hvad
+vi skal rette, og noget der ikke hentes, kan ikke komme til at stå på skærmen
+ved en fejl. Og listen er på ti: bliver den lang, holder man op med at læse
+den, og så er vi tilbage ved at samle noget ind, ingen kigger på.
+
+**Privatlivspolitikken skal sige det.** Punktet er skærpet på tjeklisten
+ovenfor. Det er ikke nok, at det står i koden.
 
 ---
 

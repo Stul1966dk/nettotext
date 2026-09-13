@@ -128,9 +128,12 @@ eget `user_id`.
 Afprøvet ende til ende 13.09.2026: tommel op, kommentar, og tallet slog
 igennem på adminsiden som "100 % — 1 svar i alt".
 
-**Kommentarerne kan endnu ikke læses i appen.** De gemmes i
-`feedback_comment`, men adminsiden viser kun andelen. Skal de læses, kræver
-det indtil videre et opslag i Supabase.
+**Kommentarerne vises på adminsiden** (13.09.2026), lige under tommelen: de
+ti nyeste med retning, teksttype og dato — uden hvem der skrev dem. Det er
+det eneste sted i NettoText, hvor tekst skrevet af en bruger kan læses af
+andre end hende selv, og det er en bevidst undtagelse fra regel 9. Se
+`beslutninger.md`. **Privatlivspolitikken skal nævne det**, og punktet er
+skærpet på tjeklisten.
 
 ---
 

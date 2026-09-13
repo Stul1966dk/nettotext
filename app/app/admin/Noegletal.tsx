@@ -1,7 +1,11 @@
 import { getTranslations } from "next-intl/server";
 
 import { hentBudgetstatus } from "@/lib/budget";
-import { hentFordeling, hentNoegletal } from "@/lib/noegletal";
+import {
+  hentFordeling,
+  hentKommentarer,
+  hentNoegletal,
+} from "@/lib/noegletal";
 
 /**
  * Nøgletallene på adminforsiden — den anden halvdel af trin 6.
@@ -22,6 +26,12 @@ const kr = new Intl.NumberFormat("da-DK", {
 });
 
 const heltal = new Intl.NumberFormat("da-DK");
+
+const dato = new Intl.DateTimeFormat("da-DK", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+});
 
 function Tal({
   label,
@@ -54,9 +64,10 @@ function Tal({
 export async function Noegletal() {
   const t = await getTranslations("admin");
 
-  const [tal, fordeling] = await Promise.all([
+  const [tal, fordeling, kommentarer] = await Promise.all([
     hentNoegletal(),
     hentFordeling(),
+    hentKommentarer(),
   ]);
 
   // Budgetstatus KASTER, når DAILY_BUDGET_DKK mangler — med vilje, fordi
@@ -186,6 +197,52 @@ export async function Noegletal() {
               }
             />
           </div>
+
+          {/* Kommentarerne står HER, lige under tommelen de hører til.
+              Er der ingen, vises kortet slet ikke — en tom kasse, der
+              siger "ingen kommentarer", er støj på en side med tal.
+
+              Det er det eneste sted i NettoText, hvor tekst skrevet af en
+              bruger kan læses af andre end hende selv. Se noten ved
+              hentKommentarer og beslutningen 13.09.2026. */}
+          {kommentarer.length > 0 && (
+            <div className="space-y-4 rounded-2xl border border-kant bg-kort p-6">
+              <div className="space-y-1">
+                <p className="font-mono text-[0.65rem] uppercase tracking-widest text-gran-let">
+                  {t("kommentarOverskrift")}
+                </p>
+                <p className="text-sm leading-relaxed text-gran-let">
+                  {t("kommentarForklaring")}
+                </p>
+              </div>
+
+              <ul className="space-y-3">
+                {kommentarer.map((k) => (
+                  <li
+                    key={k.id}
+                    className={`rounded-lg border bg-bund px-4 py-3 ${
+                      k.svar === -1 ? "border-rav" : "border-kant"
+                    }`}
+                  >
+                    <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                      <span className="font-mono text-[0.65rem] uppercase tracking-widest text-gran">
+                        {k.svar === 1
+                          ? t("kommentarOp")
+                          : t("kommentarNed")}
+                      </span>
+                      <span className="font-mono text-[0.65rem] uppercase tracking-widest text-gran-let">
+                        {k.skabelon} · {dato.format(new Date(k.dato))}
+                      </span>
+                    </div>
+
+                    <p className="mt-2 text-sm leading-relaxed text-gran">
+                      {k.tekst}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           <div className="space-y-3 rounded-2xl border border-kant bg-kort p-6">
             <p className="font-mono text-[0.65rem] uppercase tracking-widest text-gran-let">
