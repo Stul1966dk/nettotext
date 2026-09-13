@@ -36,6 +36,37 @@ trin 8.
 
 ---
 
+## 2026-09-13 — Fakta-feltet markeres på alle teksttyper
+
+Migration 0021 satte flaget `faktafelt` på produktteksten alene. Det var for
+lidt, og den ene af de to følger er alvorlig.
+
+**"Skriv en til" rydder netop de markerede felter.** Uden flaget ville den
+forrige teksts kendsgerninger blive stående i briefen til den næste — og det
+er præcis den fejl, hele funktionen er bygget for at undgå. Et tal fra en
+anden vare, ingen fik øje på, som teksten så skriver som en sandhed om denne.
+
+**Og "Indsæt en specifikation" fandtes kun ét sted.** Et blogindlæg, der skal
+bygge på en undersøgelse, har samme behov som en produkttekst, der bygger på
+et datablad.
+
+Alle fire teksttyper HAR et fakta-felt; de hedder bare noget forskelligt, og
+det er netop derfor flaget er data og ikke kode. Blogindlæggets "Noget teksten
+skal vide" siger ordret det samme som produktens: "Alt hvad du ikke skriver
+her, opfinder teksten ikke." Migration 0023 markerer de tre, der manglede.
+
+**Selve funktionerne var universelle hele tiden.** "Ret selv", "Slet
+afsnittet" og "Skriv en til" sidder i den fælles editor og bruger teksttypen
+fra kladden. Der var ingen kode at rette — kun data.
+
+**Det, der stadig følger med over:** emnefeltet på de teksttyper, der ikke har
+et idéfelt — varens navn i produktteksten, hvad siden sælger på landingssiden.
+Det står øverst i formularen, skal alligevel skrives om, og er ikke et tal.
+Et tredje flag for "det her felt handler om den ene ting" ville være en
+begrebsmæssig udgift, der ikke er betalt hjem endnu.
+
+---
+
 ## 2026-09-13 — Tre huller i produktteksten lukket
 
 Tre ting, der hver for sig er små, og som tilsammen afgør, om produktteksten

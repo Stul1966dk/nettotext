@@ -253,8 +253,15 @@ efter kolonnen `shop_info`; findes den ikke, fejler opslaget, og hele
 brand-profilen læses som tom — stiltiende, både på indstillingssiden og i
 prompten.
 
-**Ikke afprøvet endnu:** selve butiksoplysnings-feltet, som afventer
-migrationen.
+**Gælder alle teksttyper.** "Ret selv", "Slet afsnittet" og "Skriv en til"
+sidder i den fælles editor og virkede på alle fire fra første dag. Det gjorde
+DATAENE ikke: flaget `faktafelt` sad kun på produktteksten, så "Skriv en til"
+ville slæbe den forrige teksts kendsgerninger med over på de tre andre.
+Migration 0023 markerer fakta-feltet på blogindlæg, brandtekst og
+landingsside — hvilket samtidig giver alle tre knappen "Indsæt en
+specifikation".
+
+**Ikke afprøvet endnu:** butiksoplysnings-feltet, og migration 0023.
 
 Fravalgt samtidig: eksport til Shopify og lignende. Se `beslutninger.md`.
 
