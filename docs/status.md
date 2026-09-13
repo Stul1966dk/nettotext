@@ -215,6 +215,10 @@ Tilbage i trinnet:
     brand-profilen eller de gemte instruktioner, vises med den sætning, de
     står i. Tjekket slår intet op og påstår aldrig, hvad det rigtige tal er.
     Ansvarslinjen står samme sted og i briefen.
+    Afprøvet ende til ende 13.09.2026: den skrevne tekst holdt sig inden for
+    briefen, og tjekket sagde det. Et tal skrevet ind i meta-beskrivelsen
+    bagefter blev fanget med det samme — tjekket regnes om, hver gang teksten
+    eller meta-felterne ændrer sig.
   - **Indsæt specifikation: bygget 13.09.2026 (migration 0021).** Feltet i
     briefen, `POST /api/fakta` og udtrækket i `lib/tekst/fakta.ts`. Brugeren
     indsætter selv teksten — ruten tager ingen adresse imod og går aldrig på
@@ -222,7 +226,14 @@ Tilbage i trinnet:
     som ved idéforslagene. Hvilket felt listen lander i, er DATA: flaget
     `faktafelt` på feltet, sat gennem feltbyggeren på adminsiden. Kun
     produktteksten har det.
-    **Ikke afprøvet ende til ende endnu** — migration 0021 skal køres først.
+    **Afprøvet ende til ende 13.09.2026** med en produktside, hvor der med
+    vilje også stod salgstekst, et nyhedsbrev-tilbud og en cookie-linje: alle
+    syv specifikationer kom med, og alt det andet blev kastet væk. Intet blev
+    opfundet, og ingen sætninger blev skrevet af. Den billigste model blev
+    valgt (Sonnet frem for Opus), og kaldet kostede omkring 2,5 øre.
+    **To ting den ikke tog med**, begge forsvarlige, men værd at holde øje
+    med: varens eget navn (det hører i feltet "Hvad er varen?") og "fri fragt
+    over 499 kr." (en butiksoplysning, ikke en oplysning om varen).
 
 ---
 
