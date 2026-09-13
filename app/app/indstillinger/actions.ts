@@ -71,6 +71,7 @@ export async function gemBrandprofilAction(
     tone: String(data.get("tone") ?? ""),
     forbudteOrd: laesForbudteOrd(String(data.get("forbudteOrd") ?? "")),
     sprogproeve: String(data.get("sprogproeve") ?? ""),
+    butiksoplysninger: String(data.get("butiksoplysninger") ?? ""),
   });
 
   if (!profil.success) {

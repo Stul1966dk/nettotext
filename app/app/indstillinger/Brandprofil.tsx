@@ -50,6 +50,26 @@ export function Brandprofil({
         />
       </Felt>
 
+      {/* Står HER, lige efter beskrivelsen: begge dele er oplysninger om
+          virksomheden. Tone, forbudte ord og sprogprøven handler om sproget
+          og hører sammen længere nede. */}
+      <Felt
+        id="butiksoplysninger"
+        label={tekster.brandButik}
+        hjaelp={tekster.brandButikHjaelp}
+      >
+        <textarea
+          id="butiksoplysninger"
+          name="butiksoplysninger"
+          rows={3}
+          maxLength={1000}
+          defaultValue={profil.butiksoplysninger}
+          placeholder={tekster.brandButikPladsholder}
+          aria-describedby="butiksoplysninger-hjaelp"
+          className={`${feltKlasse} resize-y`}
+        />
+      </Felt>
+
       <Felt id="tone" label={tekster.brandTone} hjaelp={tekster.brandToneHjaelp}>
         <input
           id="tone"

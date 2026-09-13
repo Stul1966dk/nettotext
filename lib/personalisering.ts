@@ -26,6 +26,13 @@ export const brandprofilSkema = z.object({
   // Skrives som én linje adskilt af komma i UI'et; gemmes som liste.
   forbudteOrd: z.array(z.string().trim().min(1).max(60)).max(50),
   sprogproeve: z.string().trim().max(4000),
+  /**
+   * Faste oplysninger om butikken: levering, returret, betaling.
+   *
+   * Kortere end beskrivelsen med vilje. Det er en håndfuld linjer, der skal
+   * med i hver eneste tekst, og hver linje koster tokens hver gang.
+   */
+  butiksoplysninger: z.string().trim().max(1000),
 });
 
 export type Brandprofil = z.infer<typeof brandprofilSkema>;
@@ -45,6 +52,7 @@ const TOM: Brandprofil = {
   tone: "",
   forbudteOrd: [],
   sprogproeve: "",
+  butiksoplysninger: "",
 };
 
 /** Er der overhovedet noget i profilen? En tom profil skal ikke i prompten. */
@@ -53,6 +61,7 @@ export function profilErTom(profil: Brandprofil): boolean {
     !profil.beskrivelse &&
     !profil.tone &&
     !profil.sprogproeve &&
+    !profil.butiksoplysninger &&
     profil.forbudteOrd.length === 0
   );
 }
@@ -63,7 +72,7 @@ export async function hentBrandprofil(): Promise<Brandprofil> {
   // RLS giver kun brugerens egen række, så der er ingen betingelse at glemme.
   const { data, error } = await supabase
     .from("brand_profiles")
-    .select("company_description, tone, banned_words, style_sample")
+    .select("company_description, tone, banned_words, style_sample, shop_info")
     .maybeSingle();
 
   if (error || !data) return TOM;
@@ -73,6 +82,7 @@ export async function hentBrandprofil(): Promise<Brandprofil> {
     tone: data.tone ?? "",
     forbudteOrd: data.banned_words ?? [],
     sprogproeve: data.style_sample ?? "",
+    butiksoplysninger: data.shop_info ?? "",
   };
 }
 
@@ -89,6 +99,7 @@ export async function gemBrandprofil(
       tone: profil.tone || null,
       banned_words: profil.forbudteOrd,
       style_sample: profil.sprogproeve || null,
+      shop_info: profil.butiksoplysninger || null,
       updated_at: new Date().toISOString(),
     },
     { onConflict: "user_id" },

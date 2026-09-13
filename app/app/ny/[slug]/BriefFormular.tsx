@@ -1,9 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-import { gemKladde, nyKladde } from "@/lib/skabeloner/kladde";
+import { gemKladde, hentKladde, nyKladde } from "@/lib/skabeloner/kladde";
 import {
   STANDARD_STILTONE,
   STILTONER,
@@ -23,6 +23,7 @@ type Tekster = {
   knap: string;
   manglerFelter: string;
   ansvar: string;
+  genbrugt: string;
   instruktion: string;
   instruktionHjaelp: string;
   instruktionPladsholder: string;
@@ -57,10 +58,13 @@ export function BriefFormular({
   skabelon,
   felter,
   tekster,
+  genbrug,
 }: {
   skabelon: string;
   felter: InputFelt[];
   tekster: Tekster;
+  /** Kom brugeren hertil fra "Skriv en til"? Se effekten længere nede. */
+  genbrug: boolean;
 }) {
   const router = useRouter();
   const [fejl, setFejl] = useState<string | null>(null);
@@ -74,13 +78,19 @@ export function BriefFormular({
   // NETOP de felter er styret af React, fordi et forslag eller en faktaliste
   // skal kunne skrive i dem. Resten af formularen er uændret uindsvøbt HTML:
   // browseren holder værdierne, og de læses først, når der trykkes.
+  // ALLE felter styres nu af React. Det begyndte med idéfeltet, som et
+  // forslag skulle kunne skrive i; så kom faktalisten, og så "Skriv en til",
+  // der fylder hele formularen ud på én gang. Tre undtagelser er ikke en
+  // undtagelse længere — så er det reglen.
   const [vaerdier, setVaerdier] = useState<Record<string, string>>(() =>
-    Object.fromEntries(
-      [idefelt, faktafelt]
-        .filter((felt): felt is InputFelt => felt !== null)
-        .map((felt) => [felt.navn, felt.standard ?? ""]),
-    ),
+    Object.fromEntries(felter.map((felt) => [felt.navn, felt.standard ?? ""])),
   );
+
+  const [instruktion, setInstruktion] = useState("");
+  const [stiltone, setStiltone] = useState<string>(STANDARD_STILTONE);
+
+  /** Blev formularen fyldt ud fra den forrige tekst? Styrer kun beskeden. */
+  const [genbrugt, setGenbrugt] = useState(false);
 
   const [ideer, setIdeer] = useState<Ide[]>([]);
   const [henter, setHenter] = useState(false);
@@ -112,6 +122,64 @@ export function BriefFormular({
 
     return brief;
   }
+
+  /**
+   * "Skriv en til": formularen fyldes ud med det, brugeren skrev sidst.
+   *
+   * Kladden ligger i browseren i forvejen, så der skal ikke hentes noget.
+   * Effekten kører én gang, når siden åbnes med ?genbrug=1.
+   *
+   * TO FELTER FYLDES BEVIDST IKKE UD: idéfeltet og faktafeltet. Det er dem,
+   * der handler om DENNE ene vare eller dette ene emne, og det er i
+   * faktafeltet, tallene står. Et datablad fra den forrige vare, der bliver
+   * stående, fordi ingen fik øje på det, er den dyreste fejl, funktionen her
+   * kunne lave. Resten — målgruppe, længde, stiltone, det frie ønske — er
+   * som regel det samme for hele webshoppen og må gerne følge med.
+   *
+   * Brugeren får besked om, at felterne er udfyldt. Formularen sendes ikke
+   * af sted af sig selv, så alt bliver set igennem, før det bruges.
+   *
+   * Reglen om ikke at kalde setState i en effekt er slået fra her, og det er
+   * ikke for at slippe udenom. localStorage findes ikke, mens siden bygges på
+   * serveren, så værdierne kan ikke læses i useState-kaldet uden at serverens
+   * og browserens første tegning kommer til at sige to forskellige ting.
+   * Effekten er den eneste rigtige vej: den synkroniserer med noget uden for
+   * React, hvilket er præcis dét, effekter er til.
+   */
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    if (!genbrug) return;
+
+    const forrige = hentKladde();
+    if (!forrige || forrige.skabelon !== skabelon) return;
+
+    const spring = new Set(
+      [idefelt?.navn, faktafelt?.navn].filter(
+        (navn): navn is string => typeof navn === "string",
+      ),
+    );
+
+    setVaerdier((nu) => {
+      const naeste = { ...nu };
+
+      for (const felt of felter) {
+        if (spring.has(felt.navn)) continue;
+
+        const vaerdi = forrige.brief[felt.navn];
+        if (vaerdi) naeste[felt.navn] = vaerdi;
+      }
+
+      return naeste;
+    });
+
+    setInstruktion(forrige.instruktion ?? "");
+    setStiltone(forrige.stiltone ?? STANDARD_STILTONE);
+    setGenbrugt(true);
+    // Kører kun ved opstart. Retter brugeren bagefter, skal effekten ikke
+    // skrive hen over hende.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   async function hentIdeer() {
     setHenter(true);
@@ -251,17 +319,21 @@ export function BriefFormular({
       if (vaerdi) brief[felt.navn] = vaerdi;
     }
 
-    // Det frie ønske står UDEN FOR briefen: briefens felter kommer fra
-    // skabelonen og valideres mod den, og ønsket hører ikke til nogen
-    // teksttype. Se briefSkema i lib/skabeloner/typer.ts.
-    const instruktion = String(data.get("__instruktion") ?? "").trim();
-
-    // Samme sted som ønsket, og af samme grund: stiltonen hører ikke til
-    // nogen bestemt teksttype. Den gælder dem alle, også dem der kommer.
-    const stiltone = stiltoneSkema.parse(data.get("__stiltone"));
-
+    // Det frie ønske og stiltonen står UDEN FOR briefen: briefens felter
+    // kommer fra skabelonen og valideres mod den, og de to hører ikke til
+    // nogen teksttype. Se briefSkema i lib/skabeloner/typer.ts.
+    //
+    // De læses fra React og ikke fra FormData, fordi de nu kan sættes af
+    // "Skriv en til" ligesom resten af formularen.
     // Briefen rejser gennem browseren, ikke gennem databasen. Se kladde.ts.
-    gemKladde(nyKladde(skabelon, brief, instruktion, stiltone));
+    gemKladde(
+      nyKladde(
+        skabelon,
+        brief,
+        instruktion.trim(),
+        stiltoneSkema.parse(stiltone),
+      ),
+    );
     router.push("/app/skriv");
   }
 
@@ -272,21 +344,25 @@ export function BriefFormular({
       className="mt-8 space-y-8"
       noValidate
     >
+      {genbrugt && (
+        <p
+          role="status"
+          className="rounded-lg border border-kant bg-kort px-4 py-3 text-sm leading-relaxed text-gran"
+        >
+          {tekster.genbrugt}
+        </p>
+      )}
+
       {felter.map((felt) => {
         const erIdefelt = idefelt?.navn === felt.navn;
         const erFaktafelt = faktafelt?.navn === felt.navn;
 
-        // Felter, koden kan skrive i, styres af React. De andre passer
-        // browseren selv.
-        const styring =
-          felt.navn in vaerdier
-            ? {
-                value: vaerdier[felt.navn],
-                onChange: (
-                  e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-                ) => saetVaerdi(felt.navn, e.target.value),
-              }
-            : { defaultValue: felt.standard };
+        const styring = {
+          value: vaerdier[felt.navn] ?? "",
+          onChange: (
+            e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+          ) => saetVaerdi(felt.navn, e.target.value),
+        };
 
         return (
           <div key={felt.navn} className="space-y-2">
@@ -336,7 +412,8 @@ export function BriefFormular({
               <select
                 id={felt.navn}
                 name={felt.navn}
-                defaultValue={felt.standard ?? felt.valg?.[0]?.vaerdi}
+                value={vaerdier[felt.navn] || (felt.valg?.[0]?.vaerdi ?? "")}
+                onChange={(e) => saetVaerdi(felt.navn, e.target.value)}
                 aria-describedby={
                   felt.hjaelp ? `${felt.navn}-hjaelp` : undefined
                 }
@@ -506,7 +583,8 @@ export function BriefFormular({
         <select
           id="__stiltone"
           name="__stiltone"
-          defaultValue={STANDARD_STILTONE}
+          value={stiltone}
+          onChange={(e) => setStiltone(e.target.value)}
           aria-describedby="__stiltone-hjaelp"
           className={feltKlasse}
         >
@@ -546,6 +624,8 @@ export function BriefFormular({
           name="__instruktion"
           rows={3}
           maxLength={1000}
+          value={instruktion}
+          onChange={(e) => setInstruktion(e.target.value)}
           placeholder={tekster.instruktionPladsholder}
           aria-describedby="__instruktion-hjaelp"
           className={`${feltKlasse} resize-y`}

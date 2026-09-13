@@ -108,6 +108,18 @@ function tilpasningsLinjer(
     if (brand.beskrivelse) {
       felter.push(["Om virksomheden", rens(brand.beskrivelse)].join("\n"));
     }
+    if (brand.butiksoplysninger) {
+      felter.push(
+        [
+          "Faste oplysninger om butikken — levering, returret, betaling og",
+          "lignende. De er rigtige, og de tæller som belæg på linje med",
+          "briefen. Brug KUN dem, der har med opgaven at gøre. Skriv dem ikke",
+          "alle sammen ind, fordi de står her: en produkttekst, der slutter",
+          "med hele fragtpolitikken, er ikke blevet bedre af det.",
+          rens(brand.butiksoplysninger),
+        ].join("\n"),
+      );
+    }
     if (brand.tone) {
       felter.push(["Ønsket tone", rens(brand.tone)].join("\n"));
     }

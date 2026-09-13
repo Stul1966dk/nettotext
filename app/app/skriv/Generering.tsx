@@ -16,6 +16,7 @@ import { Faktatjek, type FaktatjekTekster } from "./Faktatjek";
 type Tekster = BlokkortTekster & FaktatjekTekster & {
   ingenBrief: string;
   nyTekst: string;
+  skrivEnTil: string;
   planlaegger: string;
   skriver: string;
   skriverProcent: string;
@@ -239,6 +240,12 @@ export function Generering({
   const [gemStatus, setGemStatus] = useState<GemStatus>("ukendt");
   /** Det, tekstens tal holdes op mod. Se samlGrundlag ovenfor. */
   const [grundlag, setGrundlag] = useState("");
+  /**
+   * Teksttypen, kladden hører til. Ligger i state og ikke kun i kladdeRef,
+   * fordi "Skriv en til" skal bruge den til sin adresse — og en ref må ikke
+   * læses, mens siden tegnes.
+   */
+  const [skabelon, setSkabelon] = useState<string | null>(null);
 
   // Omskrivning af ét afsnit. Kun ét ad gangen: to samtidige ville skrive
   // oven i hinandens blokke, og brugeren ville ikke kunne se hvilket svar
@@ -249,6 +256,9 @@ export function Generering({
     id: string;
     besked: string;
   } | null>(null);
+
+  /** Hvilket afsnit venter på at få sin håndrettelse saneret på serveren? */
+  const [gemmerBlok, setGemmerBlok] = useState<string | null>(null);
 
   const kodeRef = useRef<HTMLPreElement>(null);
 
@@ -353,6 +363,7 @@ export function Generering({
       setMarkeret(false);
 
       kladdeRef.current = kladde;
+      setSkabelon(kladde.skabelon);
       setGrundlag(samlGrundlag(kladde, personligtGrundlag));
 
       let samlet = "";
@@ -529,6 +540,7 @@ export function Generering({
     // igen. Det gør en genindlæsning af siden gratis.
     if (kladde.faerdig && kladde.html) {
       kladdeRef.current = kladde;
+      setSkabelon(kladde.skabelon);
       setGrundlag(samlGrundlag(kladde, personligtGrundlag));
       setTekst(kladde.tekst);
       setHtml(kladde.html);
@@ -549,6 +561,100 @@ export function Generering({
 
     void start();
   }, [start]);
+
+  /**
+   * Lægger en ny række blokke på plads — efter en rettelse eller en sletning.
+   *
+   * Teksten samles og deles op PÅ NY, ligesom efter en omskrivning. Så bliver
+   * numrene rigtige igen, når et afsnit er forsvundet, og en blok kommer
+   * aldrig til at indeholde noget andet, end dens navn siger.
+   */
+  const laegBlokkePaaPlads = useCallback(
+    (opdaterede: Blok[]) => {
+      const nyHtml = samlHtml(opdaterede);
+      const nyeBlokke = delIBlokke(nyHtml);
+
+      setHtml(nyHtml);
+      setBlokke(nyeBlokke);
+      gem({ html: nyHtml, blokke: nyeBlokke });
+    },
+    [gem],
+  );
+
+  /**
+   * Brugerens egen rettelse af ét afsnit.
+   *
+   * Koster ingen penge og kalder ingen AI — men den går alligevel gennem
+   * serveren, fordi HTML'en skal saneres, før den vises og gemmes. Brugeren
+   * har rettet i et contentEditable-felt, og dér kan der indsættes hvad som
+   * helst fra udklipsholderen. Se app/api/blok/route.ts.
+   */
+  const retBlok = useCallback(
+    async (blokId: string, raaHtml: string) => {
+      const nuvaerende = kladdeRef.current?.blokke ?? [];
+      const foer = nuvaerende.find((b) => b.id === blokId);
+
+      // Blev der ikke rettet noget, er der ingen grund til en tur til
+      // serveren. Det sker hver gang nogen åbner rettefeltet og fortryder.
+      if (!foer || foer.html === raaHtml) return;
+
+      setOmskrivFejl(null);
+      setGemmerBlok(blokId);
+
+      const visFejl = (aarsag: string) =>
+        setOmskrivFejl({
+          id: blokId,
+          besked: tekster.fejl[aarsag] ?? tekster.fejl.ukendt,
+        });
+
+      try {
+        const svar = await fetch("/api/blok", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ html: raaHtml }),
+        });
+
+        const data = await svar.json().catch(() => null);
+
+        if (!svar.ok || typeof data?.html !== "string") {
+          visFejl(typeof data?.aarsag === "string" ? data.aarsag : "ukendt");
+          return;
+        }
+
+        laegBlokkePaaPlads(
+          nuvaerende.map((blok) =>
+            blok.id === blokId ? { ...blok, html: data.html as string } : blok,
+          ),
+        );
+      } catch {
+        visFejl("netvaerk");
+      } finally {
+        setGemmerBlok(null);
+      }
+    },
+    [laegBlokkePaaPlads, tekster],
+  );
+
+  /**
+   * Sletter ét afsnit. Ingen server, ingen penge — blokkene er allerede
+   * saneret, og der fjernes kun noget.
+   */
+  const sletBlok = useCallback(
+    (blokId: string) => {
+      const tilbage = (kladdeRef.current?.blokke ?? []).filter(
+        (blok) => blok.id !== blokId,
+      );
+
+      // Kortet viser ikke sletteknappen på det sidste afsnit, men tjekket
+      // står også her: en tom tekst ville få siden til at se ud, som om
+      // genereringen var gået i gang forfra.
+      if (tilbage.length === 0) return;
+
+      setOmskrivFejl(null);
+      laegBlokkePaaPlads(tilbage);
+    },
+    [laegBlokkePaaPlads],
+  );
 
   /**
    * Kopiér til udklipsholderen, med en vej udenom, når browseren siger nej.
@@ -883,8 +989,12 @@ export function Generering({
                   omskrives={omskriverId === blok.id}
                   streametTekst={omskriverId === blok.id ? omskrivTekst : ""}
                   fejl={omskrivFejl?.id === blok.id ? omskrivFejl.besked : null}
-                  laast={omskriverId !== null}
+                  laast={omskriverId !== null || gemmerBlok !== null}
+                  kanSlettes={blokke.length > 1}
+                  gemmer={gemmerBlok === blok.id}
                   skrivOm={(instruktion) => void skrivOm(blok.id, instruktion)}
+                  ret={(html) => void retBlok(blok.id, html)}
+                  slet={() => sletBlok(blok.id)}
                 />
               ))}
             </div>
@@ -951,6 +1061,19 @@ export function Generering({
               >
                 {visKoder ? tekster.visTekst : tekster.visHtml}
               </button>
+
+              {/* "Skriv en til" beholder opsætningen fra den her tekst —
+                  målgruppe, længde, stiltone. "Skriv en ny tekst" begynder
+                  forfra. De to ting er ikke det samme, og en webshop, der
+                  skal have tredive varer beskrevet, bruger den første. */}
+              {skabelon && (
+                <Link
+                  href={`/app/ny/${skabelon}?genbrug=1`}
+                  className="text-sm text-gran underline"
+                >
+                  {tekster.skrivEnTil}
+                </Link>
+              )}
 
               <Link href="/app/ny" className="text-sm text-gran underline">
                 {tekster.nyTekst}

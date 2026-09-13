@@ -18,6 +18,13 @@ import { BriefFormular } from "./BriefFormular";
 
 type Props = {
   params: Promise<{ slug: string }>;
+  /**
+   * `genbrug=1` betyder, at brugeren kom hertil fra "Skriv en til" i
+   * editoren. Så fyldes formularen ud med det, hun skrev sidst. Selve
+   * værdierne hentes i browseren fra kladden — de har aldrig været på
+   * serveren i den her forespørgsel.
+   */
+  searchParams: Promise<{ genbrug?: string }>;
 };
 
 /**
@@ -44,6 +51,7 @@ const IDE_FEJLNOEGLER = [
   "ukendt",
   "netvaerk",
 ] as const;
+
 /** Skal svare til `aarsag`-værdierne fra /api/fakta. */
 const FAKTA_FEJLNOEGLER = [
   "ikke_logget_ind",
@@ -66,14 +74,14 @@ const FAKTA_FEJLNOEGLER = [
   "netvaerk",
 ] as const;
 
-
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("ny");
   return { title: t("titel") };
 }
 
-export default async function NyTekstSide({ params }: Props) {
+export default async function NyTekstSide({ params, searchParams }: Props) {
   const { slug } = await params;
+  const { genbrug } = await searchParams;
   const t = await getTranslations("ny");
   const ideFejl = await getTranslations("ny.ideFejl");
   const faktaFejl = await getTranslations("ny.faktaFejl");
@@ -120,6 +128,7 @@ export default async function NyTekstSide({ params }: Props) {
       </Link>
 
       <BriefFormular
+        genbrug={genbrug === "1"}
         skabelon={skabelon.slug}
         felter={skabelon.input_fields}
         tekster={{
@@ -128,6 +137,7 @@ export default async function NyTekstSide({ params }: Props) {
           knap: t("knap"),
           manglerFelter: t("manglerFelter"),
           ansvar: t("ansvar"),
+          genbrugt: t("genbrugt"),
           instruktion: t("instruktion"),
           instruktionHjaelp: t("instruktionHjaelp"),
           instruktionPladsholder: t("instruktionPladsholder"),

@@ -36,6 +36,66 @@ trin 8.
 
 ---
 
+## 2026-09-13 — Tre huller i produktteksten lukket
+
+Tre ting, der hver for sig er små, og som tilsammen afgør, om produktteksten
+kan bruges til mere end én vare ad gangen.
+
+**Butiksoplysningerne flyttede til brand-profilen** (migration 0022, kolonnen
+`shop_info`). Levering, returret og betaling er de samme for hele webshoppen,
+men feltet "Noget teksten skal vide" bad om dem ved hver eneste vare. De hører
+IKKE til i de gemte instruktioner: instruktionerne er regler om sprog
+("skriv altid, at vi giver fast pris"), og levering er en oplysning. De to
+ting skal ikke blandes, hverken for brugeren eller i prompten, hvor de får
+hver deres rolle. Prompten siger udtrykkeligt, at kun det relevante må bruges
+— ellers ville hver produkttekst slutte med hele fragtpolitikken.
+
+**Bemærk rækkefølgen ved udrulning.** `hentBrandprofil` spørger efter
+`shop_info`. Kører migrationen ikke FØR koden er i luften, fejler opslaget, og
+`hentBrandprofil` returnerer en tom profil — så forsvinder hele brand-profilen
+stiltiende, både på indstillingssiden og i prompten. Migration først, kode
+bagefter.
+
+**"Skriv en til med samme opsætning"** fylder briefen ud med det, brugeren
+skrev sidst. To felter fyldes bevidst IKKE ud: idéfeltet og faktafeltet. Det
+er dér, tallene står, og et datablad fra den forrige vare, der bliver stående,
+fordi ingen fik øje på det, er den dyreste fejl, funktionen kunne lave.
+Resten — målgruppe, længde, stiltone, det frie ønske — er som regel det samme
+for hele webshoppen. Brugeren får besked om, at felterne er udfyldt, og
+formularen sender ikke sig selv af sted.
+
+Det kostede, at ALLE felter i briefen nu styres af React. Det begyndte med
+idéfeltet, så kom faktalisten, og nu hele formularen. Tre undtagelser er ikke
+en undtagelse længere.
+
+**Ret og slet et afsnit i hånden.** Beskrevet i det tekniske oplæg, aldrig
+bygget. Det ramte produktteksten hårdest: vil man rette ét ord, var den eneste
+vej at betale for en omskrivning af hele afsnittet.
+
+Rettelsen sker i et `contentEditable`-felt og går gennem `POST /api/blok`, der
+saner den server-side med `sanitize-html`. Ruten koster ingen penge og kalder
+ingen AI — den findes udelukkende for at holde saneringsreglen. Grunden er
+ikke, at vi ikke stoler på brugeren: man kan indsætte hvad som helst fra
+udklipsholderen, og et script, der fulgte med et afsnit fra en anden
+hjemmeside, ville blive gemt i kladden og vist som HTML igen næste gang. At
+det kun rammer hende selv, gør det ikke i orden. Afprøvet 13.09.2026 med
+`<script>`, `onclick`, `style` og et `javascript:`-link: alt fire blev fjernet,
+og det lovlige link og `<strong>` overlevede.
+
+Sletning går ikke gennem serveren — der fjernes kun noget, og blokkene er
+saneret i forvejen. Det sidste afsnit kan ikke slettes: en tom tekst ville få
+siden til at se ud, som om genereringen var gået i gang forfra.
+
+**Fravalgt samtidig: eksport til Shopify og lignende.** Deres felt til
+produktbeskrivelse tager almindelig HTML med præcis de tags, hvidlisten
+allerede tillader, så "Kopiér uden titel" ER eksporten. En rigtig integration
+kræver OAuth-app, deres godkendelse, endnu en adgangsnøgle at kryptere og
+vedligehold pr. platform — og den giver først mening ved bulk, som ikke er i
+V1. Dertil ville den skrive direkte i en levende butik, og løftet er, at intet
+udgives uden brugerens godkendelse.
+
+---
+
 ## 2026-09-13 — Kildemateriale bygges som brugerens egne oplysninger
 
 **Byggeplanen bliver fraveget.** Det tekniske oplæg og `status.md` har

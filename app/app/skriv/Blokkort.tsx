@@ -1,16 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import type { Blok } from "@/lib/tekst/blokke";
 
 /**
- * Ét afsnit på skærmen, med muligheden for at få det skrevet om.
+ * Ét afsnit på skærmen, med tre ting man kan gøre ved det: rette i det selv,
+ * få det skrevet om, eller slette det.
  *
  * Ligger som sin egen komponent, fordi hvert kort har sin egen lille tilstand
- * — er ønskefeltet foldet ud, og hvad står der i det. Den hører til ét kort
- * og skal ikke ligge i siden som fem parallelle felter.
+ * — hvad er foldet ud, og hvad står der i feltet. Den hører til ét kort og
+ * skal ikke ligge i siden som fem parallelle felter.
+ *
+ * De tre ting udelukker hinanden, og derfor er tilstanden ÉN værdi og ikke
+ * tre flag. Tre flag kan stå i otte kombinationer, hvoraf de fem er noget
+ * rod på skærmen.
  */
+
+type Tilstand = "lukket" | "skriv-om" | "ret" | "slet";
 
 export type BlokkortTekster = {
   skrivOm: string;
@@ -20,6 +27,13 @@ export type BlokkortTekster = {
   skrivOmGratis: string;
   omskriver: string;
   annuller: string;
+  ret: string;
+  retForklaring: string;
+  retGem: string;
+  retGemmer: string;
+  slet: string;
+  sletSpoergsmaal: string;
+  sletJa: string;
 };
 
 export function Blokkort({
@@ -30,7 +44,11 @@ export function Blokkort({
   streametTekst,
   fejl,
   laast,
+  kanSlettes,
+  gemmer,
   skrivOm,
+  ret,
+  slet,
 }: {
   blok: Blok;
   label: string;
@@ -42,49 +60,125 @@ export function Blokkort({
   fejl: string | null;
   /** Sandt, mens et ANDET afsnit skrives om. Så venter det her på tur. */
   laast: boolean;
+  /** Det sidste afsnit kan ikke slettes — så var der ingen tekst tilbage. */
+  kanSlettes: boolean;
+  /** Er en håndrettelse på vej til serveren for at blive saneret? */
+  gemmer: boolean;
   skrivOm: (instruktion: string) => void;
+  ret: (html: string) => void;
+  slet: () => void;
 }) {
-  const [aaben, setAaben] = useState(false);
+  const [tilstand, setTilstand] = useState<Tilstand>("lukket");
   const [instruktion, setInstruktion] = useState("");
 
+  /**
+   * Det redigerbare felt. Vi holder fat i selve DOM-elementet, fordi det er
+   * browseren og ikke React, der ejer indholdet, mens der rettes — React kan
+   * ikke styre børnene i et contentEditable uden at flytte markøren rundt
+   * under fingrene på den, der skriver.
+   */
+  const felt = useRef<HTMLDivElement>(null);
+
+  const redigerer = tilstand === "ret";
+
   function send() {
-    setAaben(false);
+    setTilstand("lukket");
     skrivOm(instruktion);
     setInstruktion("");
   }
 
+  function gemRettelse() {
+    const html = felt.current?.innerHTML ?? "";
+    setTilstand("lukket");
+    ret(html);
+  }
+
+  /** Fortryder en rettelse: browserens indhold sættes tilbage til kladdens. */
+  function fortrydRettelse() {
+    if (felt.current) felt.current.innerHTML = blok.html;
+    setTilstand("lukket");
+  }
+
+  const knapKlasse =
+    "rounded-lg border border-kant px-3 py-1.5 text-sm text-gran outline-none focus-visible:ring-2 focus-visible:ring-gran disabled:opacity-40";
+
   return (
     <section
       aria-label={blok.overskrift ?? label}
-      aria-busy={omskrives}
-      className="space-y-3 rounded-2xl border border-kant bg-kort p-6"
+      aria-busy={omskrives || gemmer}
+      className={`space-y-3 rounded-2xl border bg-kort p-6 ${
+        redigerer ? "border-gran" : "border-kant"
+      }`}
     >
       <div className="flex flex-wrap items-baseline justify-between gap-3">
         <p className="font-mono text-xs uppercase tracking-widest text-gran-let">
           {label}
         </p>
 
-        {omskrives ? (
+        {omskrives || gemmer ? (
           <p
             role="status"
             className="font-mono text-xs uppercase tracking-widest text-gran-let"
           >
-            {tekster.omskriver}
+            {gemmer ? tekster.retGemmer : tekster.omskriver}
           </p>
+        ) : redigerer ? (
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={gemRettelse}
+              className="rounded-lg bg-gran px-3 py-1.5 text-sm font-medium text-bund outline-none focus-visible:ring-2 focus-visible:ring-gran focus-visible:ring-offset-2 focus-visible:ring-offset-kort"
+            >
+              {tekster.retGem}
+            </button>
+            <button
+              type="button"
+              onClick={fortrydRettelse}
+              className={knapKlasse}
+            >
+              {tekster.annuller}
+            </button>
+          </div>
         ) : (
-          <button
-            type="button"
-            onClick={() => setAaben((v) => !v)}
-            disabled={laast}
-            className="rounded-lg border border-kant px-3 py-1.5 text-sm text-gran outline-none focus-visible:ring-2 focus-visible:ring-gran disabled:opacity-40"
-          >
-            {aaben ? tekster.annuller : tekster.skrivOm}
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setTilstand("ret")}
+              disabled={laast}
+              className={knapKlasse}
+            >
+              {tekster.ret}
+            </button>
+
+            <button
+              type="button"
+              onClick={() =>
+                setTilstand((v) => (v === "skriv-om" ? "lukket" : "skriv-om"))
+              }
+              disabled={laast}
+              className={knapKlasse}
+            >
+              {tilstand === "skriv-om" ? tekster.annuller : tekster.skrivOm}
+            </button>
+
+            {kanSlettes && (
+              <button
+                type="button"
+                onClick={() =>
+                  setTilstand((v) => (v === "slet" ? "lukket" : "slet"))
+                }
+                disabled={laast}
+                className={knapKlasse}
+              >
+                {tilstand === "slet" ? tekster.annuller : tekster.slet}
+              </button>
+            )}
+          </div>
         )}
       </div>
 
       {/*
-        Mens afsnittet bliver skrevet, vises strømmen som TEKST — React
+        Mens afsnittet bliver skrevet om, vises strømmen som TEKST — React
         escaper den. Først når serveren har saneret det færdige afsnit,
         bliver det vist som HTML. Samme regel som ved en hel tekst.
       */}
@@ -94,10 +188,26 @@ export function Blokkort({
         </pre>
       ) : (
         <div
-          className="tekst"
+          ref={felt}
+          className={`tekst outline-none ${
+            redigerer ? "rounded-lg bg-bund px-4 py-3" : ""
+          }`}
+          contentEditable={redigerer}
+          suppressContentEditableWarning
+          role={redigerer ? "textbox" : undefined}
+          aria-multiline={redigerer ? true : undefined}
+          aria-label={redigerer ? tekster.ret : undefined}
           // Saneret server-side med sanitize-html. Se lib/tekst/saner.ts.
+          // Det gælder også en håndrettelse: den sendes gennem /api/blok,
+          // FØR den havner her igen.
           dangerouslySetInnerHTML={{ __html: blok.html }}
         />
+      )}
+
+      {redigerer && (
+        <p className="text-sm leading-relaxed text-gran-let">
+          {tekster.retForklaring}
+        </p>
       )}
 
       {fejl && (
@@ -109,7 +219,26 @@ export function Blokkort({
         </p>
       )}
 
-      {aaben && !omskrives && (
+      {tilstand === "slet" && !omskrives && (
+        <div className="space-y-3 border-t border-kant pt-4">
+          <p className="text-sm leading-relaxed text-gran">
+            {tekster.sletSpoergsmaal}
+          </p>
+
+          <button
+            type="button"
+            onClick={() => {
+              setTilstand("lukket");
+              slet();
+            }}
+            className="rounded-lg border border-rav px-4 py-2 text-sm font-medium text-gran outline-none focus-visible:ring-2 focus-visible:ring-gran"
+          >
+            {tekster.sletJa}
+          </button>
+        </div>
+      )}
+
+      {tilstand === "skriv-om" && !omskrives && (
         <div className="space-y-3 border-t border-kant pt-4">
           <label
             htmlFor={`oenske-${blok.id}`}

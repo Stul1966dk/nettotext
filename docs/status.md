@@ -237,6 +237,29 @@ Tilbage i trinnet:
 
 ---
 
+## Produkttekst — de tre huller fra 13.09.2026
+
+Gennemgangen af, hvad produktteksten manglede, gav tre punkter. Alle tre er
+bygget. Begrundelserne står i `beslutninger.md`.
+
+| Punkt | Status |
+|---|---|
+| Butiksoplysninger ét sted i stedet for i hver brief | færdig (migration 0022) |
+| "Skriv en til med samme opsætning" | færdig, afprøvet 13.09.2026 |
+| Ret og slet et afsnit i hånden | færdig, afprøvet 13.09.2026 |
+
+**Migration 0022 skal køres FØR koden rulles ud.** `hentBrandprofil` spørger
+efter kolonnen `shop_info`; findes den ikke, fejler opslaget, og hele
+brand-profilen læses som tom — stiltiende, både på indstillingssiden og i
+prompten.
+
+**Ikke afprøvet endnu:** selve butiksoplysnings-feltet, som afventer
+migrationen.
+
+Fravalgt samtidig: eksport til Shopify og lignende. Se `beslutninger.md`.
+
+---
+
 ## Trin 8 — Lancering
 
 - Marketing-forside på `/da/` efter `design/design-3-vaerksted.html`.
@@ -401,10 +424,12 @@ opdager, om prøvekvoten eller budgetloftet er sat forkert.
 
 ## Mindre huller, der ikke hører til et bestemt trin
 
-- **Redigér og slet en blok i hånden.** Det tekniske oplæg beskriver editoren
-  som "pr. blok: redigér, Regenerér denne sektion, slet". Regenerering er
-  bygget; manuel redigering og sletning er ikke. Det koster ingen AI-kald og
-  er formentlig værd at have — nogle gange vil man bare rette ét ord.
+- ~~**Redigér og slet en blok i hånden.**~~ **Bygget 13.09.2026.** "Ret selv"
+  åbner afsnittet til redigering i browseren; rettelsen saneres server-side
+  gennem `POST /api/blok`, før den vises og gemmes. "Slet afsnittet" fjerner
+  ét afsnit og nummererer resten om. Det sidste afsnit kan ikke slettes.
+  Ingen af delene koster et AI-kald. Afprøvet ende til ende 13.09.2026,
+  saneringen med `<script>`, `onclick`, `style` og et `javascript:`-link.
 - **Den lange tekstlængde (1.400 ord) er stadig ikke afprøvet i produktion.**
   Se noten om `maxDuration` på tjeklisten. Opdelt generering sektion for
   sektion er den foretrukne løsning, og blokkene fra trin 3 er fundamentet.

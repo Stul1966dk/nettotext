@@ -33,6 +33,7 @@ const FEJLNOEGLER = [
   "serverfejl",
   "ukendt",
   "netvaerk",
+  "tomt_afsnit",
 ] as const;
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -80,6 +81,7 @@ export default async function SkrivSide({
   const personligtGrundlag = [
     tilpasning.brand?.beskrivelse ?? "",
     tilpasning.brand?.tone ?? "",
+    tilpasning.brand?.butiksoplysninger ?? "",
     ...tilpasning.instruktioner,
   ].join("\n");
 
@@ -103,6 +105,7 @@ export default async function SkrivSide({
           tekster={{
             ingenBrief: t("ingenBrief"),
             nyTekst: t("nyTekst"),
+            skrivEnTil: t("skrivEnTil"),
             planlaegger: t("planlaegger"),
             skriver: t("skriver"),
             skriverProcent: t.raw("skriverProcent") as string,
@@ -146,6 +149,13 @@ export default async function SkrivSide({
             skrivOmGratis: t("skrivOmGratis"),
             omskriver: t("omskriver"),
             annuller: t("annuller"),
+            ret: t("ret"),
+            retForklaring: t("retForklaring"),
+            retGem: t("retGem"),
+            retGemmer: t("retGemmer"),
+            slet: t("slet"),
+            sletSpoergsmaal: t("sletSpoergsmaal"),
+            sletJa: t("sletJa"),
             faktaOverskrift: t("faktaOverskrift"),
             faktaIngenFund: t("faktaIngenFund"),
             faktaForklaring: t("faktaForklaring"),
