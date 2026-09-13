@@ -119,6 +119,23 @@ export function Teksttypeformular({
     );
   }
 
+  /**
+   * Som saetIdefelt: kun ÉT felt kan tage imod en indsat specifikation, og
+   * et nyt valg slår det gamle fra. To markerede felter ville betyde, at
+   * afkrydsningen på det ene ikke gjorde noget.
+   */
+  function saetFaktafelt(key: string, til: boolean) {
+    setRaekker((forrige) =>
+      forrige.map((raekke) => ({
+        ...raekke,
+        felt: {
+          ...raekke.felt,
+          faktafelt: til && raekke.key === key ? true : undefined,
+        },
+      })),
+    );
+  }
+
   function opdater(key: string, aendring: Partial<InputFelt>) {
     setRaekker((forrige) =>
       forrige.map((raekke) =>
@@ -537,6 +554,21 @@ export function Teksttypeformular({
                   </label>
                   <p className="text-sm leading-relaxed text-gran-let">
                     {tekster.idefeltHjaelp}
+                  </p>
+
+                  <label className="flex items-center gap-3 text-sm text-gran">
+                    <input
+                      type="checkbox"
+                      checked={raekke.felt.faktafelt ?? false}
+                      onChange={(e) =>
+                        saetFaktafelt(raekke.key, e.target.checked)
+                      }
+                      className="h-4 w-4 accent-gran"
+                    />
+                    {tekster.faktafelt}
+                  </label>
+                  <p className="text-sm leading-relaxed text-gran-let">
+                    {tekster.faktafeltHjaelp}
                   </p>
                 </div>
               )}

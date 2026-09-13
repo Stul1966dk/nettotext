@@ -215,8 +215,14 @@ Tilbage i trinnet:
     brand-profilen eller de gemte instruktioner, vises med den sætning, de
     står i. Tjekket slår intet op og påstår aldrig, hvad det rigtige tal er.
     Ansvarslinjen står samme sted og i briefen.
-  - **Indsæt specifikation: mangler.** Ruten, der gør en indsat specifikation
-    om til en faktaliste.
+  - **Indsæt specifikation: bygget 13.09.2026 (migration 0021).** Feltet i
+    briefen, `POST /api/fakta` og udtrækket i `lib/tekst/fakta.ts`. Brugeren
+    indsætter selv teksten — ruten tager ingen adresse imod og går aldrig på
+    nettet. Det koster ikke en prøvetekst, og der bruges den billigste model,
+    som ved idéforslagene. Hvilket felt listen lander i, er DATA: flaget
+    `faktafelt` på feltet, sat gennem feltbyggeren på adminsiden. Kun
+    produktteksten har det.
+    **Ikke afprøvet ende til ende endnu** — migration 0021 skal køres først.
 
 ---
 

@@ -10,6 +10,7 @@ import {
   stiltoneSkema,
 } from "@/lib/skabeloner/stiltone";
 import {
+  findFaktafelt,
   findIdefelt,
   type Brief,
   type InputFelt,
@@ -36,6 +37,17 @@ type Tekster = {
   ideOverskrift: string;
   /** Fejlbeskeder slået op på rutens `aarsag`. */
   ideFejl: Record<string, string>;
+  faktaLabel: string;
+  faktaHjaelp: string;
+  faktaPladsholder: string;
+  faktaKnap: string;
+  faktaHenter: string;
+  faktaGratis: string;
+  /** Kvittering med {antal}. */
+  faktaLagt: string;
+  /** Lagt til kvitteringen, når der ikke var plads til det hele. */
+  faktaKlippet: string;
+  faktaFejl: Record<string, string>;
 };
 
 const feltKlasse =
@@ -53,17 +65,38 @@ export function BriefFormular({
   const router = useRouter();
   const [fejl, setFejl] = useState<string | null>(null);
 
-  // Feltet, idéforslagene fylder ud. Står flaget ikke i skabelonen, findes
-  // knappen slet ikke — se findIdefelt i lib/skabeloner/typer.ts.
+  // De to felter, koden selv kan skrive i. Står flagene ikke i skabelonen,
+  // findes knapperne slet ikke — se findIdefelt og findFaktafelt i
+  // lib/skabeloner/typer.ts.
   const idefelt = findIdefelt(felter);
+  const faktafelt = findFaktafelt(felter);
 
-  // Netop DET felt er styret af React, fordi et forslag skal kunne skrive i
-  // det. Resten af formularen er uændret uindsvøbt HTML: browseren holder
-  // værdierne, og de læses først, når der trykkes.
-  const [ideVaerdi, setIdeVaerdi] = useState(idefelt?.standard ?? "");
+  // NETOP de felter er styret af React, fordi et forslag eller en faktaliste
+  // skal kunne skrive i dem. Resten af formularen er uændret uindsvøbt HTML:
+  // browseren holder værdierne, og de læses først, når der trykkes.
+  const [vaerdier, setVaerdier] = useState<Record<string, string>>(() =>
+    Object.fromEntries(
+      [idefelt, faktafelt]
+        .filter((felt): felt is InputFelt => felt !== null)
+        .map((felt) => [felt.navn, felt.standard ?? ""]),
+    ),
+  );
+
   const [ideer, setIdeer] = useState<Ide[]>([]);
   const [henter, setHenter] = useState(false);
   const [ideFejl, setIdeFejl] = useState<string | null>(null);
+
+  // Den indsatte specifikation. Den bliver ALDRIG gemt og følger ikke med
+  // kladden: den er et arbejdsredskab på vej mod faktalisten, ikke noget
+  // brugeren skal have liggende.
+  const [indsat, setIndsat] = useState("");
+  const [udtraekker, setUdtraekker] = useState(false);
+  const [faktaFejl, setFaktaFejl] = useState<string | null>(null);
+  const [faktaKvittering, setFaktaKvittering] = useState<string | null>(null);
+
+  function saetVaerdi(navn: string, vaerdi: string) {
+    setVaerdier((nu) => ({ ...nu, [navn]: vaerdi }));
+  }
 
   const formular = useRef<HTMLFormElement>(null);
 
@@ -113,14 +146,85 @@ export function BriefFormular({
   }
 
   /**
+   * Den indsatte specifikation bliver til en liste med oplysninger.
+   *
+   * Bemærk hvad der IKKE sker: der sendes ingen adresse af sted, og serveren
+   * henter ikke noget. Brugeren har selv kopieret teksten — det er dét, der
+   * holder funktionen fri af ophavsretten. Se docs/beslutninger.md 13.09.2026.
+   *
+   * Listen LÆGGES TIL det, der allerede står i feltet, frem for at erstatte
+   * det. Har hun selv skrevet tre linjer først, skal de ikke forsvinde, fordi
+   * hun bagefter indsætter et datablad.
+   */
+  async function hentFakta() {
+    if (!faktafelt) return;
+
+    setUdtraekker(true);
+    setFaktaFejl(null);
+    setFaktaKvittering(null);
+
+    try {
+      const svar = await fetch("/api/fakta", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          skabelon,
+          felt: faktafelt.navn,
+          tekst: indsat,
+        }),
+      });
+
+      const data = await svar.json().catch(() => null);
+
+      if (!svar.ok || !Array.isArray(data?.fakta)) {
+        // Som ved idéforslagene: ruten svarer med en kategori, aldrig med en
+        // besked. Så kan en fejl fra serveren ikke komme til at stå på
+        // skærmen med sine egne ord.
+        const aarsag = typeof data?.aarsag === "string" ? data.aarsag : "ukendt";
+        setFaktaFejl(tekster.faktaFejl[aarsag] ?? tekster.faktaFejl.ukendt);
+        return;
+      }
+
+      const fakta = data.fakta as string[];
+      const staaende = (vaerdier[faktafelt.navn] ?? "").trim();
+      const samlet = [staaende, fakta.join("\n")].filter(Boolean).join("\n");
+
+      // Feltets eget loft gælder også, når det er koden der skriver. Uden
+      // det ville briefen blive afvist ved generering, med en fejl brugeren
+      // ikke kunne se grunden til.
+      const loft = faktafelt.maxLaengde ?? 2000;
+      const klippet = samlet.length > loft;
+
+      saetVaerdi(faktafelt.navn, klippet ? samlet.slice(0, loft) : samlet);
+      setIndsat("");
+
+      setFaktaKvittering(
+        [
+          tekster.faktaLagt.replace("{antal}", String(fakta.length)),
+          klippet ? tekster.faktaKlippet.replace("{loft}", String(loft)) : "",
+        ]
+          .filter(Boolean)
+          .join(" "),
+      );
+    } catch {
+      setFaktaFejl(tekster.faktaFejl.netvaerk ?? tekster.faktaFejl.ukendt);
+    } finally {
+      setUdtraekker(false);
+    }
+  }
+
+  /**
    * Et valgt forslag skrives ind i feltet — det er ikke låst bagefter.
    * Emne og vinkel er to sætninger, og de kan begge to bruges, når feltet er
    * et tekstområde. Er feltet en enkelt linje, ryger vinklen ikke med: den
    * ville blive klippet af i visningen og gøre feltet ulæseligt.
    */
   function vaelgIde(ide: Ide) {
-    setIdeVaerdi(
-      idefelt?.type === "tekstomraade" && ide.vinkel
+    if (!idefelt) return;
+
+    saetVaerdi(
+      idefelt.navn,
+      idefelt.type === "tekstomraade" && ide.vinkel
         ? `${ide.emne}\n${ide.vinkel}`
         : ide.emne,
     );
@@ -170,17 +274,19 @@ export function BriefFormular({
     >
       {felter.map((felt) => {
         const erIdefelt = idefelt?.navn === felt.navn;
+        const erFaktafelt = faktafelt?.navn === felt.navn;
 
-        // Idéfeltet styres af React, så et forslag kan skrive i det. De
-        // andre felter passer browseren selv.
-        const styring = erIdefelt
-          ? {
-              value: ideVaerdi,
-              onChange: (
-                e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-              ) => setIdeVaerdi(e.target.value),
-            }
-          : { defaultValue: felt.standard };
+        // Felter, koden kan skrive i, styres af React. De andre passer
+        // browseren selv.
+        const styring =
+          felt.navn in vaerdier
+            ? {
+                value: vaerdier[felt.navn],
+                onChange: (
+                  e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+                ) => saetVaerdi(felt.navn, e.target.value),
+              }
+            : { defaultValue: felt.standard };
 
         return (
           <div key={felt.navn} className="space-y-2">
@@ -251,6 +357,70 @@ export function BriefFormular({
               >
                 {felt.hjaelp}
               </p>
+            )}
+
+            {/* Indsæt-feltet står ved det felt, listen lander i. Samme
+                begrundelse som ved idéforslagene: det er dér, man opdager,
+                at man ikke gider taste en specifikation af i hånden. */}
+            {erFaktafelt && (
+              <div className="space-y-3 rounded-xl border border-kant bg-kort p-4">
+                <label
+                  htmlFor="__indsat"
+                  className="block text-sm font-medium text-gran"
+                >
+                  {tekster.faktaLabel}
+                </label>
+
+                <p
+                  id="__indsat-hjaelp"
+                  className="text-sm leading-relaxed text-gran-let"
+                >
+                  {tekster.faktaHjaelp}
+                </p>
+
+                <textarea
+                  id="__indsat"
+                  rows={4}
+                  maxLength={8000}
+                  value={indsat}
+                  onChange={(e) => setIndsat(e.target.value)}
+                  placeholder={tekster.faktaPladsholder}
+                  aria-describedby="__indsat-hjaelp"
+                  className={`${feltKlasse} resize-y`}
+                />
+
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                  <button
+                    type="button"
+                    onClick={hentFakta}
+                    disabled={udtraekker || !indsat.trim()}
+                    className="rounded-lg border border-gran px-4 py-2 text-sm font-medium text-gran outline-none focus-visible:ring-2 focus-visible:ring-gran focus-visible:ring-offset-2 focus-visible:ring-offset-kort disabled:opacity-60"
+                  >
+                    {udtraekker ? tekster.faktaHenter : tekster.faktaKnap}
+                  </button>
+
+                  <p className="text-sm text-gran-let">{tekster.faktaGratis}</p>
+                </div>
+
+                {faktaFejl && (
+                  <p
+                    role="alert"
+                    className="rounded-lg border border-rav bg-bund px-4 py-3 text-sm text-gran"
+                  >
+                    {faktaFejl}
+                  </p>
+                )}
+
+                {faktaKvittering && (
+                  <p
+                    role="status"
+                    aria-live="polite"
+                    className="rounded-lg border border-kant bg-bund px-4 py-3 text-sm leading-relaxed text-gran"
+                  >
+                    {faktaKvittering}
+                  </p>
+                )}
+              </div>
             )}
 
             {/* Idéforslagene står ved det felt, de fylder ud — ikke øverst på

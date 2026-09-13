@@ -39,6 +39,21 @@ export const inputFeltSkema = z.object({
    * teksttyper: man behøver ikke forslag til, hvad ens eget produkt hedder.
    */
   idefelt: z.boolean().optional(),
+  /**
+   * Er det HER felt, en indsat specifikation skal blive til en faktaliste i?
+   *
+   * Samme slags flag som `idefelt`, og af samme grund: feltet hedder noget
+   * forskelligt fra teksttype til teksttype. Produktteksten har "fakta",
+   * en kommende teksttype kan have "resultater" eller "specifikationer".
+   *
+   * Uden flaget er der ingen knap, og det er det rigtige svar for de fleste
+   * felter: man indsætter ikke et datablad i feltet "Hvem køber den?".
+   *
+   * Et felt kan i princippet have begge flag. Det bør det ikke — et felt til
+   * emner og et felt til tal er ikke det samme felt — men gør det det, virker
+   * begge knapper, og de skriver begge i feltet.
+   */
+  faktafelt: z.boolean().optional(),
   valg: z
     .array(z.object({ vaerdi: z.string().min(1), label: z.string().min(1) }))
     .optional(),
@@ -118,6 +133,16 @@ export type Brief = Record<string, string>;
  * Er der ved en fejl markeret flere, vinder det første. En knap pr. felt
  * ville være at bygge videre på en fejl i dataene frem for at rette den.
  */
+/**
+ * Feltet, en indsat specifikation fyldes ind i — eller null.
+ *
+ * Som findIdefelt: er flaget ved en fejl sat på flere felter, vinder det
+ * første. Og et valgfelt kan ikke rumme en liste, så det springes over.
+ */
+export function findFaktafelt(felter: InputFelt[]): InputFelt | null {
+  return felter.find((felt) => felt.faktafelt && felt.type !== "valg") ?? null;
+}
+
 export function findIdefelt(felter: InputFelt[]): InputFelt | null {
   // Et valgfelt kan ikke fyldes ud med et forslag — der er en rullemenu med
   // faste muligheder. Er flaget alligevel sat på et, springes det over frem

@@ -99,7 +99,7 @@ export async function hentBudgetstatus(): Promise<Budgetstatus> {
  * rute, der bruger penge, blev talt som en tekst, fordi nogen glemte at
  * tage stilling.
  */
-export type Forbrugsslags = "tekst" | "afsnit" | "ideer";
+export type Forbrugsslags = "tekst" | "afsnit" | "ideer" | "fakta";
 
 export async function skrivForbrug(post: {
   brugerId: string;

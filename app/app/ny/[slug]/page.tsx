@@ -44,6 +44,28 @@ const IDE_FEJLNOEGLER = [
   "ukendt",
   "netvaerk",
 ] as const;
+/** Skal svare til `aarsag`-værdierne fra /api/fakta. */
+const FAKTA_FEJLNOEGLER = [
+  "ikke_logget_ind",
+  "ugyldig_anmodning",
+  "for_lang_tekst",
+  "ukendt_skabelon",
+  "intet_faktafelt",
+  "ingen_fakta",
+  "mangler_noegle",
+  "budget_opbrugt",
+  "for_mange_kald",
+  "ugyldig_noegle",
+  "tom_saldo",
+  "rate_limit",
+  "tomt_svar",
+  "for_lang",
+  "afvist",
+  "serverfejl",
+  "ukendt",
+  "netvaerk",
+] as const;
+
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("ny");
@@ -54,6 +76,7 @@ export default async function NyTekstSide({ params }: Props) {
   const { slug } = await params;
   const t = await getTranslations("ny");
   const ideFejl = await getTranslations("ny.ideFejl");
+  const faktaFejl = await getTranslations("ny.faktaFejl");
   const skabelon = await hentSkabelon(slug);
 
   if (!skabelon) {
@@ -122,6 +145,17 @@ export default async function NyTekstSide({ params }: Props) {
           ideOverskrift: t("ideOverskrift"),
           ideFejl: Object.fromEntries(
             IDE_FEJLNOEGLER.map((noegle) => [noegle, ideFejl(noegle)]),
+          ),
+          faktaLabel: t("faktaLabel"),
+          faktaHjaelp: t("faktaHjaelp"),
+          faktaPladsholder: t("faktaPladsholder"),
+          faktaKnap: t("faktaKnap"),
+          faktaHenter: t("faktaHenter"),
+          faktaGratis: t("faktaGratis"),
+          faktaLagt: t.raw("faktaLagt") as string,
+          faktaKlippet: t.raw("faktaKlippet") as string,
+          faktaFejl: Object.fromEntries(
+            FAKTA_FEJLNOEGLER.map((noegle) => [noegle, faktaFejl(noegle)]),
           ),
         }}
       />
