@@ -86,6 +86,11 @@ export async function hentBudgetstatus(): Promise<Budgetstatus> {
  * Fejler den, skal genereringen IKKE fejle: brugeren har fået sin tekst, og
  * den er betalt. En manglende logpost betyder, at dagens forbrug tælles for
  * lavt, og det skal ses i serverloggen — ikke af brugeren.
+ *
+ * Returnerer rækkens id, eller null hvis den ikke blev skrevet. Id'et er
+ * kvitteringen: feedback-widgetten i editoren hører til PÅ den her række, og
+ * uden id skulle ruten gætte hvilken tekst brugeren mente. Et gæt ville
+ * ramme forkert i det øjeblik, en gammel kladde blev åbnet fra dashboardet.
  */
 /**
  * Hvad kaldet var: en hel tekst, ét omskrevet afsnit eller fem idéforslag.
@@ -110,7 +115,7 @@ export async function skrivForbrug(post: {
   betaler: Betaler;
   inputTokens: number;
   outputTokens: number;
-}): Promise<void> {
+}): Promise<string | null> {
   const pris = beregnPrisDkk(post.model, post.inputTokens, post.outputTokens);
 
   if (pris === null) {
@@ -127,22 +132,29 @@ export async function skrivForbrug(post: {
 
   const supabase = createServiceClient();
 
-  const { error } = await supabase.from("usage_log").insert({
-    user_id: post.brugerId,
-    template_slug: post.skabelon,
-    slags: post.slags,
-    provider: post.leverandoer,
-    model: post.model,
-    paid_by: post.betaler,
-    input_tokens: post.inputTokens,
-    output_tokens: post.outputTokens,
-    estimated_cost: pris ?? 0,
-  });
+  const { data, error } = await supabase
+    .from("usage_log")
+    .insert({
+      user_id: post.brugerId,
+      template_slug: post.skabelon,
+      slags: post.slags,
+      provider: post.leverandoer,
+      model: post.model,
+      paid_by: post.betaler,
+      input_tokens: post.inputTokens,
+      output_tokens: post.outputTokens,
+      estimated_cost: pris ?? 0,
+    })
+    .select("id")
+    .single();
 
   if (error) {
     await logFejl("lib/budget · usage_log", error.message, {
       bruger: post.brugerId,
       ekstra: { model: post.model, skabelon: post.skabelon },
     });
+    return null;
   }
+
+  return data?.id ?? null;
 }

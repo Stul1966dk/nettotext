@@ -12,8 +12,11 @@ import { samlHtml, tilMarkdown, udenTitel } from "@/lib/tekst/markdown";
 
 import { Blokkort, type BlokkortTekster } from "./Blokkort";
 import { Faktatjek, type FaktatjekTekster } from "./Faktatjek";
+import { Feedback, type FeedbackTekster } from "./Feedback";
 
-type Tekster = BlokkortTekster & FaktatjekTekster & {
+type Tekster = BlokkortTekster &
+  FaktatjekTekster &
+  FeedbackTekster & {
   ingenBrief: string;
   nyTekst: string;
   skrivEnTil: string;
@@ -50,8 +53,8 @@ type Tekster = BlokkortTekster & FaktatjekTekster & {
   blokTitel: string;
   blokIndledning: string;
   blokSektion: string;
-  fejl: Record<string, string>;
-};
+    fejl: Record<string, string>;
+  };
 
 type Status = "starter" | "skriver" | "faerdig" | "fejl" | "ingen-brief";
 
@@ -246,6 +249,12 @@ export function Generering({
    * læses, mens siden tegnes.
    */
   const [skabelon, setSkabelon] = useState<string | null>(null);
+  /**
+   * Rækken i `usage_log`, teksten kostede. Kommer fra genereringen som en
+   * kvittering, eller fra en kladde, der er åbnet igen. Uden den vises
+   * feedback-widgetten ikke.
+   */
+  const [kvittering, setKvittering] = useState<string | null>(null);
 
   // Omskrivning af ét afsnit. Kun ét ad gangen: to samtidige ville skrive
   // oven i hinandens blokke, og brugeren ville ikke kunne se hvilket svar
@@ -357,6 +366,7 @@ export function Generering({
       setTitel("");
       setBeskrivelse("");
       setHarMeta(false);
+      setKvittering(null);
       setFejl(null);
       setOmskrivFejl(null);
       setKopieret(null);
@@ -405,6 +415,15 @@ export function Generering({
             setTekst(samlet);
             setStatus("skriver");
             gem({ tekst: samlet, html: "", blokke: [], faerdig: false });
+          }
+
+          if (hendelse.slags === "kvittering") {
+            // Kommer EFTER teksten, fordi forbruget skrives til allersidst
+            // på serveren. Den lægges i kladden med det samme, så teksten
+            // også kan bedømmes efter et genindlæs.
+            const id = hendelse.id as string;
+            setKvittering(id);
+            gem({ kvittering: id });
           }
 
           if (hendelse.slags === "faerdig") {
@@ -548,6 +567,7 @@ export function Generering({
       setTitel(kladde.titel);
       setBeskrivelse(kladde.beskrivelse);
       setHarMeta(Boolean(kladde.titel || kladde.beskrivelse));
+      setKvittering(kladde.kvittering ?? null);
       setStatus("faerdig");
       return;
     }
@@ -1010,6 +1030,13 @@ export function Generering({
               vilje: det er det sidste, brugeren møder, inden hun tager
               teksten med sig. Står det nederst, er den allerede kopieret. */}
           <Faktatjek fund={fund} tekster={tekster} />
+
+          {/* Widgetten står EFTER faktatjekket: først ser man teksten efter,
+              så bedømmer man den. Uden kvittering findes den ikke — se
+              noten i Feedback.tsx. */}
+          {kvittering && (
+            <Feedback kvittering={kvittering} tekster={tekster} />
+          )}
 
           <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-3">

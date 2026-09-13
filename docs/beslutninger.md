@@ -36,6 +36,47 @@ trin 8.
 
 ---
 
+## 2026-09-13 — Feedback-widgetten, og hvorfor den har en kvittering
+
+Det sidste punkt i trin 6. Kolonnerne har stået klar siden 30. august.
+
+**Svaret hænges på rækken i `usage_log`, ikke på "den nyeste tekst".**
+Det var den nemme løsning, og den ville have været forkert: kladder lever 48
+timer og kan åbnes igen fra dashboardet, så "nyeste" og "den, brugeren kigger
+på" er ikke det samme. Derfor sender genereringen rækkens id som en
+`kvittering`-hændelse, og id’et følger kladden.
+
+**Hændelsen kommer EFTER `faerdig`.** Forbruget skrives i `finally`, til
+allersidst, fordi regnskabet aldrig må vælte en tekst, der er skrevet og
+betalt. Det betyder, at kvitteringen ikke kan nå at komme før teksten — og
+det er i orden: uden kvittering findes widgetten bare ikke, og teksten er
+upåvirket.
+
+**Ruten bruger `service_role`, og derfor står ejer-tjekket i koden.**
+`usage_log` har med vilje ingen update-policy (migration 0008: kunne brugeren
+skrive i loggen, kunne hun slette dagens forbrug og nulstille budgetloftet).
+Opdateringen rammer kun rækker med brugerens eget `user_id`, jf.
+sikkerhedsreglernes punkt 6. Rammer den ingenting, er svaret det samme,
+uanset om id’et er opdigtet eller en anden brugers — vi bekræfter ikke, at
+et id findes.
+
+**Ingen kø-grænse.** Kaldet koster ingen penge og kan kun skrive i brugerens
+egne rækker. At lade den dele grænse med genereringen ville være værre: så
+ville en tommel op koste en plads i køen til at skrive en tekst.
+
+**Formen: ét klik, og så er man færdig.** Kommentarfeltet folder sig først ud
+BAGEFTER. Står det fremme fra start, ser widgetten ud som en formular, og så
+svarer ingen. Et svar kan ændres — man kan nå at trykke forkert, og en knap,
+der låser sig selv uden at sige det, er værre.
+
+**Åbent punkt: kommentarerne kan ikke læses i appen.** De gemmes, men
+adminsiden viser kun andelen. At vise dem er ikke gratis: det er fri tekst
+skrevet af brugere, og den kan indeholde hvad som helst — også noget, regel 9
+ellers holder ude af systemet. Beslutningen om at vise dem hører til hos
+ejeren og er ikke truffet.
+
+---
+
 ## 2026-09-13 — Fakta-feltet markeres på alle teksttyper
 
 Migration 0021 satte flaget `faktafelt` på produktteksten alene. Det var for

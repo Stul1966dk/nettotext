@@ -160,6 +160,16 @@ export default async function SkrivSide({
             faktaIngenFund: t("faktaIngenFund"),
             faktaForklaring: t("faktaForklaring"),
             faktaAnsvar: t("faktaAnsvar"),
+            spoergsmaal: t("feedbackSpoergsmaal"),
+            op: t("feedbackOp"),
+            ned: t("feedbackNed"),
+            tak: t("feedbackTak"),
+            kommentarLabel: t("feedbackKommentarLabel"),
+            kommentarPladsholder: t("feedbackKommentarPladsholder"),
+            kommentarKnap: t("feedbackKommentarKnap"),
+            kommentarSendt: t("feedbackKommentarSendt"),
+            sender: t("feedbackSender"),
+            feedbackFejl: t("feedbackFejl"),
             fejl: fejlbeskeder,
           }}
         />

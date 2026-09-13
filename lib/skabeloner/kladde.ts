@@ -58,6 +58,15 @@ export type Kladde = {
   beskrivelse: string;
   faerdig: boolean;
   /**
+   * Rækken i `usage_log`, teksten kostede. Sendes af genereringen, når
+   * teksten er leveret, og bruges af feedback-widgetten.
+   *
+   * Følger kladden, så en tekst også kan bedømmes efter et genindlæs eller
+   * fra dashboardet i morgen. Forsvinder med kladden efter 48 timer —
+   * derefter kan den tekst ikke længere bedømmes, og det er i orden.
+   */
+  kvittering?: string;
+  /**
    * Hvornår browserkopien holder op med at gælde. Sættes af gemKladde, ikke
    * af den, der kalder — så kan den ikke glemmes ét sted.
    */

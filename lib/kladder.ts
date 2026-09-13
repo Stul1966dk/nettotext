@@ -45,6 +45,8 @@ export const indholdSkema = z.object({
   titel: z.string().max(300),
   beskrivelse: z.string().max(500),
   faerdig: z.boolean(),
+  /** Valgfri: kladder fra før feedback-widgetten fandtes har den ikke. */
+  kvittering: z.string().uuid().optional(),
 });
 
 export type KladdeIndhold = z.infer<typeof indholdSkema>;

@@ -105,11 +105,32 @@ Begrundelserne står i `beslutninger.md`.
 | Rate limit pr. bruger | færdig (30.08.2026) |
 | Fejlovervågning | færdig 12.09.2026 — egen fejllog frem for Sentry: `error_log`, `lib/fejl.ts` og `/app/admin/fejl` |
 | Adminsidens nøgletal | færdig 13.09.2026 (migration 0024) |
-| Feedback-widget | **mangler** — det sidste punkt i trinnet |
+| Feedback-widget | færdig 13.09.2026 |
 
-Feedback er halvt forberedt: kolonnerne `feedback` og `feedback_comment` står
-allerede i `usage_log`. Der mangler tommel op/ned i editoren og ruten
-`POST /api/feedback`.
+**Trin 6 er dermed lukket.**
+
+Feedback-widgetten (13.09.2026) står i editoren efter faktatjekket: først ser
+man teksten efter, så bedømmer man den. Ét klik, og så er man færdig;
+kommentarfeltet folder sig først ud bagefter og er frivilligt.
+
+Svaret hører til PÅ rækken i `usage_log`, teksten kostede. Genereringen sender
+rækkens id som en `kvittering`-hændelse i NDJSON-strømmen efter teksten —
+forbruget skrives til allersidst, så den kan ikke komme før — og id’et følger
+kladden, så en tekst også kan bedømmes efter et genindlæs eller fra
+dashboardet i morgen. Uden kvittering vises widgetten ikke.
+
+`POST /api/feedback` bruger `service_role`, fordi `usage_log` med vilje ingen
+update-policy har (migration 0008: kunne brugeren skrive i loggen, kunne hun
+nulstille budgetloftet). Derfor gælder sikkerhedsreglernes punkt 6, og
+ejer-tjekket står i selve opdateringen: den rammer kun rækker med brugerens
+eget `user_id`.
+
+Afprøvet ende til ende 13.09.2026: tommel op, kommentar, og tallet slog
+igennem på adminsiden som "100 % — 1 svar i alt".
+
+**Kommentarerne kan endnu ikke læses i appen.** De gemmes i
+`feedback_comment`, men adminsiden viser kun andelen. Skal de læses, kræver
+det indtil videre et opslag i Supabase.
 
 ---
 

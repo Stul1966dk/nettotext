@@ -71,6 +71,15 @@ type Hendelse =
       titel: string;
       beskrivelse: string;
     }
+  /**
+   * Kvitteringen: id'et på rækken i `usage_log`, teksten kostede.
+   *
+   * Kommer EFTER `faerdig`, fordi forbruget skrives til allersidst — se
+   * `finally` nedenfor, hvor rækkefølgen er begrundet. Klienten bruger den
+   * til feedback-widgetten; udebliver den, findes widgetten ikke, og
+   * teksten er ellers upåvirket.
+   */
+  | { slags: "kvittering"; id: string }
   | { slags: "fejl"; aarsag: string };
 
 /** Typet indpakning af ndjsonLinje, så hændelserne ikke kan skrive sig skæve. */
@@ -326,7 +335,7 @@ export async function POST(request: Request) {
         // er skrevet og betalt, uanset om vi fik skrevet det ned.
         if (forbrug) {
           try {
-            await skrivForbrug({
+            const kvittering = await skrivForbrug({
               brugerId: user.id,
               skabelon: skabelon.slug,
               slags: "tekst",
@@ -336,6 +345,13 @@ export async function POST(request: Request) {
               inputTokens: forbrug.inputTokens,
               outputTokens: forbrug.outputTokens,
             });
+
+            // Kvitteringen sendes KUN, hvis rækken faktisk blev skrevet.
+            // Uden række er der ikke noget at hænge en tommel op på, og en
+            // widget, der ikke kan gemme svaret, er værre end ingen widget.
+            if (kvittering) {
+              controller.enqueue(linje({ slags: "kvittering", id: kvittering }));
+            }
           } catch (fejl) {
             await logFejl("POST /api/generate · forbrugslog", fejl, { bruger: user.id });
           }
