@@ -104,7 +104,8 @@ Begrundelserne står i `beslutninger.md`.
 | Globalt dagligt budgetloft | færdig (30.08.2026) |
 | Rate limit pr. bruger | færdig (30.08.2026) |
 | Fejlovervågning | færdig 12.09.2026 — egen fejllog frem for Sentry: `error_log`, `lib/fejl.ts` og `/app/admin/fejl` |
-| Feedback-widget | **mangler** |
+| Adminsidens nøgletal | færdig 13.09.2026 (migration 0024) |
+| Feedback-widget | **mangler** — det sidste punkt i trinnet |
 
 Feedback er halvt forberedt: kolonnerne `feedback` og `feedback_comment` står
 allerede i `usage_log`. Der mangler tommel op/ned i editoren og ruten
@@ -380,8 +381,19 @@ uden at åbne Supabase og skrive SQL.
 oprette og rette teksttyper: navn, beskrivelse, systemprompt og felterne i
 briefen, med kladde-tilstand og historik over tidligere udgaver
 (`template_versions`, migration 0017). Adgangen ligger i et layout under
-`/app/admin` og kræver `ADMIN_EMAIL`. **Tallene nedenfor mangler stadig** —
-det er den anden halvdel af siden.
+`/app/admin` og kræver `ADMIN_EMAIL`.
+
+**Tallene er færdige 13.09.2026** (migration 0024): dagens budget med måler,
+forbrug i dag og denne måned delt på hvem der betalte, skrevne tekster, pris
+pr. tekst, tokens, brugere og nye pr. uge, prøvetekster givet væk, kladder
+lige nu, og fordelingen på teksttype og model. De står ØVERST på forsiden og
+ikke bag et klik — de er kun noget værd, hvis de bliver set.
+
+Regnet i databasen med to `security definer`-funktioner, ikke i JavaScript:
+tallene er summer over en tabel, der vokser med hvert kald, og at hente
+rækkerne hjem for at lægge dem sammen holder op med at virke stille og roligt.
+Feedback-andelen står klar, men siger "widgetten er ikke bygget endnu", indtil
+den er det.
 
 **Adressen på adminkontoen står IKKE i repoet.** Den ligger i miljøvariablen
 `ADMIN_EMAIL`, både i `.env.local` og hos Vercel. Begrundelsen er den samme

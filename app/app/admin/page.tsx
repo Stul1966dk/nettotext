@@ -4,12 +4,12 @@ import { getTranslations } from "next-intl/server";
 
 import { hentFejltal } from "@/lib/fejloversigt";
 
+import { Noegletal } from "./Noegletal";
+
 /**
  * Adminsidens forside.
  *
- * Teksttyperne og fejlloggen indtil videre. Tallene — forbrug, budget,
- * brugere, prøvekvote — er beskrevet i docs/status.md og hører til her,
- * når de bygges.
+ * Nøgletallene øverst, derefter teksttyperne og fejlloggen.
  *
  * Fejltallet står PÅ forsiden og ikke bag et klik. Vi har fravalgt Sentry
  * og får derfor ingen besked, når noget brænder; så skal tallet i det
@@ -32,6 +32,8 @@ export default async function AdminForside() {
         </p>
         <h1 className="text-2xl font-semibold text-gran">{t("forside")}</h1>
       </div>
+
+      <Noegletal />
 
       <Link
         href="/app/admin/teksttyper"
