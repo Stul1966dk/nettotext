@@ -21,6 +21,7 @@ type Tekster = {
   valgfrit: string;
   knap: string;
   manglerFelter: string;
+  ansvar: string;
   instruktion: string;
   instruktionHjaelp: string;
   instruktionPladsholder: string;
@@ -397,12 +398,22 @@ export function BriefFormular({
         </p>
       )}
 
-      <button
-        type="submit"
-        className="rounded-lg bg-gran px-6 py-3 font-medium text-bund outline-none focus-visible:ring-2 focus-visible:ring-gran focus-visible:ring-offset-2 focus-visible:ring-offset-bund"
-      >
-        {tekster.knap}
-      </button>
+      <div className="space-y-3">
+        <button
+          type="submit"
+          className="rounded-lg bg-gran px-6 py-3 font-medium text-bund outline-none focus-visible:ring-2 focus-visible:ring-gran focus-visible:ring-offset-2 focus-visible:ring-offset-bund"
+        >
+          {tekster.knap}
+        </button>
+
+        {/* Ansvaret siges HER, hvor briefen sendes af sted, og igen i
+            editoren ved faktatjekket. To gange, fordi det er to forskellige
+            øjeblikke: her lover vi at bruge tallene, som de står — dér skal
+            teksten bruges til noget. */}
+        <p className="max-w-prose text-xs leading-relaxed text-gran-let">
+          {tekster.ansvar}
+        </p>
+      </div>
     </form>
   );
 }

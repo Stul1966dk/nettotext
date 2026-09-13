@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
 import { hentKladdeVedId } from "@/lib/kladder";
+import { hentTilpasning } from "@/lib/personalisering";
 import type { Kladde } from "@/lib/skabeloner/kladde";
 import { STANDARD_STILTONE } from "@/lib/skabeloner/stiltone";
 
@@ -69,6 +70,19 @@ export default async function SkrivSide({
       }
     : null;
 
+  // Brugerens egne oplysninger, som faktatjekket i editoren holder tekstens
+  // tal op mod. Hentes her, hvor RLS i forvejen afgør, at det er hendes egne
+  // rækker — og sendes med som ren tekst, fordi tjekket kører i browseren.
+  //
+  // Sprogprøven er bevidst ikke med. Begrundelsen står ved samlGrundlag i
+  // Generering.tsx.
+  const tilpasning = await hentTilpasning();
+  const personligtGrundlag = [
+    tilpasning.brand?.beskrivelse ?? "",
+    tilpasning.brand?.tone ?? "",
+    ...tilpasning.instruktioner,
+  ].join("\n");
+
   const t = await getTranslations("skriv");
   const fejl = await getTranslations("skriv.fejl");
 
@@ -85,6 +99,7 @@ export default async function SkrivSide({
       <div className="mt-8">
         <Generering
           startKladde={startKladde}
+          personligtGrundlag={personligtGrundlag}
           tekster={{
             ingenBrief: t("ingenBrief"),
             nyTekst: t("nyTekst"),
@@ -131,6 +146,10 @@ export default async function SkrivSide({
             skrivOmGratis: t("skrivOmGratis"),
             omskriver: t("omskriver"),
             annuller: t("annuller"),
+            faktaOverskrift: t("faktaOverskrift"),
+            faktaIngenFund: t("faktaIngenFund"),
+            faktaForklaring: t("faktaForklaring"),
+            faktaAnsvar: t("faktaAnsvar"),
             fejl: fejlbeskeder,
           }}
         />

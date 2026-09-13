@@ -1,17 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { laesNdjson } from "@/lib/api/laesStream";
 import { gemKladde, hentKladde, type Kladde } from "@/lib/skabeloner/kladde";
 import { delIBlokke, type Blok } from "@/lib/tekst/blokke";
+import { tjekTal } from "@/lib/tekst/faktatjek";
 import { fremskridtProcent, maalTegn } from "@/lib/tekst/fremskridt";
 import { samlHtml, tilMarkdown, udenTitel } from "@/lib/tekst/markdown";
 
 import { Blokkort, type BlokkortTekster } from "./Blokkort";
+import { Faktatjek, type FaktatjekTekster } from "./Faktatjek";
 
-type Tekster = BlokkortTekster & {
+type Tekster = BlokkortTekster & FaktatjekTekster & {
   ingenBrief: string;
   nyTekst: string;
   planlaegger: string;
@@ -186,13 +188,38 @@ const GEMMEPAUSE_MS = 2000;
 
 type GemStatus = "ukendt" | "gemmer" | "gemt" | "mislykkedes";
 
+/**
+ * Alt brugeren selv har skrevet, samlet ét sted.
+ *
+ * Faktatjekket holder tekstens tal op mod netop dét. Brand-profilen og de
+ * gemte instruktioner er med, fordi de også er brugerens egne oplysninger —
+ * står der "vi har kørt siden 1998" i profilen, er 1998 ikke et tal, modellen
+ * har fundet på.
+ *
+ * Sprogprøven er IKKE med. Den er et eksempel på tonefald, ikke en kilde til
+ * oplysninger, og modellen har udtrykkelig besked på ikke at bruge dens
+ * indhold. Tællede vi dens tal med som kendte, ville et opdigtet tal kunne
+ * slippe igennem, fordi det tilfældigvis også stod i en gammel tekst.
+ */
+function samlGrundlag(kladde: Kladde, personligt: string): string {
+  return [...Object.values(kladde.brief), kladde.instruktion, personligt].join(
+    "\n",
+  );
+}
+
 export function Generering({
   tekster,
   startKladde,
+  personligtGrundlag,
 }: {
   tekster: Tekster;
   /** En kladde hentet fra serveren, når siden er åbnet fra dashboardet. */
   startKladde: Kladde | null;
+  /**
+   * Brand-profilen og de gemte instruktioner som ren tekst. Hentes på
+   * serveren, hvor de i forvejen ligger, og bruges kun til faktatjekket.
+   */
+  personligtGrundlag: string;
 }) {
   const [status, setStatus] = useState<Status>("starter");
   const [tekst, setTekst] = useState("");
@@ -210,6 +237,8 @@ export function Generering({
   const [henter, setHenter] = useState(false);
   const [eksportFejl, setEksportFejl] = useState(false);
   const [gemStatus, setGemStatus] = useState<GemStatus>("ukendt");
+  /** Det, tekstens tal holdes op mod. Se samlGrundlag ovenfor. */
+  const [grundlag, setGrundlag] = useState("");
 
   // Omskrivning af ét afsnit. Kun ét ad gangen: to samtidige ville skrive
   // oven i hinandens blokke, og brugeren ville ikke kunne se hvilket svar
@@ -324,6 +353,7 @@ export function Generering({
       setMarkeret(false);
 
       kladdeRef.current = kladde;
+      setGrundlag(samlGrundlag(kladde, personligtGrundlag));
 
       let samlet = "";
 
@@ -390,7 +420,7 @@ export function Generering({
         visFejl("netvaerk");
       }
     },
-    [gem, tekster],
+    [gem, personligtGrundlag, tekster],
   );
 
   /**
@@ -499,6 +529,7 @@ export function Generering({
     // igen. Det gør en genindlæsning af siden gratis.
     if (kladde.faerdig && kladde.html) {
       kladdeRef.current = kladde;
+      setGrundlag(samlGrundlag(kladde, personligtGrundlag));
       setTekst(kladde.tekst);
       setHtml(kladde.html);
       setBlokke(kladde.blokke);
@@ -510,7 +541,7 @@ export function Generering({
     }
 
     await generer(kladde);
-  }, [generer, startKladde]);
+  }, [generer, personligtGrundlag, startKladde]);
 
   useEffect(() => {
     if (igangsat.current) return;
@@ -616,6 +647,23 @@ export function Generering({
 
     kodeRef.current.scrollIntoView({ block: "nearest" });
   }, [markeret, visKoder]);
+
+  /**
+   * Faktatjekket. Regnes her og ikke i en effekt: det er en udregning på det,
+   * der allerede står på skærmen, og den skal køre igen, hver gang teksten
+   * eller meta-felterne ændrer sig — også efter at ét afsnit er skrevet om.
+   *
+   * Meta-titlen og meta-beskrivelsen er med. De ender på kundens side
+   * ligesom teksten, og et opfundet tal i en meta-beskrivelse er lige så
+   * galt som et opfundet tal i brødteksten.
+   */
+  const fund = useMemo(
+    () =>
+      status === "faerdig" && html
+        ? tjekTal([html, titel, beskrivelse].join(" "), grundlag)
+        : [],
+    [beskrivelse, grundlag, html, status, titel],
+  );
 
   function proevIgen() {
     const kladde = hentKladde();
@@ -847,6 +895,11 @@ export function Generering({
               dangerouslySetInnerHTML={{ __html: html }}
             />
           )}
+
+          {/* Tjekket står MELLEM teksten og kopiknapperne, og det er med
+              vilje: det er det sidste, brugeren møder, inden hun tager
+              teksten med sig. Står det nederst, er den allerede kopieret. */}
+          <Faktatjek fund={fund} tekster={tekster} />
 
           <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-3">

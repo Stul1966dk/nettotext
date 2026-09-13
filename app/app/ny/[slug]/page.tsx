@@ -104,6 +104,7 @@ export default async function NyTekstSide({ params }: Props) {
           valgfrit: t("valgfrit"),
           knap: t("knap"),
           manglerFelter: t("manglerFelter"),
+          ansvar: t("ansvar"),
           instruktion: t("instruktion"),
           instruktionHjaelp: t("instruktionHjaelp"),
           instruktionPladsholder: t("instruktionPladsholder"),

@@ -30,8 +30,61 @@ trin 8.
 - [ ] **Prøv ChatGPT-vejen af, før nogen får lov at vælge den.** `lib/ai/openai.ts` er skrevet, men aldrig kørt — platformens nøgle er en Anthropic-nøgle, så OpenAI-siden kan først testes, når der findes en OpenAI-nøgle at teste med. Lad ikke brugerne vælge ChatGPT i indstillinger, før mindst én tekst er skrevet den vej.
 - [ ] **Tjek at lange tekster når at blive færdige.** `/api/generate` har `maxDuration = 60`. Vercels loft afhænger af abonnement. Timer "Langt — ca. 1.400 ord" ud i produktion, er der to knapper: hæv `maxDuration` (kræver det rigtige abonnement), eller sænk `effort` i `lib/ai/anthropic.ts`.
 - [ ] **Byg "slet min konto"** (GDPR, CLAUDE.md regel 9). Alle brugerens rækker i alle tabeller, `ai_keys` inklusive. De fleste tabeller har `on delete cascade` mod `auth.users`, så meget er gjort — der mangler en knap, en rute og en bekræftelse.
+- [ ] **Få betingelserne og kildefunktionen set efter af en advokat.** Vurderingen bag beslutningen 13.09.2026 er lavet uden jurist. Den er holdbar nok til at bygge på, men før der kommer betalende brugere, skal to ting efterses: at brugerbetingelserne siger, at brugeren selv vælger sine kilder og selv står inde for de oplysninger, hun godkender — og at ansvarslinjerne i briefen og editoren er formuleret, så de holder.
 - [ ] **Privatlivspolitik** på `/da/privatliv` (GDPR, jf. teknisk oplæg afsnit 5).
 - [ ] **Opdatér brandnavnet** i `design/design-3-vaerksted.html` til NettoText.
+
+---
+
+## 2026-09-13 — Kildemateriale bygges som brugerens egne oplysninger
+
+**Byggeplanen bliver fraveget.** Det tekniske oplæg og `status.md` har
+`POST /api/fetch-source` stående som det sidste punkt i trin 7: brugeren
+angiver en URL, serveren henter siden og renser den til kontekst. Den rute
+bliver ikke bygget. Ejerens krav var, at der ikke måtte være en juridisk
+gråzone overhovedet, og hentningen er der, hvor gråzonen ligger.
+
+**Det, der bygges i stedet, er tre ting.** Brugeren indsætter selv
+oplysningerne — enten i hånden eller ved at indsætte en specifikation, vi
+rydder op i til en faktaliste. Den færdige tekst får sine tal holdt op mod
+briefen. Og der står tydeligt i både briefen og editoren, at ansvaret for,
+om oplysningerne passer, er brugerens.
+
+**Hvorfor hentningen blev valgt fra.** Ophavsretten beskytter udformningen,
+ikke oplysningerne: mål, vægt, garanti og forskningsresultater er frie, og
+teksten må skrives ud fra dem. Men en server, der henter, skal forholde sig
+til `robots.txt`, forbehold mod tekst- og datamining, betalingsmure,
+databasebeskyttelse ved systematisk høstning og til SSRF. Hvert enkelt punkt
+kan løses; tilsammen er de en vurdering af, hvor grænsen går, og det var
+netop dét, der ikke måtte være. Indsætter brugeren selv, er der ingen robot,
+der besøger nogens side, og ingen grænse at vurdere.
+
+**AI-websøgning blev også valgt fra, og af en anden grund.** Den flytter ikke
+hentningen væk — den flytter den bare hen til en tredjepart, vi ikke kan se
+ind i. Dertil: et tal fra en søgning kan brugeren ikke dokumentere over for
+sin kunde, og markedsføringsloven kræver, at en erhvervsdrivende kan
+dokumentere sine faktiske påstande. Det ville også bryde med beslutningen fra
+12.09.2026 om ikke at tage flere tredjeparter ind.
+
+**Faktatjekket kigger indad og aldrig udad.** Ejeren spurgte, om det kunne
+tjekke tal mod nettet — "du skriver 34 kg, men min research siger 24 kg".
+Svaret blev nej, og grunden er ikke ophavsret: det vender ansvaret om. I det
+øjeblik værktøjet foreslår et andet tal, har NettoText fremsat en påstand om
+varen, og en bruger kan komme til at rette et rigtigt tal til et forkert,
+fordi værktøjet bad om det. Det ville modsige ansvarslinjen, vi selv viser
+samme sted. Tjekket siger derfor kun én ting: "det her tal står ikke i det,
+du selv har skrevet."
+
+**Prisen ved at vælge sådan.** Brugeren skal selv indsætte specifikationen.
+Det er tyve sekunders arbejde mere pr. tekst, og det er dét, vi betaler for
+ikke at skulle vurdere nogen grænse. Skulle hentningen alligevel bygges en
+dag, er faktalisten, sletteknappen og prompt-blokken de samme — så er kun
+selve hentningen nyt arbejde.
+
+**Ansvarslinjen står to steder, ikke ét.** I briefen, hvor oplysningerne
+sendes af sted, og i editoren ved faktatjekket, hvor teksten skal bruges til
+noget. Uden linjen i editoren ville et tjek uden fund kunne læses som en
+godkendelse — og vi har ikke kontrolleret noget, vi har talt cifre.
 
 ---
 

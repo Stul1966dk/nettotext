@@ -1,6 +1,6 @@
 # Status — hvad mangler i version 1
 
-Sidst opdateret: **12. september 2026**, midt i trin 7.
+Sidst opdateret: **13. september 2026**, midt i trin 7.
 
 Dokumentet holder byggeplanen i `teknisk-oplaeg-v1.md` op mod, hvad der
 faktisk står i koden og databasen. Byggeplanen er en plan; det her er en
@@ -204,9 +204,19 @@ tjeklisten allerede kræver.
 
 Tilbage i trinnet:
 
-- **Kildemateriale:** `POST /api/fetch-source`. Kræver SSRF-beskyttelsen fra
-  CLAUDE.md regel 8: kun http/https, timeout 10 sek., maks. 2 MB, og private
-  eller interne IP-adresser blokeret.
+- **Kildemateriale — lavet om 13.09.2026.** `POST /api/fetch-source` bliver
+  IKKE bygget. Punktet er skiftet ud med tre ting, der holder brugeren som
+  kilde: hun indsætter selv oplysningerne, en rute rydder en indsat
+  specifikation op til en faktaliste, og den færdige tekst får sine tal holdt
+  op mod briefen. Begrundelsen — og hvad der blev valgt fra — står i
+  `beslutninger.md` under 13.09.2026.
+  - **Faktatjek: færdigt 13.09.2026.** `lib/tekst/faktatjek.ts` og kortet
+    "Tjek tallene" i editoren. Tal i teksten, der ikke står i briefen,
+    brand-profilen eller de gemte instruktioner, vises med den sætning, de
+    står i. Tjekket slår intet op og påstår aldrig, hvad det rigtige tal er.
+    Ansvarslinjen står samme sted og i briefen.
+  - **Indsæt specifikation: mangler.** Ruten, der gør en indsat specifikation
+    om til en faktaliste.
 
 ---
 
