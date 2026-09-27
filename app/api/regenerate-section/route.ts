@@ -12,6 +12,7 @@ import { logFejl } from "@/lib/fejl";
 import { harProeveKvote } from "@/lib/kvote";
 import { tagPladsIKoeen } from "@/lib/ratelimit";
 import { hentSkabelon } from "@/lib/skabeloner/hent";
+import { hentAktivtMateriale } from "@/lib/skabeloner/materiale";
 import { hentTilpasning } from "@/lib/personalisering";
 import { stiltoneSkema } from "@/lib/skabeloner/stiltone";
 import { briefSkema } from "@/lib/skabeloner/typer";
@@ -149,9 +150,12 @@ export async function POST(request: Request) {
     }
   }
 
-  // Samme personalisering som ved den oprindelige tekst. Ellers ville det
-  // omskrevne afsnit falde ud af tonen i resten.
-  const tilpasning = await hentTilpasning();
+  // Samme personalisering og samme materiale som ved den oprindelige tekst.
+  // Ellers ville det omskrevne afsnit falde ud af tonen i resten.
+  const [tilpasning, materialer] = await Promise.all([
+    hentTilpasning(),
+    hentAktivtMateriale(skabelon.slug),
+  ]);
 
   const brugerbesked = byggOmskrivBesked(
     skabelon.input_fields,
@@ -204,6 +208,7 @@ export async function POST(request: Request) {
           system: `${byggSystemprompt(
             skabelon,
             anmodning.data.stiltone,
+            materialer,
           )}\n\n${OMSKRIV_TILLAEG}`,
           bruger: brugerbesked,
           model: valg.model,

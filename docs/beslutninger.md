@@ -36,6 +36,49 @@ trin 8.
 
 ---
 
+## 2026-09-27 — Materiale til hver teksttype: vejledninger og eksempler
+
+Ejeren vil kunne lægge beskrivelser fra anerkendte tekstforfattere ind til
+hver teksttype, sammen med eksempler, der rammer niveauet. Materialet sendes
+med i systemprompten ved hver tekst af typen, lige efter skrivevejledningen
+(migration 0026, `lib/skabeloner/materiale.ts`, afsnittet "Materiale" på
+adminsiden).
+
+**Kun .txt, .md og indsat tekst.** Ejerens valg. Filen læses i browseren, og
+kun teksten gemmes, så der er ingen Storage-bucket. Word og PDF er valgt fra:
+Word ville kræve en ekstra pakke, og PDF giver ødelagte linjeskift og sidetal
+midt i sætningerne. En PDF kopieres ind i feltet i stedet.
+
+**Tabellen er lukket, også for læsning.** Materialet kan være beskyttet tekst,
+som ejeren må bruge internt, men ikke må udlevere. Med en læse-policy som på
+`templates` kunne enhver indlogget bruger hente det direkte fra Supabase. Nu
+læses det kun med service_role, og det sendes kun videre til AI-leverandøren.
+
+**Vejledning og eksempel har forskellig magt.** En vejledning er regler, der
+skal følges, men kan ikke ændre formatet, kravet om belæg eller reglen om
+briefen. Et eksempel viser niveau og opbygning og må hverken skrives af eller
+bruges som kilde. Uden den sidste regel kunne et tal fra en eksempeltekst ende
+i en brugers produkttekst som en påstand om hendes vare.
+
+**Loft: 40.000 tegn aktivt materiale pr. teksttype.** Omkring 11.000 tokens,
+op til ca. 40 øre ekstra pr. tekst på den dyreste model, og de fleste tekster
+betales af brugerens egen nøgle. Adminsiden viser det aktuelle tal og prisen.
+Loftet tjekkes på serveren, ikke kun i formularen.
+
+**Fejler opslaget, skrives teksten uden materiale**, som med brand-profilen.
+Fejlen logges og kan ses på adminsidens fejlliste.
+
+**Ingen historik på materialet**, modsat skrivevejledningen. Et stykke
+materiale slås fra i stedet for at blive slettet, hvis man vil kunne tage det
+tilbage. Sletning spørger først.
+
+**Ikke gjort: prompt caching.** Materialet er det samme ved hver tekst af
+typen og ville være billigere med Anthropics cache. Det kræver, at adapteren
+kan sende systemprompten i flere dele. Værd at gøre, hvis materialet bliver
+stort, eller teksterne bliver mange.
+
+---
+
 ## 2026-09-27 — Prompten deles: fri skrivevejledning, fast format i koden
 
 Ejeren vil kunne skrive en detaljeret prompt til hver teksttype på

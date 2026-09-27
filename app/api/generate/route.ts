@@ -7,6 +7,7 @@ import { logFejl } from "@/lib/fejl";
 import { frigivProeveTekst, reserverProeveTekst } from "@/lib/kvote";
 import { hentTilpasning } from "@/lib/personalisering";
 import { hentSkabelon } from "@/lib/skabeloner/hent";
+import { hentAktivtMateriale } from "@/lib/skabeloner/materiale";
 import { afvis, ndjsonLinje, NDJSON_HEADERS } from "@/lib/api/ndjson";
 import { tagPladsIKoeen } from "@/lib/ratelimit";
 import { delIBlokke, type Blok } from "@/lib/tekst/blokke";
@@ -189,9 +190,13 @@ export async function POST(request: Request) {
     }
   }
 
-  // Brand-profil og gemte instruktioner. Fejler opslaget, skrives teksten
-  // uden dem frem for slet ikke — se lib/personalisering.ts.
-  const tilpasning = await hentTilpasning();
+  // Brand-profil, gemte instruktioner og teksttypens materiale. Fejler et
+  // opslag, skrives teksten uden frem for slet ikke — se
+  // lib/personalisering.ts og lib/skabeloner/materiale.ts.
+  const [tilpasning, materialer] = await Promise.all([
+    hentTilpasning(),
+    hentAktivtMateriale(skabelon.slug),
+  ]);
 
   const brugerbesked = byggBrugerbesked(
     skabelon.input_fields,
@@ -242,7 +247,11 @@ export async function POST(request: Request) {
         const bidder = valg.adapter.generateStream({
           // Skrivevejledningen, det faste format, stiltonen og reglen om
           // briefen. Rækkefølgen er begrundet i byggSystemprompt.
-          system: byggSystemprompt(skabelon, anmodning.data.stiltone),
+          system: byggSystemprompt(
+            skabelon,
+            anmodning.data.stiltone,
+            materialer,
+          ),
           bruger: brugerbesked,
           model: valg.model,
           maxTokens: 16000,

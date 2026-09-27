@@ -306,7 +306,11 @@ export function Teksttypeformular({
           <input
             type="checkbox"
             name="uses_h1"
-            checked={brugerH1}
+            // Ikke styret af state, som "Synlig for brugerne": formularen
+            // nulstilles af React efter hver gemning, og et styret flueben
+            // ville så vise noget andet end det gemte. State bruges kun til
+            // at vise det rigtige format herunder.
+            defaultChecked={skabelon?.uses_h1 ?? true}
             onChange={(e) => setBrugerH1(e.target.checked)}
             className="h-4 w-4 accent-gran"
           />

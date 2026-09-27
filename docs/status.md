@@ -208,12 +208,23 @@ styre hver teksttype i detaljer uden at skrive kode. Tre trin:
 | Trin | Indhold | Status |
 |---|---|---|
 | 1 | Prompten deles: fri skrivevejledning på adminsiden, fast format i koden (migration 0025) | færdig 27.09.2026 |
-| 2 | Materiale pr. teksttype: vejledninger og eksempler som .txt, .md eller indsat tekst | mangler |
+| 2 | Materiale pr. teksttype: vejledninger og eksempler som .txt, .md eller indsat tekst (migration 0026) | færdig 27.09.2026 |
 | 3 | Kategoritekst: hero-tekst, plads til produktoversigten, detaljeret beskrivelse | mangler |
 
 Trin 1 er afprøvet 27.09.2026 med en produkttekst og et blogindlæg skrevet
 direkte mod Anthropic med den nye systemprompt: META-linjerne kom først,
 produktteksten havde ingen h1, og blogindlægget havde præcis én.
+
+Trin 2 er afprøvet ende til ende 27.09.2026 på adminsiden og i appen: en
+.md-fil blev hentet (titlen foreslået ud fra filnavnet), gemt, rettet, slået
+fra og til og slettet. En produkttekst skrevet med en testvejledning fulgte
+begge dens regler, også den ordrette slutsætning. Loftet afviste det tredje
+stykke, da to på 20.000 tegn var aktive, og viste 39 øre pr. tekst ved fuldt
+loft. Testmaterialet er slettet igen. **Afprøvningen fandt én fejl**, rettet
+før udrulning: React nulstillede formularen efter gemning, så et flueben, der
+var slået fra og gemt, stod som slået til — og blev slået til igen ved næste
+gemning. Det samme gjaldt h1-fluebenet fra trin 1, som aldrig var lagt ud
+med fejlen i brug.
 
 **Idégenerering: færdig 07.09.2026 (migration 0018).** Knappen "Foreslå
 emner" står ved det felt, forslagene fylder ud, og giver fem emner med en
