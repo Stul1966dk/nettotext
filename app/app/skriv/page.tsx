@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 
 import { hentKladdeVedId } from "@/lib/kladder";
 import { hentTilpasning } from "@/lib/personalisering";
+import { hentSkabelonerMedProduktoversigt } from "@/lib/skabeloner/hent";
 import type { Kladde } from "@/lib/skabeloner/kladde";
 import { STANDARD_STILTONE } from "@/lib/skabeloner/stiltone";
 
@@ -77,7 +78,10 @@ export default async function SkrivSide({
   //
   // Sprogprøven er bevidst ikke med. Begrundelsen står ved samlGrundlag i
   // Generering.tsx.
-  const tilpasning = await hentTilpasning();
+  const [tilpasning, medProduktoversigt] = await Promise.all([
+    hentTilpasning(),
+    hentSkabelonerMedProduktoversigt(),
+  ]);
   const personligtGrundlag = [
     tilpasning.brand?.beskrivelse ?? "",
     tilpasning.brand?.tone ?? "",
@@ -102,6 +106,7 @@ export default async function SkrivSide({
         <Generering
           startKladde={startKladde}
           personligtGrundlag={personligtGrundlag}
+          medProduktoversigt={medProduktoversigt}
           tekster={{
             ingenBrief: t("ingenBrief"),
             nyTekst: t("nyTekst"),
@@ -141,6 +146,11 @@ export default async function SkrivSide({
             metaTom: t("metaTom"),
             blokTitel: t("blokTitel"),
             blokIndledning: t("blokIndledning"),
+            blokHero: t("blokHero"),
+            produktoversigtMarkering: t("produktoversigtMarkering"),
+            kopierHero: t("kopierHero"),
+            kopierBeskrivelse: t("kopierBeskrivelse"),
+            produktoversigtForklaring: t("produktoversigtForklaring"),
             blokSektion: t.raw("blokSektion") as string,
             skrivOm: t("skrivOm"),
             skrivOmForklaring: t("skrivOmForklaring"),

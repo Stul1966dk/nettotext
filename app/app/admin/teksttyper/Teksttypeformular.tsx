@@ -81,6 +81,7 @@ export function Teksttypeformular({
     description: string;
     system_prompt: string;
     uses_h1: boolean;
+    product_grid: boolean;
     input_fields: InputFelt[];
     active: boolean;
   } | null;
@@ -318,6 +319,19 @@ export function Teksttypeformular({
         </label>
         <p className="text-sm leading-relaxed text-gran-let">
           {tekster.h1Hjaelp}
+        </p>
+
+        <label className="flex items-center gap-3 pt-2 text-sm font-medium text-gran">
+          <input
+            type="checkbox"
+            name="product_grid"
+            defaultChecked={skabelon?.product_grid ?? false}
+            className="h-4 w-4 accent-gran"
+          />
+          {tekster.produktoversigt}
+        </label>
+        <p className="text-sm leading-relaxed text-gran-let">
+          {tekster.produktoversigtHjaelp}
         </p>
 
         {/* Det faste format vises, så man kan se, hvad vejledningen lægges

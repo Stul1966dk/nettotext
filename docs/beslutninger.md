@@ -36,6 +36,48 @@ trin 8.
 
 ---
 
+## 2026-09-27 — Kategoritekst: hero-tekst, produktoversigt, beskrivelse
+
+Ejeren ønskede V1 skåret ned til kategoritekst, produkttekst og blogindlæg,
+men besluttede undervejs at beholde brandtekst og landingsside. Kategoritekst
+er ny (migration 0027).
+
+**En kategoriside har to tekststeder med butikkens produktoversigt imellem.**
+Skellet er den første h2: før den er hero-teksten, efter den er
+beskrivelsen. Editoren viser en markering dér, og de to dele kopieres med
+hver sin knap ("Kopiér hero-tekst" og "Kopiér beskrivelse") i stedet for
+"Kopiér HTML". Word-filen har markeringen med. Brugeren sætter selv
+produktoversigten ind i sin webshop.
+
+**Skellet er et flueben på teksttypen (`templates.product_grid`)**, ikke
+kode for én bestemt teksttype, så en senere teksttype med samme opbygning
+kan få det uden ny kode.
+
+**h1 er en valgmulighed for brugeren, uden ny kode.** Ejeren ville have h1
+som et valg. Det fandtes allerede: titlen er sin egen blok i editoren, som
+kan slettes, før teksten kopieres. Kategoriteksten skrives derfor med h1, og
+forklaringen under kopiknapperne siger, at titlen skal slettes, hvis
+webshoppen selv sætter kategoriens navn som overskrift. Et valg i briefen
+blev fravalgt: det skulle have fulgt kladden gennem genereringen,
+omskrivningen og begge slags gemning, som stiltonen gør. Det var for meget
+for noget, der allerede kunne lade sig gøre.
+
+**Skrivevejledningen er et udkast og holdt generel.** Ejeren gjorde det
+klart, at alt i Administration er overordnede instrukser, der skal passe til
+alle slags varer og ønsker. Sprogreglerne er de samme som i produktteksten.
+Det særlige for kategorisider er sidens opbygning, at teksten skal hjælpe
+kunden med at vælge mellem varerne, og at den aldrig må påstå noget om
+udvalget, som briefen ikke dækker, fordi udvalget skifter, mens teksten
+bliver stående.
+
+**Oprettet som aktiv.** En inaktiv teksttype kan ikke afprøves, heller ikke
+af adminkontoen: læse-policyen på `templates` skjuler inaktive rækker for
+alle. Det er i orden nu, hvor tilmeldingen er lukket. **Hjælpeteksten ved
+"Synlig for brugerne" lover noget, der ikke passer** ("Uden flueben kan kun
+du se den"). Det er ikke rettet i denne omgang.
+
+---
+
 ## 2026-09-27 — Materiale til hver teksttype: vejledninger og eksempler
 
 Ejeren vil kunne lægge beskrivelser fra anerkendte tekstforfattere ind til

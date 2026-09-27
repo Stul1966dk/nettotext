@@ -1,14 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Fragment,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import { laesNdjson } from "@/lib/api/laesStream";
 import { gemKladde, hentKladde, type Kladde } from "@/lib/skabeloner/kladde";
 import { delIBlokke, type Blok } from "@/lib/tekst/blokke";
 import { tjekTal } from "@/lib/tekst/faktatjek";
 import { fremskridtProcent, maalTegn } from "@/lib/tekst/fremskridt";
-import { samlHtml, tilMarkdown, udenTitel } from "@/lib/tekst/markdown";
+import {
+  delVedProduktoversigt,
+  samlHtml,
+  tilMarkdown,
+  udenTitel,
+} from "@/lib/tekst/markdown";
 
 import { Blokkort, type BlokkortTekster } from "./Blokkort";
 import { Faktatjek, type FaktatjekTekster } from "./Faktatjek";
@@ -52,6 +64,11 @@ type Tekster = BlokkortTekster &
   metaTom: string;
   blokTitel: string;
   blokIndledning: string;
+  blokHero: string;
+  produktoversigtMarkering: string;
+  kopierHero: string;
+  kopierBeskrivelse: string;
+  produktoversigtForklaring: string;
   blokSektion: string;
     fejl: Record<string, string>;
   };
@@ -215,6 +232,7 @@ export function Generering({
   tekster,
   startKladde,
   personligtGrundlag,
+  medProduktoversigt,
 }: {
   tekster: Tekster;
   /** En kladde hentet fra serveren, når siden er åbnet fra dashboardet. */
@@ -224,6 +242,8 @@ export function Generering({
    * serveren, hvor de i forvejen ligger, og bruges kun til faktatjekket.
    */
   personligtGrundlag: string;
+  /** Teksttyper, der deles af en produktoversigt. Se migration 0027. */
+  medProduktoversigt: string[];
 }) {
   const [status, setStatus] = useState<Status>("starter");
   const [tekst, setTekst] = useState("");
@@ -730,7 +750,12 @@ export function Generering({
       const svar = await fetch("/api/export/docx", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ blokke, titel, beskrivelse }),
+        body: JSON.stringify({
+          blokke,
+          titel,
+          beskrivelse,
+          produktoversigt: harProduktoversigt,
+        }),
       });
 
       if (!svar.ok) {
@@ -808,7 +833,9 @@ export function Generering({
 
   function blokLabel(blok: Blok): string {
     if (blok.slags === "titel") return tekster.blokTitel;
-    if (blok.slags === "indledning") return tekster.blokIndledning;
+    if (blok.slags === "indledning") {
+      return harProduktoversigt ? tekster.blokHero : tekster.blokIndledning;
+    }
 
     return tekster.blokSektion.replace("{nummer}", String(blok.nummer ?? ""));
   }
@@ -834,6 +861,14 @@ export function Generering({
   // "Kopiér HTML", og forklaringen under knapperne ville love noget, der
   // ikke passer. Så vises de ikke.
   const harTitel = blokke.some((blok) => blok.slags === "titel");
+
+  // En kategoriside har butikkens produktoversigt mellem hero-teksten og
+  // beskrivelsen. Så vises skellet, og de to dele kopieres hver for sig i
+  // stedet for som ét stykke. Se delVedProduktoversigt().
+  const harProduktoversigt =
+    skabelon !== null && medProduktoversigt.includes(skabelon);
+  const dele = delVedProduktoversigt(blokke);
+  const foersteSektion = dele.beskrivelse[0]?.id ?? null;
 
   // Skønnet over, hvor langt vi er. Null betyder "vi ved det ikke" — så
   // viser bjælken bevægelse uden at påstå et tal. Se lib/tekst/fremskridt.ts.
@@ -1001,8 +1036,13 @@ export function Generering({
           ) : blokke.length > 0 ? (
             <div className="space-y-4">
               {blokke.map((blok) => (
+                <Fragment key={blok.id}>
+                {harProduktoversigt && blok.id === foersteSektion && (
+                  <p className="rounded-lg border border-dashed border-kant px-4 py-6 text-center font-mono text-xs uppercase tracking-widest text-gran-let">
+                    {tekster.produktoversigtMarkering}
+                  </p>
+                )}
                 <Blokkort
-                  key={blok.id}
                   blok={blok}
                   label={blokLabel(blok)}
                   tekster={tekster}
@@ -1016,6 +1056,7 @@ export function Generering({
                   ret={(html) => void retBlok(blok.id, html)}
                   slet={() => sletBlok(blok.id)}
                 />
+                </Fragment>
               ))}
             </div>
           ) : (
@@ -1040,15 +1081,41 @@ export function Generering({
 
           <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-3">
-              <button
-                type="button"
-                onClick={() => kopier("html", html)}
-                className="rounded-lg bg-gran px-4 py-2 text-sm font-medium text-bund outline-none focus-visible:ring-2 focus-visible:ring-gran focus-visible:ring-offset-2 focus-visible:ring-offset-bund"
-              >
-                {kopieret === "html" ? tekster.kopieret : tekster.kopier}
-              </button>
+              {harProduktoversigt ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => kopier("hero", samlHtml(dele.hero))}
+                    className="rounded-lg bg-gran px-4 py-2 text-sm font-medium text-bund outline-none focus-visible:ring-2 focus-visible:ring-gran focus-visible:ring-offset-2 focus-visible:ring-offset-bund"
+                  >
+                    {kopieret === "hero" ? tekster.kopieret : tekster.kopierHero}
+                  </button>
 
-              {harTitel && (
+                  {dele.beskrivelse.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        kopier("beskrivelse", samlHtml(dele.beskrivelse))
+                      }
+                      className="rounded-lg bg-gran px-4 py-2 text-sm font-medium text-bund outline-none focus-visible:ring-2 focus-visible:ring-gran focus-visible:ring-offset-2 focus-visible:ring-offset-bund"
+                    >
+                      {kopieret === "beskrivelse"
+                        ? tekster.kopieret
+                        : tekster.kopierBeskrivelse}
+                    </button>
+                  )}
+                </>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => kopier("html", html)}
+                  className="rounded-lg bg-gran px-4 py-2 text-sm font-medium text-bund outline-none focus-visible:ring-2 focus-visible:ring-gran focus-visible:ring-offset-2 focus-visible:ring-offset-bund"
+                >
+                  {kopieret === "html" ? tekster.kopieret : tekster.kopier}
+                </button>
+              )}
+
+              {harTitel && !harProduktoversigt && (
                 <button
                   type="button"
                   onClick={() =>
@@ -1107,10 +1174,16 @@ export function Generering({
               </Link>
             </div>
 
-            {harTitel && (
+            {harProduktoversigt ? (
               <p className="text-xs leading-relaxed text-gran-let">
-                {tekster.kopierForklaring}
+                {tekster.produktoversigtForklaring}
               </p>
+            ) : (
+              harTitel && (
+                <p className="text-xs leading-relaxed text-gran-let">
+                  {tekster.kopierForklaring}
+                </p>
+              )
             )}
 
             {eksportFejl && (

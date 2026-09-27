@@ -57,3 +57,22 @@ export async function hentSkabeloner(): Promise<SkabelonIListen[]> {
     return resultat.success ? [resultat.data] : [];
   });
 }
+
+/**
+ * Adresserne på de teksttyper, der deles af en produktoversigt. Migration
+ * 0027.
+ *
+ * Editoren kender kun teksttypens adresse — kladden kan komme fra
+ * browserens localStorage, hvor serveren ikke ser den. Derfor sendes listen
+ * med i stedet for ét flag, og editoren slår selv op.
+ */
+export async function hentSkabelonerMedProduktoversigt(): Promise<string[]> {
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from("templates")
+    .select("slug")
+    .eq("product_grid", true);
+
+  return (data ?? []).map((raekke) => raekke.slug);
+}

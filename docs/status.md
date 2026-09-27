@@ -147,6 +147,7 @@ skærpet på tjeklisten.
 | Produkttekst | færdig 03.09.2026 (migration 0014) |
 | Brandtekst | færdig 03.09.2026 (migration 0015) |
 | Landingsside | færdig 03.09.2026, oprettet gennem adminsiden |
+| Kategoritekst | bygget 27.09.2026 (migration 0027), skrivevejledningen er et udkast |
 
 Produktteksten kostede én kodeændring: `/app/ny` havde teksttypen skrevet ind
 i koden og henter den nu fra adressen, så `/app/ny` er blevet et valg mellem
@@ -209,7 +210,7 @@ styre hver teksttype i detaljer uden at skrive kode. Tre trin:
 |---|---|---|
 | 1 | Prompten deles: fri skrivevejledning på adminsiden, fast format i koden (migration 0025) | færdig 27.09.2026 |
 | 2 | Materiale pr. teksttype: vejledninger og eksempler som .txt, .md eller indsat tekst (migration 0026) | færdig 27.09.2026 |
-| 3 | Kategoritekst: hero-tekst, plads til produktoversigten, detaljeret beskrivelse | mangler |
+| 3 | Kategoritekst: hero-tekst, plads til produktoversigten, detaljeret beskrivelse (migration 0027) | færdig 27.09.2026 |
 
 Trin 1 er afprøvet 27.09.2026 med en produkttekst og et blogindlæg skrevet
 direkte mod Anthropic med den nye systemprompt: META-linjerne kom først,
@@ -225,6 +226,14 @@ før udrulning: React nulstillede formularen efter gemning, så et flueben, der
 var slået fra og gemt, stod som slået til — og blev slået til igen ved næste
 gemning. Det samme gjaldt h1-fluebenet fra trin 1, som aldrig var lagt ud
 med fejlen i brug.
+
+Trin 3 er afprøvet ende til ende 27.09.2026 med en kategori af termokander:
+titel, hero-tekst, markeringen af produktoversigten og tre sektioner.
+"Kopiér hero-tekst" gav titel og hero, "Kopiér beskrivelse" de tre
+sektioner, og Word-filen havde markeringen mellem de to. Med titlen slettet
+blev hero-teksten kopieret uden h1. Tallene holdt sig til briefen. **Én ting
+at holde øje med i skrivevejledningen:** hero-teksten begyndte med et
+retorisk spørgsmål, som sprogreglerne forbyder som indgang til et afsnit.
 
 **Idégenerering: færdig 07.09.2026 (migration 0018).** Knappen "Foreslå
 emner" står ved det felt, forslagene fylder ud, og giver fem emner med en

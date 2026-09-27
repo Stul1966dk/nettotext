@@ -85,3 +85,21 @@ export function samlHtml(blokke: Blok[]): string {
 export function udenTitel(blokke: Blok[]): Blok[] {
   return blokke.filter((blok) => blok.slags !== "titel");
 }
+
+/**
+ * Teksten delt ved produktoversigten. Migration 0027.
+ *
+ * På en kategoriside står butikkens egen produktoversigt mellem hero-teksten
+ * og beskrivelsen. Skellet er den første h2: alt før den (titel og
+ * indledning) er hero-teksten, alt fra den er beskrivelsen. Står der ingen
+ * h2 i teksten, er det hele hero-tekst, og beskrivelsen er tom.
+ */
+export function delVedProduktoversigt(blokke: Blok[]): {
+  hero: Blok[];
+  beskrivelse: Blok[];
+} {
+  const skel = blokke.findIndex((blok) => blok.slags === "sektion");
+  if (skel === -1) return { hero: blokke, beskrivelse: [] };
+
+  return { hero: blokke.slice(0, skel), beskrivelse: blokke.slice(skel) };
+}

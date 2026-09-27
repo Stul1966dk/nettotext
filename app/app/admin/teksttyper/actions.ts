@@ -72,6 +72,7 @@ export async function gemSkabelonAction(
     description: formData.get("description"),
     system_prompt: formData.get("system_prompt"),
     uses_h1: formData.get("uses_h1") === "on",
+    product_grid: formData.get("product_grid") === "on",
     input_fields: felter,
     active: formData.get("active") === "on",
   });

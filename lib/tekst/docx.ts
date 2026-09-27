@@ -12,7 +12,7 @@ import {
 } from "docx";
 
 import type { Blok } from "./blokke";
-import { samlHtml } from "./markdown";
+import { delVedProduktoversigt, samlHtml } from "./markdown";
 
 /**
  * Den færdige tekst som Word-fil.
@@ -203,10 +203,47 @@ function metaAfsnit(titel: string, beskrivelse: string): Paragraph[] {
   return afsnit;
 }
 
+/**
+ * Markeringen af, hvor butikkens produktoversigt skal stå. Kun på
+ * teksttyper med produktoversigt — se delVedProduktoversigt().
+ */
+function produktoversigtAfsnit(): Paragraph {
+  return new Paragraph({
+    children: [
+      new TextRun({
+        text: "Her står produktoversigten på din side. Teksten ovenfor skal over varerne, teksten nedenfor under dem.",
+        italics: true,
+        color: "4C6A60",
+      }),
+    ],
+    spacing: { before: 360, after: 360 },
+    border: {
+      top: { style: "single", size: 6, color: "DDE0D8" },
+      bottom: { style: "single", size: 6, color: "DDE0D8" },
+    },
+  });
+}
+
+/** Teksten som Word-afsnit, med markeringen imellem, hvis den skal være der. */
+function tekstAfsnit(blokke: Blok[], produktoversigt: boolean) {
+  const dele = delVedProduktoversigt(blokke);
+
+  if (!produktoversigt || dele.beskrivelse.length === 0) {
+    return tilAfsnit(samlHtml(blokke));
+  }
+
+  return [
+    ...tilAfsnit(samlHtml(dele.hero)),
+    produktoversigtAfsnit(),
+    ...tilAfsnit(samlHtml(dele.beskrivelse)),
+  ];
+}
+
 export async function byggDocx(
   blokke: Blok[],
   titel: string,
   beskrivelse: string,
+  produktoversigt = false,
 ): Promise<Buffer> {
   const dokument = new Document({
     // Nummererede lister kræver en opskrift på, hvordan de tælles. Uden den
@@ -229,7 +266,7 @@ export async function byggDocx(
     sections: [
       {
         children: [
-          ...tilAfsnit(samlHtml(blokke)),
+          ...tekstAfsnit(blokke, produktoversigt),
           ...metaAfsnit(titel, beskrivelse),
         ],
       },

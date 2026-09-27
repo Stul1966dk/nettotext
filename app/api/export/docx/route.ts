@@ -32,6 +32,8 @@ const anmodningSkema = z.object({
   blokke: z.array(blokSkema).min(1).max(40),
   titel: z.string().max(300).optional(),
   beskrivelse: z.string().max(500).optional(),
+  /** Markér, hvor produktoversigten står. Se delVedProduktoversigt(). */
+  produktoversigt: z.boolean().optional(),
 });
 
 export async function POST(request: Request) {
@@ -56,10 +58,15 @@ export async function POST(request: Request) {
     return Response.json({ slags: "fejl", aarsag: "ugyldig_anmodning" }, { status: 400 });
   }
 
-  const { blokke, titel = "", beskrivelse = "" } = anmodning.data;
+  const {
+    blokke,
+    titel = "",
+    beskrivelse = "",
+    produktoversigt = false,
+  } = anmodning.data;
 
   try {
-    const fil = await byggDocx(blokke, titel, beskrivelse);
+    const fil = await byggDocx(blokke, titel, beskrivelse, produktoversigt);
 
     // Filnavnet tages fra artiklens egen overskrift, ikke fra meta-titlen:
     // det er den, brugeren kender teksten på, når filen ligger i en mappe.
