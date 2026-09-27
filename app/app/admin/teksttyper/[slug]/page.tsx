@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
+import { outputformat } from "@/lib/ai/prompt";
 import {
   hentAlleSkabeloner,
   hentSkabelonTilRedigering,
@@ -60,6 +61,10 @@ export default async function RedigerTeksttype({ params }: Props) {
       "prompt",
       "promptHjaelp",
       "promptArv",
+      "h1",
+      "h1Hjaelp",
+      "fastFormat",
+      "fastFormatHjaelp",
       "felter",
       "felterHjaelp",
       "tilfoejFelt",
@@ -116,11 +121,13 @@ export default async function RedigerTeksttype({ params }: Props) {
             name: skabelon.name,
             description: skabelon.description,
             system_prompt: skabelon.system_prompt,
+            uses_h1: skabelon.uses_h1,
             input_fields: skabelon.input_fields,
             active: skabelon.active,
           }
         }
         kopikilder={kopikilder}
+        formater={{ medH1: outputformat(true), udenH1: outputformat(false) }}
         tekster={tekster}
       />
     </div>

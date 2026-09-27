@@ -65,6 +65,8 @@ export const skabelonSkema = z.object({
   slug: z.string().min(1),
   name: z.string().min(1),
   system_prompt: z.string().min(1),
+  /** Må teksten have sin egen h1? Se outputformat() i lib/ai/prompt.ts. */
+  uses_h1: z.boolean(),
   input_fields: z.array(inputFeltSkema).min(1),
 });
 

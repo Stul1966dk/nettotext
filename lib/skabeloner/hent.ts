@@ -20,7 +20,7 @@ export async function hentSkabelon(slug: string): Promise<Skabelon | null> {
 
   const { data } = await supabase
     .from("templates")
-    .select("slug, name, system_prompt, input_fields")
+    .select("slug, name, system_prompt, uses_h1, input_fields")
     .eq("slug", slug)
     .maybeSingle();
 

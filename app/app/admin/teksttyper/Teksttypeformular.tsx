@@ -72,6 +72,7 @@ function nytFelt(): InputFelt {
 export function Teksttypeformular({
   skabelon,
   kopikilder,
+  formater,
   tekster,
 }: {
   skabelon: {
@@ -79,10 +80,13 @@ export function Teksttypeformular({
     name: string;
     description: string;
     system_prompt: string;
+    uses_h1: boolean;
     input_fields: InputFelt[];
     active: boolean;
   } | null;
   kopikilder: Kopikilde[];
+  /** Det faste outputformat i begge udgaver, til visning. */
+  formater: { medH1: string; udenH1: string };
   tekster: Tekster;
 }) {
   const erNy = skabelon === null;
@@ -91,6 +95,8 @@ export function Teksttypeformular({
     gemSkabelonAction,
     null,
   );
+
+  const [brugerH1, setBrugerH1] = useState(skabelon?.uses_h1 ?? true);
 
   const [raekker, setRaekker] = useState<Raekke[]>(() =>
     (skabelon?.input_fields ?? []).map((felt, i) => ({
@@ -295,6 +301,34 @@ export function Teksttypeformular({
         <p className="text-sm leading-relaxed text-gran-let">
           {tekster.promptArv}
         </p>
+
+        <label className="flex items-center gap-3 pt-2 text-sm font-medium text-gran">
+          <input
+            type="checkbox"
+            name="uses_h1"
+            checked={brugerH1}
+            onChange={(e) => setBrugerH1(e.target.checked)}
+            className="h-4 w-4 accent-gran"
+          />
+          {tekster.h1}
+        </label>
+        <p className="text-sm leading-relaxed text-gran-let">
+          {tekster.h1Hjaelp}
+        </p>
+
+        {/* Det faste format vises, så man kan se, hvad vejledningen lægges
+            sammen med. Det kan ikke rettes her — se outputformat(). */}
+        <details className="rounded-lg border border-kant bg-bund px-4 py-3">
+          <summary className="cursor-pointer text-sm font-medium text-gran outline-none focus-visible:ring-2 focus-visible:ring-gran">
+            {tekster.fastFormat}
+          </summary>
+          <p className="mt-3 text-sm leading-relaxed text-gran-let">
+            {tekster.fastFormatHjaelp}
+          </p>
+          <pre className="mt-3 whitespace-pre-wrap font-mono text-xs leading-relaxed text-gran-let">
+            {brugerH1 ? formater.medH1 : formater.udenH1}
+          </pre>
+        </details>
       </section>
 
       {/* --- Felterne i briefen ------------------------------------------ */}

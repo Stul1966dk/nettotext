@@ -49,6 +49,8 @@ export const adminSkabelonSkema = z.object({
    * for brugerens penge.
    */
   system_prompt: z.string().trim().min(200).max(40_000),
+  /** Må teksten have sin egen h1? Formatet selv bor i lib/ai/prompt.ts. */
+  uses_h1: z.boolean(),
   input_fields: z
     .array(adminFeltSkema)
     .min(1)
@@ -74,7 +76,7 @@ export async function hentAlleSkabeloner(): Promise<SkabelonRaekke[]> {
   const { data } = await db
     .from("templates")
     .select(
-      "id, slug, name, description, system_prompt, input_fields, active, updated_at",
+      "id, slug, name, description, system_prompt, uses_h1, input_fields, active, updated_at",
     )
     .order("name");
 
@@ -99,7 +101,7 @@ export async function hentSkabelonTilRedigering(
   const { data } = await db
     .from("templates")
     .select(
-      "id, slug, name, description, system_prompt, input_fields, active, updated_at",
+      "id, slug, name, description, system_prompt, uses_h1, input_fields, active, updated_at",
     )
     .eq("slug", slug)
     .maybeSingle();
@@ -128,7 +130,7 @@ export async function gemSkabelon(
 
   const { data: nuvaerende } = await db
     .from("templates")
-    .select("id, slug, name, description, system_prompt, input_fields, active")
+    .select("id, slug, name, description, system_prompt, uses_h1, input_fields, active")
     .eq("slug", skabelon.slug)
     .maybeSingle();
 
@@ -139,6 +141,7 @@ export async function gemSkabelon(
       name: nuvaerende.name,
       description: nuvaerende.description,
       system_prompt: nuvaerende.system_prompt,
+      uses_h1: nuvaerende.uses_h1,
       input_fields: nuvaerende.input_fields,
       active: nuvaerende.active,
       saved_by: admin.id,
@@ -153,6 +156,7 @@ export async function gemSkabelon(
         name: skabelon.name,
         description: skabelon.description || null,
         system_prompt: skabelon.system_prompt,
+        uses_h1: skabelon.uses_h1,
         input_fields: skabelon.input_fields,
         active: skabelon.active,
         updated_at: new Date().toISOString(),
@@ -167,6 +171,7 @@ export async function gemSkabelon(
     name: skabelon.name,
     description: skabelon.description || null,
     system_prompt: skabelon.system_prompt,
+    uses_h1: skabelon.uses_h1,
     input_fields: skabelon.input_fields,
     active: skabelon.active,
   });

@@ -36,6 +36,37 @@ trin 8.
 
 ---
 
+## 2026-09-27 — Prompten deles: fri skrivevejledning, fast format i koden
+
+Ejeren vil kunne skrive en detaljeret prompt til hver teksttype på
+adminsiden: hvordan den bedste tekst skrives, hvad der altid skal med, og
+hvad der skal undlades. Feltet fandtes allerede, men det rummede også det
+tekniske format (META-linjerne, HTML, tilladte tags) og reglen om, at
+briefen er data. En rettelse, der kom til at ramme dén del, ville få
+editoren til at gå i stykker for teksttypen.
+
+**Formatet og reglen om briefen bor nu i koden** (`outputformat()` og
+`byggSystemprompt()` i `lib/ai/prompt.ts`, migration 0025). Feltet på
+adminsiden hedder "Skrivevejledning" og kan rettes frit. Det faste format
+kan ses under feltet, men ikke rettes dér. Det følger grænsen fra
+beslutningen om stiltonen 03.09.2026: en teksttypes egne regler er data,
+det der gælder alle teksttyper, er kode.
+
+**Rækkefølgen i systemprompten er:** vejledning, format, stiltone, reglen om
+briefen. Sikkerhedsreglen står sidst, hvor den vejer tungest, og formatet
+siger udtrykkeligt, at det vinder, hvis vejledningen siger noget andet.
+
+**h1 blev et flueben** (`templates.uses_h1`), fordi det var det eneste, der
+skiftede fra teksttype til teksttype i formatet. Produktteksten har det slået
+fra.
+
+**Sprogreglerne er ikke flyttet med.** Beslutningen 03.09.2026 pegede på dem
+som de næste, der skal ind i koden, når der kommer mange teksttyper. Det er
+stadig rigtigt, men de er en del af den vejledning, ejeren nu selv vil
+skrive, og derfor bliver de stående, hvor ejeren kan se og rette dem.
+
+---
+
 ## 2026-09-13 — Feedback-kommentarerne vises på adminsiden
 
 Kommentarerne blev gemt fra første dag og kunne ikke læses nogen steder i

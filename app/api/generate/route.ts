@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { byggBrugerbesked, stiltoneTillaeg } from "@/lib/ai/prompt";
+import { byggBrugerbesked, byggSystemprompt } from "@/lib/ai/prompt";
 import { ManglerNoegle, vaelgNoegle, AiFejl } from "@/lib/ai";
 import { hentBudgetstatus, skrivForbrug } from "@/lib/budget";
 import { logFejl } from "@/lib/fejl";
@@ -240,12 +240,9 @@ export async function POST(request: Request) {
 
       try {
         const bidder = valg.adapter.generateStream({
-          // Skabelonens systemprompt plus stiltonen. Tillægget er VORES
-          // regler for, hvad brugerens valg betyder, og hører derfor til på
-          // systemets side af skellet i CLAUDE.md regel 5.
-          system: `${skabelon.system_prompt}\n\n${stiltoneTillaeg(
-            anmodning.data.stiltone,
-          )}`,
+          // Skrivevejledningen, det faste format, stiltonen og reglen om
+          // briefen. Rækkefølgen er begrundet i byggSystemprompt.
+          system: byggSystemprompt(skabelon, anmodning.data.stiltone),
           bruger: brugerbesked,
           model: valg.model,
           maxTokens: 16000,

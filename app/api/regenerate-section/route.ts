@@ -4,7 +4,7 @@ import { ManglerNoegle, vaelgNoegle, AiFejl } from "@/lib/ai";
 import {
   byggOmskrivBesked,
   OMSKRIV_TILLAEG,
-  stiltoneTillaeg,
+  byggSystemprompt,
 } from "@/lib/ai/prompt";
 import { afvis, ndjsonLinje, NDJSON_HEADERS } from "@/lib/api/ndjson";
 import { hentBudgetstatus, skrivForbrug } from "@/lib/budget";
@@ -201,7 +201,8 @@ export async function POST(request: Request) {
         const bidder = valg.adapter.generateStream({
           // Systemprompten plus vores eget tillæg. Se OMSKRIV_TILLAEG:
           // det er systemets instruktion, ikke brugerens.
-          system: `${skabelon.system_prompt}\n\n${stiltoneTillaeg(
+          system: `${byggSystemprompt(
+            skabelon,
             anmodning.data.stiltone,
           )}\n\n${OMSKRIV_TILLAEG}`,
           bruger: brugerbesked,

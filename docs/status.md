@@ -1,6 +1,6 @@
 # Status — hvad mangler i version 1
 
-Sidst opdateret: **13. september 2026**, midt i trin 7.
+Sidst opdateret: **27. september 2026**, midt i trin 7.
 
 Dokumentet holder byggeplanen i `teknisk-oplaeg-v1.md` op mod, hvad der
 faktisk står i koden og databasen. Byggeplanen er en plan; det her er en
@@ -201,6 +201,19 @@ siden skrives med "sælgende" valgt, så prompten kun skal tage sig af
 strukturen.
 
 **Dermed er alle fire teksttyper fra trin 7 færdige.**
+
+**Teksttyperne i Administration (påbegyndt 27.09.2026).** Ejeren skal kunne
+styre hver teksttype i detaljer uden at skrive kode. Tre trin:
+
+| Trin | Indhold | Status |
+|---|---|---|
+| 1 | Prompten deles: fri skrivevejledning på adminsiden, fast format i koden (migration 0025) | færdig 27.09.2026 |
+| 2 | Materiale pr. teksttype: vejledninger og eksempler som .txt, .md eller indsat tekst | mangler |
+| 3 | Kategoritekst: hero-tekst, plads til produktoversigten, detaljeret beskrivelse | mangler |
+
+Trin 1 er afprøvet 27.09.2026 med en produkttekst og et blogindlæg skrevet
+direkte mod Anthropic med den nye systemprompt: META-linjerne kom først,
+produktteksten havde ingen h1, og blogindlægget havde præcis én.
 
 **Idégenerering: færdig 07.09.2026 (migration 0018).** Knappen "Foreslå
 emner" står ved det felt, forslagene fylder ud, og giver fem emner med en
