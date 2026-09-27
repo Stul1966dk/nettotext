@@ -39,7 +39,7 @@ export function anthropicAdapter(apiNoegle: string): AiAdapter {
     return {
       model: anmodning.model,
       max_tokens: anmodning.maxTokens,
-      system: anmodning.system,
+      system: systemBlokke(anmodning),
       messages: [{ role: "user" as const, content: anmodning.bruger }],
       ...fallback,
       // Hvor grundigt modellen tænker, før den skriver.
@@ -56,6 +56,37 @@ export function anthropicAdapter(apiNoegle: string): AiAdapter {
       // serverloggen, se route.ts.
       output_config: { effort: "medium" as const },
     };
+  }
+
+  /**
+   * Prompt caching.
+   *
+   * Den faste del af systemprompten — skrivevejledningen, materialet og
+   * outputformatet — er den samme for hver tekst af samme type og fylder
+   * typisk 2.000 til 13.000 tokens. Med en cache-markør efter den gemmer
+   * Anthropic den i fem minutter, og næste kald inden for de fem minutter
+   * betaler en tiendedel for den del. Hvert kald forlænger de fem minutter.
+   *
+   * Prisen er, at det FØRSTE kald betaler 25 % ekstra for at skrive den.
+   * Det tjener sig hjem, så snart ét kald mere rammer den: en omskrivning
+   * af et afsnit, "Skriv en til med samme opsætning", eller en anden
+   * bruger på platformens nøgle. Cachen deles kun inden for samme
+   * API-nøgle, så en bruger med egen nøgle har sin egen.
+   *
+   * Under 512 tokens (Opus 5) eller 1.024 (Sonnet 5) cacher Anthropic ikke
+   * og tager heller ikke ekstra betaling. Så sker der bare ingenting.
+   */
+  function systemBlokke(anmodning: Anmodning) {
+    if (typeof anmodning.system === "string") return anmodning.system;
+
+    return [
+      {
+        type: "text" as const,
+        text: anmodning.system.fast,
+        cache_control: { type: "ephemeral" as const },
+      },
+      { type: "text" as const, text: anmodning.system.variabel },
+    ];
   }
 
   return {
@@ -81,6 +112,8 @@ export function anthropicAdapter(apiNoegle: string): AiAdapter {
           model: svar.model,
           inputTokens: svar.usage.input_tokens,
           outputTokens: svar.usage.output_tokens,
+          cacheSkrevet: svar.usage.cache_creation_input_tokens ?? 0,
+          cacheLaest: svar.usage.cache_read_input_tokens ?? 0,
         };
       } catch (fejl) {
         throw oversaetFejl(fejl);
@@ -111,6 +144,8 @@ export function anthropicAdapter(apiNoegle: string): AiAdapter {
           model: endeligt.model,
           inputTokens: endeligt.usage.input_tokens,
           outputTokens: endeligt.usage.output_tokens,
+          cacheSkrevet: endeligt.usage.cache_creation_input_tokens ?? 0,
+          cacheLaest: endeligt.usage.cache_read_input_tokens ?? 0,
         };
       } catch (fejl) {
         throw oversaetFejl(fejl);

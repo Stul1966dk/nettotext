@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { ManglerNoegle, vaelgNoegle, AiFejl } from "@/lib/ai";
+import type { Forbrug } from "@/lib/ai/typer";
 import {
   byggOmskrivBesked,
   OMSKRIV_TILLAEG,
@@ -174,11 +175,7 @@ export async function POST(request: Request) {
       let begyndt = false;
 
       const begyndtTid = Date.now();
-      let forbrug: {
-        model: string;
-        inputTokens: number;
-        outputTokens: number;
-      } | null = null;
+      let forbrug: Forbrug | null = null;
 
       /**
        * Sender det, klienten endnu ikke har fået. Starten holdes tilbage,
@@ -204,12 +201,15 @@ export async function POST(request: Request) {
       try {
         const bidder = valg.adapter.generateStream({
           // Systemprompten plus vores eget tillæg. Se OMSKRIV_TILLAEG:
-          // det er systemets instruktion, ikke brugerens.
-          system: `${byggSystemprompt(
+          // det er systemets instruktion, ikke brugerens. Tillægget står
+          // efter cachen, så omskrivningen genbruger den faste del fra
+          // genereringen af samme tekst.
+          system: byggSystemprompt(
             skabelon,
             anmodning.data.stiltone,
             materialer,
-          )}\n\n${OMSKRIV_TILLAEG}`,
+            OMSKRIV_TILLAEG,
+          ),
           bruger: brugerbesked,
           model: valg.model,
           // Ét afsnit, ikke en hel artikel.
@@ -227,7 +227,8 @@ export async function POST(request: Request) {
             console.log(
               `[omskriv] ${bid.model} · betalt af ${valg.betaler} ` +
                 `· ${Date.now() - begyndtTid} ms · ` +
-                `${bid.inputTokens} ind / ${bid.outputTokens} ud`,
+                `${bid.inputTokens} ind / ${bid.outputTokens} ud ` +
+                `· cache ${bid.cacheLaest ?? 0} læst / ${bid.cacheSkrevet ?? 0} skrevet`,
             );
           }
         }
@@ -268,6 +269,8 @@ export async function POST(request: Request) {
               betaler: valg.betaler,
               inputTokens: forbrug.inputTokens,
               outputTokens: forbrug.outputTokens,
+              cacheSkrevet: forbrug.cacheSkrevet,
+              cacheLaest: forbrug.cacheLaest,
             });
           } catch (fejl) {
             await logFejl("POST /api/regenerate-section · forbrugslog", fejl, { bruger: user.id });

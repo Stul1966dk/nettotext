@@ -1,7 +1,14 @@
 import OpenAI from "openai";
 
 import { skoenTokens } from "./estimat";
-import { AiFejl, type AiAdapter, type Anmodning, type Resultat, type StreamBid } from "./typer";
+import {
+  AiFejl,
+  samletSystem,
+  type AiAdapter,
+  type Anmodning,
+  type Resultat,
+  type StreamBid,
+} from "./typer";
 
 /**
  * Adapter for OpenAI (ChatGPT).
@@ -17,7 +24,10 @@ export function openaiAdapter(apiNoegle: string): AiAdapter {
   function grundparametre(anmodning: Anmodning) {
     return {
       model: anmodning.model,
-      instructions: anmodning.system,
+      // OpenAI cacher selv begyndelsen af en prompt, der gentages. Den faste
+      // del står først, så det sker uden videre. Deres inputtal tæller den
+      // cachede del med til fuld pris, så regnskabet skønner højst for højt.
+      instructions: samletSystem(anmodning.system),
       input: anmodning.bruger,
       max_output_tokens: anmodning.maxTokens,
     };

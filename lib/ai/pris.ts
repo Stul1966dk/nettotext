@@ -32,16 +32,29 @@ const PR_MILLION = 1_000_000;
  * afgør, hvad der så skal ske — men at lade som om et kald var gratis er
  * ikke svaret.
  */
+/**
+ * Prompt caching hos Anthropic: at skrive til cachen koster 1,25 gange
+ * normal inputpris, at læse fra den 0,1 gange. Se systemBlokke() i
+ * anthropic.ts.
+ */
+const CACHE_SKRIV = 1.25;
+const CACHE_LAES = 0.1;
+
 export function beregnPrisDkk(
   modelId: string,
   inputTokens: number,
   outputTokens: number,
+  cache: { skrevet?: number; laest?: number } = {},
 ): number | null {
   const pris = findModel(modelId)?.pris;
   if (!pris) return null;
 
-  const dollars =
-    (inputTokens * pris.ind + outputTokens * pris.ud) / PR_MILLION;
+  const ind =
+    inputTokens +
+    (cache.skrevet ?? 0) * CACHE_SKRIV +
+    (cache.laest ?? 0) * CACHE_LAES;
+
+  const dollars = (ind * pris.ind + outputTokens * pris.ud) / PR_MILLION;
 
   // Fire decimaler: samme præcision som kolonnen i usage_log. Et kort kald
   // koster omkring 15 øre, så øren skal med.

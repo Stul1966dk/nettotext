@@ -1,3 +1,4 @@
+import type { SystemDele } from "@/lib/ai/typer";
 import type { Blok } from "@/lib/tekst/blokke";
 
 import type { Tilpasning } from "@/lib/personalisering";
@@ -311,22 +312,34 @@ function materialeBlok(materialer: AktivtMateriale[]): string | null {
  *   4. Stiltonen — brugerens valg, vores regler.
  *   5. Om briefen — sikkerhedsreglen står sidst, hvor den vejer tungest.
  *
- * Omskrivning af ét afsnit lægger OMSKRIV_TILLAEG oveni bagefter.
+ * Omskrivning af ét afsnit lægger OMSKRIV_TILLAEG oveni til sidst
+ * (`tillaeg`).
+ *
+ * De tre første dele er de samme for hver tekst af typen og bliver cachet
+ * hos leverandøren (`fast`). Stiltonen skifter med brugerens valg og står
+ * derfor efter cachen (`variabel`), sammen med reglen om briefen, der skal
+ * stå sidst. Se systemBlokke() i lib/ai/anthropic.ts.
  */
 export function byggSystemprompt(
   skabelon: { system_prompt: string; uses_h1: boolean },
   stiltone: Stiltone,
   materialer: AktivtMateriale[] = [],
-): string {
-  return [
+  tillaeg = "",
+): SystemDele {
+  const fast = [
     skabelon.system_prompt.trim(),
     materialeBlok(materialer),
     outputformat(skabelon.uses_h1),
-    stiltoneTillaeg(stiltone),
-    OM_BRIEFEN,
   ]
     .filter((del): del is string => del !== null)
     .join("\n\n");
+
+  return {
+    fast,
+    variabel: [stiltoneTillaeg(stiltone), OM_BRIEFEN, tillaeg]
+      .filter(Boolean)
+      .join("\n\n"),
+  };
 }
 
 /**

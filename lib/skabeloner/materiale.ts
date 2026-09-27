@@ -28,8 +28,10 @@ export const MAKS_TEGN_PR_STYKKE = 20_000;
  *
  * Materialet sendes med ved HVER tekst, og de fleste tekster betales af
  * brugerens egen nøgle. 40.000 tegn er omkring 11.000 tokens, og det koster
- * cirka 40 øre ekstra pr. tekst på den dyreste model. Mere end det skal være
- * et bevidst valg, ikke noget, der sniger sig ind ét dokument ad gangen.
+ * op til cirka 50 øre ekstra pr. tekst på den dyreste model, når materialet
+ * skrives til Anthropics cache — og omkring 4 øre, når næste tekst inden for
+ * fem minutter kan læse det derfra. Mere end det skal være et bevidst valg,
+ * ikke noget, der sniger sig ind ét dokument ad gangen.
  */
 export const MAKS_TEGN_SAMLET = 40_000;
 

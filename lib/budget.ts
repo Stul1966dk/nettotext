@@ -115,8 +115,14 @@ export async function skrivForbrug(post: {
   betaler: Betaler;
   inputTokens: number;
   outputTokens: number;
+  /** Se Forbrug i lib/ai/typer.ts. Mangler de, er der ikke brugt cache. */
+  cacheSkrevet?: number;
+  cacheLaest?: number;
 }): Promise<string | null> {
-  const pris = beregnPrisDkk(post.model, post.inputTokens, post.outputTokens);
+  const pris = beregnPrisDkk(post.model, post.inputTokens, post.outputTokens, {
+    skrevet: post.cacheSkrevet,
+    laest: post.cacheLaest,
+  });
 
   if (pris === null) {
     // Modellen står uden pris i lib/ai/modeller.ts. Så tæller kaldet ikke med
@@ -141,7 +147,12 @@ export async function skrivForbrug(post: {
       provider: post.leverandoer,
       model: post.model,
       paid_by: post.betaler,
-      input_tokens: post.inputTokens,
+      // HELE promptens størrelse, også den del, der kom fra cachen. Ellers
+      // ville tallet falde, bare fordi cachen ramte, og adminsidens tal for
+      // forbrug ville ikke kunne sammenlignes med tallene fra før 27.09.2026.
+      // Prisen i `estimated_cost` er den, der tager højde for cachen.
+      input_tokens:
+        post.inputTokens + (post.cacheSkrevet ?? 0) + (post.cacheLaest ?? 0),
       output_tokens: post.outputTokens,
       estimated_cost: pris ?? 0,
     })

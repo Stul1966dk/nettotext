@@ -31,11 +31,15 @@ type Props = { params: Promise<{ slug: string }> };
  * Hvad det aktive materiale koster ekstra pr. tekst, i øre, på den DYRESTE
  * model, vi kender prisen på. Et loft over, ikke et gennemsnit: det er den
  * regning, en bruger med den dyreste model får.
+ *
+ * Regnet som en SKRIVNING til cachen (1,25 gange normal pris), for det er
+ * den dyreste af de tre muligheder. Rammer cachen, koster materialet en
+ * tiendedel. Se systemBlokke() i lib/ai/anthropic.ts.
  */
 function ekstraOere(tokens: number): number {
   const priser = Object.values(MODELLER)
     .flat()
-    .map((m) => beregnPrisDkk(m.id, tokens, 0))
+    .map((m) => beregnPrisDkk(m.id, 0, 0, { skrevet: tokens }))
     .filter((p): p is number => p !== null);
 
   return priser.length ? Math.ceil(Math.max(...priser) * 100) : 0;

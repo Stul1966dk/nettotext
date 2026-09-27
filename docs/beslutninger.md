@@ -36,6 +36,43 @@ trin 8.
 
 ---
 
+## 2026-09-27 — Prompt caching på den faste del af systemprompten
+
+**Systemprompten er delt i to** (`SystemDele` i `lib/ai/typer.ts`): en fast
+del — skrivevejledningen, materialet og outputformatet — og en variabel del
+med stiltonen, reglen om briefen og, ved omskrivning, OMSKRIV_TILLAEG.
+Anthropic-adapteren sætter en cache-markør efter den faste del. Den er den
+samme for hver tekst af typen, og derfor rammer også omskrivningen af et
+afsnit cachen fra genereringen af samme tekst.
+
+**Afvejningen:** første kald betaler 25 % ekstra for at skrive til cachen,
+hvert kald inden for fem minutter derefter betaler en tiendedel for den del.
+Det tjener sig hjem ved ét genbrug. Cachen deles kun inden for samme
+API-nøgle, så den rammer oftest ved omskrivning, "Skriv en til med samme
+opsætning" og på platformens nøgle. En bruger, der skriver én tekst og går,
+betaler de 25 % uden at få noget igen. Det er valgt til, fordi omskrivning
+er en fast del af arbejdsgangen i editoren.
+
+**Målt 27.09.2026** med en kategoritekst på Sonnet 5: omskrivningen af ét
+afsnit læste 4.074 tokens fra cachen og kostede 5,7 øre mod 10,9 øre uden.
+
+**Regnskabet skulle rettes med.** Med cache tæller Anthropics `input_tokens`
+kun den del, der IKKE kom fra cachen. Uden rettelsen ville forbrugsloggen og
+budgetloftet have talt for lavt. `beregnPrisDkk` regner nu skrivning til
+1,25 og læsning til 0,1 gange inputprisen, og `usage_log.input_tokens`
+rummer fortsat hele promptens størrelse, så tallene kan sammenlignes med
+tiden før. Der er ingen ny kolonne til cachetallene; de står i serverloggen
+for hvert kald.
+
+**OpenAI er ikke rørt.** De cacher selv begyndelsen af en gentaget prompt,
+og deres inputtal tæller den cachede del med til fuld pris, så vores
+regnskab skønner højst for højt dér.
+
+**Hjælpeteksten ved "Synlig for brugerne" er rettet** til det, den faktisk
+gør: uden flueben er teksttypen skjult for alle, også for ejeren.
+
+---
+
 ## 2026-09-27 — Kategoritekst: hero-tekst, produktoversigt, beskrivelse
 
 Ejeren ønskede V1 skåret ned til kategoritekst, produkttekst og blogindlæg,
@@ -74,7 +111,7 @@ bliver stående.
 af adminkontoen: læse-policyen på `templates` skjuler inaktive rækker for
 alle. Det er i orden nu, hvor tilmeldingen er lukket. **Hjælpeteksten ved
 "Synlig for brugerne" lover noget, der ikke passer** ("Uden flueben kan kun
-du se den"). Det er ikke rettet i denne omgang.
+du se den"). Rettet samme dag.
 
 ---
 
@@ -114,10 +151,8 @@ Fejlen logges og kan ses på adminsidens fejlliste.
 materiale slås fra i stedet for at blive slettet, hvis man vil kunne tage det
 tilbage. Sletning spørger først.
 
-**Ikke gjort: prompt caching.** Materialet er det samme ved hver tekst af
-typen og ville være billigere med Anthropics cache. Det kræver, at adapteren
-kan sende systemprompten i flere dele. Værd at gøre, hvis materialet bliver
-stort, eller teksterne bliver mange.
+**Prompt caching blev bygget samme dag** — se beslutningen om prompt
+caching ovenfor.
 
 ---
 

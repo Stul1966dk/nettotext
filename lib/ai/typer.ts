@@ -9,10 +9,24 @@
 export const LEVERANDOERER = ["anthropic", "openai"] as const;
 export type Leverandoer = (typeof LEVERANDOERER)[number];
 
+/**
+ * En systemprompt i to dele: den, der er den samme fra kald til kald, og
+ * den, der skifter.
+ *
+ * Den faste del kommer først og kan caches hos leverandøren — se
+ * anthropic.ts. Rækkefølgen er ikke til forhandling: en cache er et match
+ * på begyndelsen af prompten, og ét tegn, der skifter før eller inde i den
+ * faste del, gør cachen værdiløs.
+ */
+export type SystemDele = { fast: string; variabel: string };
+
 /** Ét kald til en sprogmodel. */
 export type Anmodning = {
-  /** Systemskabelonen fra templates.system_prompt. Ligger fast. */
-  system: string;
+  /**
+   * Systemprompten. Delt i to, når en del af den gentages fra kald til kald
+   * og er værd at cache; ellers en almindelig tekst.
+   */
+  system: string | SystemDele;
   /** Brugerens brief, pakket som afgrænset datablok. Se prompt.ts. */
   bruger: string;
   model: string;
@@ -22,9 +36,27 @@ export type Anmodning = {
 /** Hvad kaldet kostede. Metadata — aldrig selve teksten. */
 export type Forbrug = {
   model: string;
+  /**
+   * Input til fuld pris. Hos Anthropic er det KUN den del, der ikke kom fra
+   * cachen — de to cachetal herunder skal lægges oveni for at få hele
+   * promptens størrelse.
+   */
   inputTokens: number;
   outputTokens: number;
+  /** Tokens skrevet til cachen. Koster 1,25 gange normal inputpris. */
+  cacheSkrevet?: number;
+  /** Tokens læst fra cachen. Koster 0,1 gange normal inputpris. */
+  cacheLaest?: number;
 };
+
+/** Hele systemprompten som én tekst, til leverandører uden eksplicit cache. */
+export function samletSystem(system: string | SystemDele): string {
+  return typeof system === "string"
+    ? system
+    : `${system.fast}
+
+${system.variabel}`;
+}
 
 export type Resultat = Forbrug & { tekst: string };
 

@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { byggBrugerbesked, byggSystemprompt } from "@/lib/ai/prompt";
 import { ManglerNoegle, vaelgNoegle, AiFejl } from "@/lib/ai";
+import type { Forbrug } from "@/lib/ai/typer";
 import { hentBudgetstatus, skrivForbrug } from "@/lib/budget";
 import { logFejl } from "@/lib/fejl";
 import { frigivProeveTekst, reserverProeveTekst } from "@/lib/kvote";
@@ -240,8 +241,7 @@ export async function POST(request: Request) {
 
       // Gemmes her og skrives i usage_log til sidst — også hvis genereringen
       // gik i stykker undervejs. Tokens er brugt, uanset om teksten blev hel.
-      let forbrug: { model: string; inputTokens: number; outputTokens: number } | null =
-        null;
+      let forbrug: Forbrug | null = null;
 
       try {
         const bidder = valg.adapter.generateStream({
@@ -290,7 +290,8 @@ export async function POST(request: Request) {
               `[generate] ${bid.model} · betalt af ${valg.betaler} ` +
                 `· planlægning ${foersteOrd ?? ialt} ms ` +
                 `· skrivning ${ialt - (foersteOrd ?? ialt)} ms · i alt ${ialt} ms ` +
-                `· ${bid.inputTokens} ind / ${bid.outputTokens} ud`,
+                `· ${bid.inputTokens} ind / ${bid.outputTokens} ud ` +
+                `· cache ${bid.cacheLaest ?? 0} læst / ${bid.cacheSkrevet ?? 0} skrevet`,
             );
           }
         }
@@ -350,6 +351,8 @@ export async function POST(request: Request) {
               betaler: valg.betaler,
               inputTokens: forbrug.inputTokens,
               outputTokens: forbrug.outputTokens,
+              cacheSkrevet: forbrug.cacheSkrevet,
+              cacheLaest: forbrug.cacheLaest,
             });
 
             // Kvitteringen sendes KUN, hvis rækken faktisk blev skrevet.
