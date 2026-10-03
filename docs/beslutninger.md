@@ -30,9 +30,50 @@ trin 8.
 - [ ] **Prøv ChatGPT-vejen af, før nogen får lov at vælge den.** `lib/ai/openai.ts` er skrevet, men aldrig kørt — platformens nøgle er en Anthropic-nøgle, så OpenAI-siden kan først testes, når der findes en OpenAI-nøgle at teste med. Lad ikke brugerne vælge ChatGPT i indstillinger, før mindst én tekst er skrevet den vej.
 - [ ] **Tjek at lange tekster når at blive færdige — i produktion.** `/api/generate` har fra 03.10.2026 `maxDuration = 120` (før 60; et indlæg på ca. 1.150 ord tog 52 sekunder lokalt). Ejeren er på Vercels gratis-plan, hvor mere end 60 sekunder kræver Fluid Compute. Det mangler at blive bekræftet, at Vercel tager imod værdien, og at et indlæg på fulde 1.400 ord bliver færdigt på det deployede site. Gør det ikke, er der to knapper: slå Fluid Compute til, eller sænk `effort` i `lib/ai/anthropic.ts`.
 - [ ] **Byg "slet min konto"** (GDPR, CLAUDE.md regel 9). Alle brugerens rækker i alle tabeller, `ai_keys` inklusive. De fleste tabeller har `on delete cascade` mod `auth.users`, så meget er gjort — der mangler en knap, en rute og en bekræftelse.
-- [ ] **Få betingelserne og kildefunktionen set efter af en advokat.** Vurderingen bag beslutningen 13.09.2026 er lavet uden jurist. Den er holdbar nok til at bygge på, men før der kommer betalende brugere, skal to ting efterses: at brugerbetingelserne siger, at brugeren selv vælger sine kilder og selv står inde for de oplysninger, hun godkender — og at ansvarslinjerne i briefen og editoren er formuleret, så de holder.
+- [ ] **Få betingelserne og kildefunktionen set efter af en advokat.** Vurderingen bag beslutningen 13.09.2026 er lavet uden jurist. Den er holdbar nok til at bygge på, men før der kommer betalende brugere, skal to ting efterses: at brugerbetingelserne siger, at brugeren selv vælger sine kilder og selv står inde for de oplysninger, hun godkender — og at ansvarslinjerne i briefen og editoren er formuleret, så de holder. Fra 03.10.2026 også: at blogindlæg må indeholde almen viden fra AI-modellen, som brugeren ikke selv har oplyst (se beslutningen samme dag).
 - [ ] **Privatlivspolitik** på `/da/privatliv` (GDPR, jf. teknisk oplæg afsnit 5). **Skal udtrykkeligt nævne feedback-kommentarerne:** de gemmes permanent i `usage_log` og læses på adminsiden. Det er det eneste sted, hvor tekst skrevet af en bruger kan læses af andre end hende selv, og det skal stå i politikken, ikke kun i koden. Se beslutningen 13.09.2026.
 - [ ] **Opdatér brandnavnet** i `design/design-3-vaerksted.html` til NettoText.
+
+---
+
+## 2026-10-03 — Blogindlæg må bruge almen viden om emnet
+
+**Princippet fra 13.09.2026 bliver blødt op for de teksttyper, hvor det er
+slået til.** Reglen "ved du noget om emnet, som briefen ikke nævner, skal det
+stå uskrevet" blev lavet til produkttekster. På et blogindlæg betød den, at
+teksten kun kunne blive så lang og så god som det, brugeren selv havde
+skrevet i briefen. Ejeren, da hjælpeteksten sagde det ligeud: "så kan man jo
+lige så godt selv skrive blogindlægget — så er appen ingen hjælp."
+
+**Skellet går nu sådan** (migration 0029, kolonnen `general_knowledge`,
+flueben på adminsiden, slået til på blogindlæg og fra på alt andet):
+
+- Almen viden om emnet — forklaringer, sammenhænge, råd — må modellen selv
+  bidrage med.
+- Tal, priser, statistik, undersøgelser, årstal og navngivne produkter, mærker
+  og virksomheder må kun komme fra briefen.
+- Alt om afsenderen må kun komme fra briefen.
+- Lovregler, satser, frister og andet, der ændrer sig over tid, må kun komme
+  fra briefen.
+
+Reglerne står i koden (`stiltoneTillaeg` i `lib/ai/prompt.ts`), ikke i
+skrivevejledningen, så de ikke kan slettes ved en fejl på adminsiden.
+
+**Hvor den almene viden kommer fra:** modellens træning. Den slår intet op,
+og den bliver kun nyere, når der skiftes til en nyere model. Derfor reglen om
+det, der ændrer sig over tid. Beslutningen om ingen online research er
+uændret.
+
+**Det koster:** almen viden kan være forkert eller forældet, og faktatjekket
+fanger kun tal. Brugeren kan ikke dokumentere en forklaring, modellen har
+skrevet af sig selv. Derfor har de teksttyper deres egen ansvarslinje, både i
+briefen og i editoren: den siger, at forklaringer og råd kommer fra AI'ens
+almene viden, og at teksten skal læses igennem. Hører med til det, advokaten
+skal se på (tjeklisten).
+
+**Rullet tilbage samme dag:** linjen i skrivevejledningen om, at teksten skal
+være kortere, hvis oplysningerne ikke rækker, og hjælpeteksten ved "Hvor
+langt?" om, at et langt indlæg kræver flere oplysninger.
 
 ---
 

@@ -3,7 +3,10 @@ import { getTranslations } from "next-intl/server";
 
 import { hentKladdeVedId } from "@/lib/kladder";
 import { hentTilpasning } from "@/lib/personalisering";
-import { hentSkabelonerMedProduktoversigt } from "@/lib/skabeloner/hent";
+import {
+  hentSkabelonerMedAlmenViden,
+  hentSkabelonerMedProduktoversigt,
+} from "@/lib/skabeloner/hent";
 import type { Kladde } from "@/lib/skabeloner/kladde";
 import { STANDARD_STILTONE } from "@/lib/skabeloner/stiltone";
 
@@ -78,9 +81,10 @@ export default async function SkrivSide({
   //
   // Sprogprøven er bevidst ikke med. Begrundelsen står ved samlGrundlag i
   // Generering.tsx.
-  const [tilpasning, medProduktoversigt] = await Promise.all([
+  const [tilpasning, medProduktoversigt, medAlmenViden] = await Promise.all([
     hentTilpasning(),
     hentSkabelonerMedProduktoversigt(),
+    hentSkabelonerMedAlmenViden(),
   ]);
   const personligtGrundlag = [
     tilpasning.brand?.beskrivelse ?? "",
@@ -107,6 +111,7 @@ export default async function SkrivSide({
           startKladde={startKladde}
           personligtGrundlag={personligtGrundlag}
           medProduktoversigt={medProduktoversigt}
+          medAlmenViden={medAlmenViden}
           tekster={{
             ingenBrief: t("ingenBrief"),
             nyTekst: t("nyTekst"),
@@ -170,6 +175,7 @@ export default async function SkrivSide({
             faktaIngenFund: t("faktaIngenFund"),
             faktaForklaring: t("faktaForklaring"),
             faktaAnsvar: t("faktaAnsvar"),
+            faktaAnsvarAlmenViden: t("faktaAnsvarAlmenViden"),
             spoergsmaal: t("feedbackSpoergsmaal"),
             op: t("feedbackOp"),
             ned: t("feedbackNed"),

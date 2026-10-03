@@ -83,6 +83,7 @@ export function Teksttypeformular({
     uses_h1: boolean;
     product_grid: boolean;
     free_wish: boolean;
+    general_knowledge: boolean;
     input_fields: InputFelt[];
     active: boolean;
   } | null;
@@ -333,6 +334,19 @@ export function Teksttypeformular({
         </label>
         <p className="text-sm leading-relaxed text-gran-let">
           {tekster.produktoversigtHjaelp}
+        </p>
+
+        <label className="flex items-center gap-3 pt-2 text-sm font-medium text-gran">
+          <input
+            type="checkbox"
+            name="general_knowledge"
+            defaultChecked={skabelon?.general_knowledge ?? false}
+            className="h-4 w-4 accent-gran"
+          />
+          {tekster.almenViden}
+        </label>
+        <p className="text-sm leading-relaxed text-gran-let">
+          {tekster.almenVidenHjaelp}
         </p>
 
         {/* Det faste format vises, så man kan se, hvad vejledningen lægges

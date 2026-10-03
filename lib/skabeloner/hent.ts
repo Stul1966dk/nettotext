@@ -20,7 +20,9 @@ export async function hentSkabelon(slug: string): Promise<Skabelon | null> {
 
   const { data } = await supabase
     .from("templates")
-    .select("slug, name, system_prompt, uses_h1, free_wish, input_fields")
+    .select(
+      "slug, name, system_prompt, uses_h1, free_wish, general_knowledge, input_fields",
+    )
     .eq("slug", slug)
     .maybeSingle();
 
@@ -73,6 +75,23 @@ export async function hentSkabelonerMedProduktoversigt(): Promise<string[]> {
     .from("templates")
     .select("slug")
     .eq("product_grid", true);
+
+  return (data ?? []).map((raekke) => raekke.slug);
+}
+
+/**
+ * Adresserne på de teksttyper, der må bruge almen viden. Migration 0029.
+ *
+ * Som listen ovenfor, og af samme grund: editoren kender kun adressen, og
+ * den skal vide, hvilken ansvarslinje der passer til teksten.
+ */
+export async function hentSkabelonerMedAlmenViden(): Promise<string[]> {
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from("templates")
+    .select("slug")
+    .eq("general_knowledge", true);
 
   return (data ?? []).map((raekke) => raekke.slug);
 }

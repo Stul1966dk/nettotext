@@ -233,6 +233,7 @@ export function Generering({
   startKladde,
   personligtGrundlag,
   medProduktoversigt,
+  medAlmenViden,
 }: {
   tekster: Tekster;
   /** En kladde hentet fra serveren, når siden er åbnet fra dashboardet. */
@@ -244,6 +245,8 @@ export function Generering({
   personligtGrundlag: string;
   /** Teksttyper, der deles af en produktoversigt. Se migration 0027. */
   medProduktoversigt: string[];
+  /** Teksttyper, der må bruge almen viden om emnet. Se migration 0029. */
+  medAlmenViden: string[];
 }) {
   const [status, setStatus] = useState<Status>("starter");
   const [tekst, setTekst] = useState("");
@@ -1070,7 +1073,11 @@ export function Generering({
           {/* Tjekket står MELLEM teksten og kopiknapperne, og det er med
               vilje: det er det sidste, brugeren møder, inden hun tager
               teksten med sig. Står det nederst, er den allerede kopieret. */}
-          <Faktatjek fund={fund} tekster={tekster} />
+          <Faktatjek
+            fund={fund}
+            almenViden={skabelon !== null && medAlmenViden.includes(skabelon)}
+            tekster={tekster}
+          />
 
           {/* Widgetten står EFTER faktatjekket: først ser man teksten efter,
               så bedømmer man den. Uden kvittering findes den ikke — se

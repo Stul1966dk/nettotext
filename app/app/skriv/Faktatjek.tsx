@@ -20,13 +20,20 @@ export type FaktatjekTekster = {
   faktaIngenFund: string;
   faktaForklaring: string;
   faktaAnsvar: string;
+  faktaAnsvarAlmenViden: string;
 };
 
 export function Faktatjek({
   fund,
+  almenViden,
   tekster,
 }: {
   fund: Fund[];
+  /**
+   * Må teksttypen bruge almen viden? Så siger ansvarslinjen, at ikke alt i
+   * teksten kommer fra briefen. Tjekket selv er det samme: det tæller tal.
+   */
+  almenViden: boolean;
   tekster: FaktatjekTekster;
 }) {
   const harFund = fund.length > 0;
@@ -65,7 +72,7 @@ export function Faktatjek({
       )}
 
       <p className="text-xs leading-relaxed text-gran-let">
-        {tekster.faktaAnsvar}
+        {almenViden ? tekster.faktaAnsvarAlmenViden : tekster.faktaAnsvar}
       </p>
     </section>
   );

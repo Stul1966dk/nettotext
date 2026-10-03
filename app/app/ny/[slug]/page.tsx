@@ -137,7 +137,11 @@ export default async function NyTekstSide({ params, searchParams }: Props) {
           valgfrit: t("valgfrit"),
           knap: t("knap"),
           manglerFelter: t("manglerFelter"),
-          ansvar: t("ansvar"),
+          // Ansvarslinjen følger teksttypen: må teksten bruge almen viden,
+          // skal der stå, at ikke alt i den kommer fra briefen.
+          ansvar: skabelon.general_knowledge
+            ? t("ansvarAlmenViden")
+            : t("ansvar"),
           genbrugt: t("genbrugt"),
           instruktion: t("instruktion"),
           instruktionHjaelp: t("instruktionHjaelp"),

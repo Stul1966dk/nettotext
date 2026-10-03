@@ -125,6 +125,8 @@ export default async function RedigerTeksttype({ params }: Props) {
       "h1Hjaelp",
       "produktoversigt",
       "produktoversigtHjaelp",
+      "almenViden",
+      "almenVidenHjaelp",
       "fastFormat",
       "fastFormatHjaelp",
       "felter",
@@ -188,6 +190,7 @@ export default async function RedigerTeksttype({ params }: Props) {
             uses_h1: skabelon.uses_h1,
             product_grid: skabelon.product_grid,
             free_wish: skabelon.free_wish,
+            general_knowledge: skabelon.general_knowledge,
             input_fields: skabelon.input_fields,
             active: skabelon.active,
           }

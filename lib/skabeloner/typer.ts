@@ -69,6 +69,8 @@ export const skabelonSkema = z.object({
   uses_h1: z.boolean(),
   /** Vises "Noget særligt til lige denne tekst" i briefen? Migration 0028. */
   free_wish: z.boolean(),
+  /** Må teksten bruge modellens almene viden om emnet? Migration 0029. */
+  general_knowledge: z.boolean(),
   input_fields: z.array(inputFeltSkema).min(1),
 });
 
