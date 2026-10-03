@@ -54,6 +54,10 @@ type Tekster = {
 const feltKlasse =
   "w-full rounded-lg border border-kant bg-kort px-4 py-3 text-gran outline-none focus-visible:ring-2 focus-visible:ring-gran";
 
+/** Hvert spørgsmål får en streg over sig, så det er til at se, hvor det
+    ene slutter og det næste begynder. */
+const spoergsmaalKlasse = "space-y-2 border-t border-kant pt-8";
+
 export function BriefFormular({
   skabelon,
   felter,
@@ -370,7 +374,7 @@ export function BriefFormular({
         };
 
         return (
-          <div key={felt.navn} className="space-y-2">
+          <div key={felt.navn} className={spoergsmaalKlasse}>
             <div className="flex items-baseline justify-between gap-4">
               <label
                 htmlFor={felt.navn}
@@ -382,6 +386,18 @@ export function BriefFormular({
                 {felt.paakraevet ? tekster.paakraevet : tekster.valgfrit}
               </span>
             </div>
+
+            {/* Hjælpeteksten står OVER feltet, lige under spørgsmålet. Stod
+                den under, lå den lige så tæt på det næste felt som på sit
+                eget. */}
+            {felt.hjaelp && (
+              <p
+                id={`${felt.navn}-hjaelp`}
+                className="text-sm leading-relaxed text-gran-let"
+              >
+                {felt.hjaelp}
+              </p>
+            )}
 
             {felt.type === "tekstomraade" && (
               <textarea
@@ -430,15 +446,6 @@ export function BriefFormular({
                   </option>
                 ))}
               </select>
-            )}
-
-            {felt.hjaelp && (
-              <p
-                id={`${felt.navn}-hjaelp`}
-                className="text-sm leading-relaxed text-gran-let"
-              >
-                {felt.hjaelp}
-              </p>
             )}
 
             {/* Indsæt-feltet står ved det felt, listen lander i. Samme
@@ -577,13 +584,20 @@ export function BriefFormular({
       {/* Stiltonen står uden for løkken, fordi den gælder ALLE teksttyper,
           også dem der ikke er skrevet endnu. Stod den i skabelonernes
           input_fields, skulle hver ny migrationsfil gentage den. */}
-      <div className="space-y-2">
+      <div className={spoergsmaalKlasse}>
         <label
           htmlFor="__stiltone"
           className="block text-sm font-medium text-gran"
         >
           {tekster.stiltone}
         </label>
+
+        <p
+          id="__stiltone-hjaelp"
+          className="text-sm leading-relaxed text-gran-let"
+        >
+          {tekster.stiltoneHjaelp}
+        </p>
 
         <select
           id="__stiltone"
@@ -599,13 +613,6 @@ export function BriefFormular({
             </option>
           ))}
         </select>
-
-        <p
-          id="__stiltone-hjaelp"
-          className="text-sm leading-relaxed text-gran-let"
-        >
-          {tekster.stiltoneHjaelp}
-        </p>
       </div>
 
       {/* Uden for løkken, fordi feltet ikke kommer fra skabelonen. Navnet
@@ -613,7 +620,7 @@ export function BriefFormular({
           en teksttype selv har fundet på. Teksttypen kan slå det fra, når
           den i forvejen har et frit felt, der dækker det samme. */}
       {fritOenske && (
-      <div className="space-y-2">
+      <div className={spoergsmaalKlasse}>
         <div className="flex items-baseline justify-between gap-4">
           <label
             htmlFor="__instruktion"
@@ -626,6 +633,13 @@ export function BriefFormular({
           </span>
         </div>
 
+        <p
+          id="__instruktion-hjaelp"
+          className="text-sm leading-relaxed text-gran-let"
+        >
+          {tekster.instruktionHjaelp}
+        </p>
+
         <textarea
           id="__instruktion"
           name="__instruktion"
@@ -637,13 +651,6 @@ export function BriefFormular({
           aria-describedby="__instruktion-hjaelp"
           className={`${feltKlasse} resize-y`}
         />
-
-        <p
-          id="__instruktion-hjaelp"
-          className="text-sm leading-relaxed text-gran-let"
-        >
-          {tekster.instruktionHjaelp}
-        </p>
       </div>
       )}
 
@@ -656,7 +663,7 @@ export function BriefFormular({
         </p>
       )}
 
-      <div className="space-y-3">
+      <div className="space-y-3 border-t border-kant pt-8">
         <button
           type="submit"
           className="rounded-lg bg-gran px-6 py-3 font-medium text-bund outline-none focus-visible:ring-2 focus-visible:ring-gran focus-visible:ring-offset-2 focus-visible:ring-offset-bund"
