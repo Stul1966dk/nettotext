@@ -35,7 +35,9 @@ const blokSkema = z.object({
  * fylder det samme som den færdige tekst en gang til.
  */
 export const indholdSkema = z.object({
-  brief: z.record(z.string(), z.string().max(2000)),
+  // 4000 er det højeste, et felt kan sættes til på adminsiden. Stod loftet
+  // lavere her, kunne en brief, der var lovlig i formularen, ikke gemmes.
+  brief: z.record(z.string(), z.string().max(4000)),
   /** Valgfri: kladder fra før trin 5 har den ikke. */
   instruktion: z.string().max(1000).optional(),
   /** Valgfri: kladder fra før stiltonen fandtes har den ikke. */

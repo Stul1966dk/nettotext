@@ -28,11 +28,37 @@ trin 8.
 - [ ] **Udvid forbuddet mod modsætningsfiguren?** Prompten forbyder "ikke X, men Y" og "det handler ikke kun om X, det handler om Y". Modellen skriver den i stedet delt over to sætninger: "... handler ikke om at gøre det pænt. Det handler om at holde fugten ude." Ejerens beslutning, om reglen skal udvides — det er en sprogvurdering, ikke en teknisk.
 - [ ] **Slå OpenAI-priserne op**, før nogen må vælge ChatGPT. `lib/ai/modeller.ts` har prisfeltet tomt for de to OpenAI-modeller, fordi tallene ikke er slået op. Uden pris logges forbruget som 0 kr., og budgetloftet tæller for lavt.
 - [ ] **Prøv ChatGPT-vejen af, før nogen får lov at vælge den.** `lib/ai/openai.ts` er skrevet, men aldrig kørt — platformens nøgle er en Anthropic-nøgle, så OpenAI-siden kan først testes, når der findes en OpenAI-nøgle at teste med. Lad ikke brugerne vælge ChatGPT i indstillinger, før mindst én tekst er skrevet den vej.
-- [ ] **Tjek at lange tekster når at blive færdige.** `/api/generate` har `maxDuration = 60`. Vercels loft afhænger af abonnement. Timer "Langt — ca. 1.400 ord" ud i produktion, er der to knapper: hæv `maxDuration` (kræver det rigtige abonnement), eller sænk `effort` i `lib/ai/anthropic.ts`.
+- [ ] **Tjek at lange tekster når at blive færdige — i produktion.** `/api/generate` har fra 03.10.2026 `maxDuration = 120` (før 60; et indlæg på ca. 1.150 ord tog 52 sekunder lokalt). Ejeren er på Vercels gratis-plan, hvor mere end 60 sekunder kræver Fluid Compute. Det mangler at blive bekræftet, at Vercel tager imod værdien, og at et indlæg på fulde 1.400 ord bliver færdigt på det deployede site. Gør det ikke, er der to knapper: slå Fluid Compute til, eller sænk `effort` i `lib/ai/anthropic.ts`.
 - [ ] **Byg "slet min konto"** (GDPR, CLAUDE.md regel 9). Alle brugerens rækker i alle tabeller, `ai_keys` inklusive. De fleste tabeller har `on delete cascade` mod `auth.users`, så meget er gjort — der mangler en knap, en rute og en bekræftelse.
 - [ ] **Få betingelserne og kildefunktionen set efter af en advokat.** Vurderingen bag beslutningen 13.09.2026 er lavet uden jurist. Den er holdbar nok til at bygge på, men før der kommer betalende brugere, skal to ting efterses: at brugerbetingelserne siger, at brugeren selv vælger sine kilder og selv står inde for de oplysninger, hun godkender — og at ansvarslinjerne i briefen og editoren er formuleret, så de holder.
 - [ ] **Privatlivspolitik** på `/da/privatliv` (GDPR, jf. teknisk oplæg afsnit 5). **Skal udtrykkeligt nævne feedback-kommentarerne:** de gemmes permanent i `usage_log` og læses på adminsiden. Det er det eneste sted, hvor tekst skrevet af en bruger kan læses af andre end hende selv, og det skal stå i politikken, ikke kun i koden. Se beslutningen 13.09.2026.
 - [ ] **Opdatér brandnavnet** i `design/design-3-vaerksted.html` til NettoText.
+
+---
+
+## 2026-10-03 — Lange blogindlæg: mere plads i briefen, mere tid til at skrive
+
+Tre test af blogindlægget med "Langt (ca. 1.400 ord)" gav 793, ca. 950 og
+ca. 1.150 ord med henholdsvis 371, 982 og 2.282 tegn i "Noget teksten skal
+vide". Længden følger briefen: uden research kan teksten kun blive så lang,
+som oplysningerne rækker til.
+
+**Belæg går forud for længde.** Skrivevejledningen siger nu, at teksten skal
+være kortere, hvis oplysningerne ikke rækker. Ejerens valg. Feltet "Noget
+teksten skal vide" er hævet fra 1.000 til 3.000 tegn på adminsiden.
+
+**Kladden kunne ikke gemmes med en lang brief.** `indholdSkema` i
+`lib/kladder.ts` afviste brief-felter over 2.000 tegn, mens adminsiden
+tillader 4.000. Loftet er hævet til 4.000. Rettelsen er ikke afprøvet med en
+ny generering.
+
+**`maxDuration` for `/api/generate` er hævet fra 60 til 120 sekunder.** Se
+punktet på tjeklisten: det er ikke bekræftet, at Vercels gratis-plan tager
+imod det.
+
+**Åbent:** teksten gør stadig én oplysning til en påstand om "de fleste" og
+lægger egne forklaringer til, selvom både koden og vejledningen forbyder det.
+Faktatjekket fanger kun tal.
 
 ---
 

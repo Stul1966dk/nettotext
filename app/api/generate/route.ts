@@ -35,9 +35,14 @@ import { createClient } from "@/lib/supabase/server";
  * Svaret er NDJSON: én JSON-linje pr. hændelse. Se protokollen nedenfor.
  */
 
-// Genereringen tager tid — særligt for lange tekster. Bemærk at Vercel har
-// sit eget loft afhængigt af abonnement; 60 sekunder virker på alle planer.
-export const maxDuration = 60;
+// Genereringen tager tid — særligt for lange tekster. Målt 03.10.2026: et
+// blogindlæg på ca. 1.150 ord tog 52 sekunder, så 60 var for tæt på til de
+// 1.400 ord, briefen kan bede om.
+//
+// Vercel har sit eget loft afhængigt af abonnement. På gratis-planen kræver
+// alt over 60 sekunder, at Fluid Compute er slået til i projektets
+// indstillinger. Afviser Vercel værdien, er det dér, der skal kigges.
+export const maxDuration = 120;
 
 const anmodningSkema = z.object({
   skabelon: z.string().min(1).max(64),
