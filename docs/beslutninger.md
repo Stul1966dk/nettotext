@@ -36,6 +36,31 @@ trin 8.
 
 ---
 
+## 2026-10-03 — "Langt" hedder 1.000-1.200 ord, og en FAQ kommer oveni
+
+**Blogindlæggets længste valgmulighed lover nu det, appen leverer**
+(migration 0030). Den hed "Langt (ca. 1.400 ord)", og otte test gav mellem
+800 og 1.150 ord uanset skrivevejledningens ordlyd. Ejerens beslutning:
+1.000-1.200 ord, og tallet gælder brødteksten.
+
+**Den lange tekst slutter med "Ofte stillede spørgsmål"**, 4 til 5 spørgsmål
+som h3. Ejerens idé. Afsnittet tæller ikke med i ordantallet. Det står i
+skrivevejledningen på adminsiden, ikke i koden, og editoren viser det som ét
+afsnit, brugeren kan slette.
+
+**Det virkede ikke, som det står nu.** Testen efter ændringen gav 887 ord
+brødtekst og 243 ord FAQ, 1.130 i alt. Modellen skriver omkring 1.130-1.150
+ord i alt, uanset hvordan vejledningen fordeler dem, så en FAQ i samme kald
+tager sine ord fra brødteksten. Uden FAQ gav samme opsætning ca. 1.150 ord
+brødtekst. Ejeren har sagt stop for flere test af vejledningens ordlyd; næste
+skridt er en anden løsning, ikke en ny formulering.
+
+**Engelske fagudtryk uden dansk ord er i orden** — øvelsesnavne som "goblet
+squat" og "rows". Vejledningen forbyder kun engelske ord, der har en dækkende
+dansk betegnelse.
+
+---
+
 ## 2026-10-03 — Grundigheden hævet fra medium til høj
 
 `effort` i `lib/ai/anthropic.ts` er hævet fra "medium" til "high". Ejerens
