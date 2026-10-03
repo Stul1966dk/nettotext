@@ -131,6 +131,7 @@ export default async function NyTekstSide({ params, searchParams }: Props) {
         genbrug={genbrug === "1"}
         skabelon={skabelon.slug}
         felter={skabelon.input_fields}
+        fritOenske={skabelon.free_wish}
         tekster={{
           paakraevet: t("paakraevet"),
           valgfrit: t("valgfrit"),

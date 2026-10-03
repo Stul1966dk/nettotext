@@ -57,11 +57,14 @@ const feltKlasse =
 export function BriefFormular({
   skabelon,
   felter,
+  fritOenske,
   tekster,
   genbrug,
 }: {
   skabelon: string;
   felter: InputFelt[];
+  /** Vises "Noget særligt til lige denne tekst"? Teksttypen bestemmer. */
+  fritOenske: boolean;
   tekster: Tekster;
   /** Kom brugeren hertil fra "Skriv en til"? Se effekten længere nede. */
   genbrug: boolean;
@@ -172,7 +175,9 @@ export function BriefFormular({
       return naeste;
     });
 
-    setInstruktion(forrige.instruktion ?? "");
+    // Er feltet slået fra, må et ønske fra en ældre kladde ikke følge med
+    // usynligt.
+    if (fritOenske) setInstruktion(forrige.instruktion ?? "");
     setStiltone(forrige.stiltone ?? STANDARD_STILTONE);
     setGenbrugt(true);
     // Kører kun ved opstart. Retter brugeren bagefter, skal effekten ikke
@@ -605,7 +610,9 @@ export function BriefFormular({
 
       {/* Uden for løkken, fordi feltet ikke kommer fra skabelonen. Navnet
           har to underscores foran, så det aldrig kan kollidere med et felt,
-          en teksttype selv har fundet på. */}
+          en teksttype selv har fundet på. Teksttypen kan slå det fra, når
+          den i forvejen har et frit felt, der dækker det samme. */}
+      {fritOenske && (
       <div className="space-y-2">
         <div className="flex items-baseline justify-between gap-4">
           <label
@@ -638,6 +645,7 @@ export function BriefFormular({
           {tekster.instruktionHjaelp}
         </p>
       </div>
+      )}
 
       {fejl && (
         <p

@@ -67,6 +67,8 @@ export const skabelonSkema = z.object({
   system_prompt: z.string().min(1),
   /** Må teksten have sin egen h1? Se outputformat() i lib/ai/prompt.ts. */
   uses_h1: z.boolean(),
+  /** Vises "Noget særligt til lige denne tekst" i briefen? Migration 0028. */
+  free_wish: z.boolean(),
   input_fields: z.array(inputFeltSkema).min(1),
 });
 

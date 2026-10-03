@@ -53,6 +53,8 @@ export const adminSkabelonSkema = z.object({
   uses_h1: z.boolean(),
   /** Deles teksten af en produktoversigt? Se migration 0027. */
   product_grid: z.boolean(),
+  /** Vises det frie ønske i briefen? Se migration 0028. */
+  free_wish: z.boolean(),
   input_fields: z
     .array(adminFeltSkema)
     .min(1)
@@ -78,7 +80,7 @@ export async function hentAlleSkabeloner(): Promise<SkabelonRaekke[]> {
   const { data } = await db
     .from("templates")
     .select(
-      "id, slug, name, description, system_prompt, uses_h1, product_grid, input_fields, active, updated_at",
+      "id, slug, name, description, system_prompt, uses_h1, product_grid, free_wish, input_fields, active, updated_at",
     )
     .order("name");
 
@@ -103,7 +105,7 @@ export async function hentSkabelonTilRedigering(
   const { data } = await db
     .from("templates")
     .select(
-      "id, slug, name, description, system_prompt, uses_h1, product_grid, input_fields, active, updated_at",
+      "id, slug, name, description, system_prompt, uses_h1, product_grid, free_wish, input_fields, active, updated_at",
     )
     .eq("slug", slug)
     .maybeSingle();
@@ -132,7 +134,7 @@ export async function gemSkabelon(
 
   const { data: nuvaerende } = await db
     .from("templates")
-    .select("id, slug, name, description, system_prompt, uses_h1, product_grid, input_fields, active")
+    .select("id, slug, name, description, system_prompt, uses_h1, product_grid, free_wish, input_fields, active")
     .eq("slug", skabelon.slug)
     .maybeSingle();
 
@@ -145,6 +147,7 @@ export async function gemSkabelon(
       system_prompt: nuvaerende.system_prompt,
       uses_h1: nuvaerende.uses_h1,
       product_grid: nuvaerende.product_grid,
+      free_wish: nuvaerende.free_wish,
       input_fields: nuvaerende.input_fields,
       active: nuvaerende.active,
       saved_by: admin.id,
@@ -161,6 +164,7 @@ export async function gemSkabelon(
         system_prompt: skabelon.system_prompt,
         uses_h1: skabelon.uses_h1,
         product_grid: skabelon.product_grid,
+        free_wish: skabelon.free_wish,
         input_fields: skabelon.input_fields,
         active: skabelon.active,
         updated_at: new Date().toISOString(),
@@ -177,6 +181,7 @@ export async function gemSkabelon(
     system_prompt: skabelon.system_prompt,
     uses_h1: skabelon.uses_h1,
     product_grid: skabelon.product_grid,
+    free_wish: skabelon.free_wish,
     input_fields: skabelon.input_fields,
     active: skabelon.active,
   });

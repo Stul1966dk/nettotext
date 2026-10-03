@@ -82,6 +82,7 @@ export function Teksttypeformular({
     system_prompt: string;
     uses_h1: boolean;
     product_grid: boolean;
+    free_wish: boolean;
     input_fields: InputFelt[];
     active: boolean;
   } | null;
@@ -627,6 +628,21 @@ export function Teksttypeformular({
             </div>
           ))}
         </div>
+
+        {/* Ikke et felt i listen, men et fast felt formularen selv tegner
+            nederst i briefen. Derfor et flueben for hele teksttypen. */}
+        <label className="flex items-center gap-3 pt-2 text-sm font-medium text-gran">
+          <input
+            type="checkbox"
+            name="free_wish"
+            defaultChecked={skabelon?.free_wish ?? true}
+            className="h-4 w-4 accent-gran"
+          />
+          {tekster.fritOenske}
+        </label>
+        <p className="text-sm leading-relaxed text-gran-let">
+          {tekster.fritOenskeHjaelp}
+        </p>
       </section>
 
       {/* --- Synlighed og gemning ---------------------------------------- */}

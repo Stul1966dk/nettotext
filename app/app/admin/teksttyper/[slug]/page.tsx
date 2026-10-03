@@ -154,6 +154,8 @@ export default async function RedigerTeksttype({ params }: Props) {
       "idefeltHjaelp",
       "faktafelt",
       "faktafeltHjaelp",
+      "fritOenske",
+      "fritOenskeHjaelp",
       "aktiv",
       "aktivHjaelp",
       "gem",
@@ -185,6 +187,7 @@ export default async function RedigerTeksttype({ params }: Props) {
             system_prompt: skabelon.system_prompt,
             uses_h1: skabelon.uses_h1,
             product_grid: skabelon.product_grid,
+            free_wish: skabelon.free_wish,
             input_fields: skabelon.input_fields,
             active: skabelon.active,
           }

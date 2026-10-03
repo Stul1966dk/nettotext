@@ -36,6 +36,35 @@ trin 8.
 
 ---
 
+## 2026-10-03 — Det frie ønske kan slås fra pr. teksttype
+
+Første fund fra afprøvningen af teksttyperne én ad gangen: blogindlæggets
+brief havde for mange spørgsmål.
+
+**"Noget særligt til lige denne tekst" er slået fra på blogindlægget**
+(migration 0028, kolonnen `free_wish`, flueben på adminsiden). Feltet stod i
+formularens kode og dermed på alle teksttyper. På blogindlægget dækker
+"Noget teksten skal vide" det samme, og brugeren kan ikke se forskel — vores
+eget eksempel i feltet var en oplysning, ikke et ønske. Hjælpeteksten ved
+"Noget teksten skal vide" siger nu, at feltet også rummer det, teksten ellers
+skal tage hensyn til. Standarden er TIL, så de øvrige teksttyper er uændrede,
+indtil de selv er afprøvet.
+
+**Det koster:** et ønske skrevet i "Noget teksten skal vide" står i briefen,
+som prompten behandler som oplysninger, ikke som ønsker. "Nævn at vi har
+lørdagsåbent" virker; "skriv kortere sætninger" virker måske dårligere end
+før. Viser afprøvningen det, er svaret at pege på de gemte instruktioner i
+Indstillinger, ikke at sætte feltet tilbage.
+
+**"Indsæt en specifikation" bliver på blogindlægget, men hedder nu "Indsæt
+kildemateriale".** Beslutningen fra 13.09.2026 står: et blogindlæg, der
+bygger på en undersøgelse, har brug for den. Fejlen var ordene — "varens
+oplysninger", "leverandøren", "producentens salgstekst" — som kun passede på
+produktteksten. Teksterne i sprogfilen er skrevet om, så de passer på alle
+teksttyper.
+
+---
+
 ## 2026-09-27 — Prompt caching på den faste del af systemprompten
 
 **Systemprompten er delt i to** (`SystemDele` i `lib/ai/typer.ts`): en fast
