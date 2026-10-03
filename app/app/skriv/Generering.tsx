@@ -13,6 +13,7 @@ import {
 import { laesNdjson } from "@/lib/api/laesStream";
 import { gemKladde, hentKladde, type Kladde } from "@/lib/skabeloner/kladde";
 import { delIBlokke, type Blok } from "@/lib/tekst/blokke";
+import { erFaqBlok } from "@/lib/tekst/faq";
 import { tjekTal } from "@/lib/tekst/faktatjek";
 import { fremskridtProcent, maalTegn } from "@/lib/tekst/fremskridt";
 import {
@@ -24,10 +25,12 @@ import {
 
 import { Blokkort, type BlokkortTekster } from "./Blokkort";
 import { Faktatjek, type FaktatjekTekster } from "./Faktatjek";
+import { Faq, type FaqTekster } from "./Faq";
 import { Feedback, type FeedbackTekster } from "./Feedback";
 
 type Tekster = BlokkortTekster &
   FaktatjekTekster &
+  FaqTekster &
   FeedbackTekster & {
   ingenBrief: string;
   nyTekst: string;
@@ -288,6 +291,11 @@ export function Generering({
     id: string;
     besked: string;
   } | null>(null);
+
+  // Afsnittet med ofte stillede spørgsmål. Skrives i sit eget kald, når
+  // brugeren beder om det. Se Faq.tsx.
+  const [faqHenter, setFaqHenter] = useState(false);
+  const [faqFejl, setFaqFejl] = useState<string | null>(null);
 
   /** Hvilket afsnit venter på at få sin håndrettelse saneret på serveren? */
   const [gemmerBlok, setGemmerBlok] = useState<string | null>(null);
@@ -622,6 +630,69 @@ export function Generering({
       gem({ html: nyHtml, blokke: nyeBlokke });
     },
     [gem],
+  );
+
+  /**
+   * Lægger "Ofte stillede spørgsmål" til sidst i teksten.
+   *
+   * Har teksten allerede afsnittet, bliver det skiftet ud og ikke lagt til en
+   * gang til. Serveren får hele teksten med, så svarene kan holde sig fra
+   * det, artiklen allerede siger.
+   */
+  const tilfoejFaq = useCallback(
+    async (spoergsmaal: string) => {
+      const kladde = kladdeRef.current;
+      if (!kladde) return;
+
+      setFaqHenter(true);
+      setFaqFejl(null);
+
+      const visFejl = (aarsag: string) =>
+        setFaqFejl(tekster.fejl[aarsag] ?? tekster.fejl.ukendt);
+
+      try {
+        const svar = await fetch("/api/faq", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            skabelon: kladde.skabelon,
+            brief: kladde.brief,
+            blokke: kladde.blokke,
+            spoergsmaal,
+            stiltone: kladde.stiltone,
+          }),
+        });
+
+        const data = await svar.json().catch(() => null);
+
+        if (!svar.ok || typeof data?.html !== "string") {
+          visFejl(typeof data?.aarsag === "string" ? data.aarsag : "ukendt");
+          return;
+        }
+
+        // Blokkene læses HER og ikke før kaldet: brugeren kan have rettet i
+        // et andet afsnit, mens spørgsmålene blev skrevet.
+        const uden = (kladdeRef.current?.blokke ?? []).filter(
+          (blok) => !erFaqBlok(blok),
+        );
+
+        laegBlokkePaaPlads([
+          ...uden,
+          {
+            id: "blok-faq",
+            slags: "sektion",
+            overskrift: null,
+            nummer: null,
+            html: data.html as string,
+          },
+        ]);
+      } catch {
+        visFejl("netvaerk");
+      } finally {
+        setFaqHenter(false);
+      }
+    },
+    [laegBlokkePaaPlads, tekster],
   );
 
   /**
@@ -1052,7 +1123,9 @@ export function Generering({
                   omskrives={omskriverId === blok.id}
                   streametTekst={omskriverId === blok.id ? omskrivTekst : ""}
                   fejl={omskrivFejl?.id === blok.id ? omskrivFejl.besked : null}
-                  laast={omskriverId !== null || gemmerBlok !== null}
+                  laast={
+                    omskriverId !== null || gemmerBlok !== null || faqHenter
+                  }
                   kanSlettes={blokke.length > 1}
                   gemmer={gemmerBlok === blok.id}
                   skrivOm={(instruktion) => void skrivOm(blok.id, instruktion)}
@@ -1069,6 +1142,22 @@ export function Generering({
               dangerouslySetInnerHTML={{ __html: html }}
             />
           )}
+
+          {/* Kun på teksttyper, der må bruge almen viden: spørgsmål, artiklen
+              ikke allerede svarer på, kan ikke skrives ud fra briefen alene.
+              Står FØR faktatjekket, så afsnittets tal bliver tjekket med. */}
+          {blokke.length > 0 &&
+            skabelon !== null &&
+            medAlmenViden.includes(skabelon) && (
+              <Faq
+                findes={blokke.some(erFaqBlok)}
+                henter={faqHenter}
+                laast={omskriverId !== null || gemmerBlok !== null}
+                fejl={faqFejl}
+                tekster={tekster}
+                tilfoej={(spoergsmaal) => void tilfoejFaq(spoergsmaal)}
+              />
+            )}
 
           {/* Tjekket står MELLEM teksten og kopiknapperne, og det er med
               vilje: det er det sidste, brugeren møder, inden hun tager

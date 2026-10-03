@@ -36,6 +36,40 @@ trin 8.
 
 ---
 
+## 2026-10-03 — Ofte stillede spørgsmål er en knap i editoren
+
+**FAQ'en skrives i sit eget kald, når brugeren trykker på knappen**
+(`POST /api/faq`, `Faq.tsx`). Ejerens valg blandt fire muligheder, efter at
+en FAQ skrevet sammen med artiklen tog sine ord fra brødteksten. Linjerne om
+FAQ er taget ud af skrivevejledningen igen.
+
+**Knappen findes kun på teksttyper, der må bruge almen viden.** Spørgsmål,
+artiklen ikke allerede svarer på, kan ikke skrives ud fra briefen alene.
+
+**To krav fra ejeren står i `FAQ_TILLAEG`:** svarene må ikke være brødteksten
+skrevet om, og spørgsmålene skal være nogle, folk søger efter. Modellen får
+hele artiklen med som listen over det, afsnittet IKKE må gentage.
+
+**Det andet krav kan appen ikke garantere.** Den har ingen søgedata og slår
+intet op (13.09.2026). Modellen vælger ud fra, hvad den ved, folk typisk
+spørger om, og kortet i editoren siger det ligeud. Derfor feltet "Spørgsmål,
+du ved der bliver søgt efter": brugeren har adgang til Search Console og
+Googles "Andre spurgte også", og hendes spørgsmål bruges først.
+
+**Regler som ved omskrivning af et afsnit:** koster ikke en prøvetekst, tæller
+i grænsen på tre kald i minuttet, går gennem budgetloftet, og logges som
+`afsnit` i `usage_log`.
+
+**Målt:** 37 sekunder og ca. 300 ord, fem spørgsmål, ingen af dem besvaret i
+artiklen. Den faste del af prompten kom fra cachen.
+
+**Åbent — længden.** Artiklen uden FAQ blev 849 ord, da modellen fik at vide
+1.000-1.200. Med "1.400" fik vi ca. 1.150. Modellen leverer altså omkring 80 %
+af det ordantal, den får opgivet, uanset tallet. Næste skridt er at opgive et
+højere tal til modellen end det, brugeren ser.
+
+---
+
 ## 2026-10-03 — "Langt" hedder 1.000-1.200 ord, og en FAQ kommer oveni
 
 **Blogindlæggets længste valgmulighed lover nu det, appen leverer**
