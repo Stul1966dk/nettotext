@@ -36,6 +36,47 @@ trin 8.
 
 ---
 
+## 2026-10-03 — Koden tæller ordene og lægger afsnit til
+
+**Længden styres af et tal, koden kontrollerer — ikke af en formulering i
+skrivevejledningen.** Ejerens valg blandt fire muligheder. Elleve test af
+blogindlægget gav mellem 750 og 1.150 ord med samme brief, uanset hvad
+vejledningen sagde om ordantal, antal afsnit eller "sigt efter 1.400". Det,
+der virkede hver gang, var et kald for sig med en afgrænset opgave.
+
+**Sådan virker det** (`lib/tekst/laengde.ts`, `POST /api/udvid`,
+`Laengde.tsx`): når artiklen er skrevet, tælles brødteksten. Er den kortere
+end det, brugeren valgte, bestiller koden et bestemt antal afsnit på 150 til
+200 ord om underspørgsmål, artiklen ikke dækker, og sætter dem ind før det
+sidste afsnit. Højst to runder, højst fire afsnit pr. runde. Sker af sig selv
+lige efter en ny tekst; på en kladde, der åbnes igen, er det en knap.
+
+**Målet læses ud af valgmulighedens egen tekst.** "1.000-1.200 ord" betyder
+mindst 1.000; "ca. 800 ord" betyder mindst 720. Så er der ét sted at rette,
+og det, brugeren får lovet, er det, koden holder. Prisen er en kobling
+mellem tekst og kode: en valgmulighed uden tal har intet mål. Feltet skal
+hedde `laengde`, samme kobling som fremskridtsbjælken.
+
+**Editoren viser altid ordantallet**, også på teksttyper, der ikke udvides.
+
+**Kun teksttyper, der må bruge almen viden.** En tekst, der kun må bygge på
+briefen, kan ikke gøres længere uden at finde på noget.
+
+**Regler som ved omskrivning:** koster ikke en prøvetekst, tæller i grænsen
+på tre kald i minuttet, går gennem budgetloftet, logges som `afsnit`.
+
+**Det koster:** et ekstra kald på 20 til 40 sekunder, når teksten er for
+kort — og det var den i de fleste test. En lang tekst tager nu op mod
+halvandet minut i alt.
+
+**Målt:** 739 → 1.096 ord med to afsnit (37 sek.), og i det automatiske
+forløb 879 → 1.055 ord med ét afsnit (21 sek.). Linjerne om "sigt efter
+1.400 ord" er taget ud af skrivevejledningen igen.
+
+**Ikke afprøvet:** "Kort" og "Mellem", anden runde, og fejlvejen.
+
+---
+
 ## 2026-10-03 — Ofte stillede spørgsmål er en knap i editoren
 
 **FAQ'en skrives i sit eget kald, når brugeren trykker på knappen**

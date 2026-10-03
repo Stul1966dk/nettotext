@@ -1,7 +1,11 @@
 import "server-only";
 
+import { z } from "zod";
+
 import { createClient } from "@/lib/supabase/server";
+import { laengdemaal } from "@/lib/tekst/laengde";
 import {
+  inputFeltSkema,
   skabelonIListenSkema,
   skabelonSkema,
   type Skabelon,
@@ -77,6 +81,37 @@ export async function hentSkabelonerMedProduktoversigt(): Promise<string[]> {
     .eq("product_grid", true);
 
   return (data ?? []).map((raekke) => raekke.slug);
+}
+
+/**
+ * Længdemålene for de teksttyper, koden selv må udvide: teksttypens adresse
+ * → valgmulighedens værdi → mindste ordantal.
+ *
+ * Kun teksttyper, der må bruge almen viden. En tekst, der kun må bygge på
+ * briefen, kan ikke gøres længere uden at finde på noget.
+ *
+ * Editoren får målene med herfra, så den kan vise ordantallet og selv se, om
+ * teksten skal udvides, uden et ekstra kald. Serveren regner dem ud igen i
+ * /api/udvid og stoler ikke på tallet fra browseren.
+ */
+export async function hentLaengdemaal(): Promise<
+  Record<string, Record<string, number>>
+> {
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from("templates")
+    .select("slug, input_fields")
+    .eq("general_knowledge", true);
+
+  const maal: Record<string, Record<string, number>> = {};
+
+  for (const raekke of data ?? []) {
+    const felter = z.array(inputFeltSkema).safeParse(raekke.input_fields);
+    if (felter.success) maal[raekke.slug] = laengdemaal(felter.data);
+  }
+
+  return maal;
 }
 
 /**

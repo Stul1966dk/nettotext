@@ -16,6 +16,7 @@ import { delIBlokke, type Blok } from "@/lib/tekst/blokke";
 import { erFaqBlok } from "@/lib/tekst/faq";
 import { tjekTal } from "@/lib/tekst/faktatjek";
 import { fremskridtProcent, maalTegn } from "@/lib/tekst/fremskridt";
+import { broedtekstOrd } from "@/lib/tekst/laengde";
 import {
   delVedProduktoversigt,
   samlHtml,
@@ -27,10 +28,12 @@ import { Blokkort, type BlokkortTekster } from "./Blokkort";
 import { Faktatjek, type FaktatjekTekster } from "./Faktatjek";
 import { Faq, type FaqTekster } from "./Faq";
 import { Feedback, type FeedbackTekster } from "./Feedback";
+import { Laengde, type LaengdeTekster } from "./Laengde";
 
 type Tekster = BlokkortTekster &
   FaktatjekTekster &
   FaqTekster &
+  LaengdeTekster &
   FeedbackTekster & {
   ingenBrief: string;
   nyTekst: string;
@@ -237,6 +240,7 @@ export function Generering({
   personligtGrundlag,
   medProduktoversigt,
   medAlmenViden,
+  laengdemaal,
 }: {
   tekster: Tekster;
   /** En kladde hentet fra serveren, når siden er åbnet fra dashboardet. */
@@ -250,6 +254,11 @@ export function Generering({
   medProduktoversigt: string[];
   /** Teksttyper, der må bruge almen viden om emnet. Se migration 0029. */
   medAlmenViden: string[];
+  /**
+   * Mindste ordantal pr. teksttype og valgt længde. Kun teksttyper, koden
+   * selv må udvide, står her. Se hentLaengdemaal().
+   */
+  laengdemaal: Record<string, Record<string, number>>;
 }) {
   const [status, setStatus] = useState<Status>("starter");
   const [tekst, setTekst] = useState("");
@@ -291,6 +300,13 @@ export function Generering({
     id: string;
     besked: string;
   } | null>(null);
+
+  // Længden. Målet er det, brugeren valgte i briefen; null, når teksttypen
+  // ikke har et. Udvidelsen kører af sig selv lige efter genereringen og
+  // højst to gange — se udvid() længere nede.
+  const [mindsteOrd, setMindsteOrd] = useState<number | null>(null);
+  const [udvider, setUdvider] = useState(false);
+  const [udvidFejl, setUdvidFejl] = useState<string | null>(null);
 
   // Afsnittet med ofte stillede spørgsmål. Skrives i sit eget kald, når
   // brugeren beder om det. Se Faq.tsx.
@@ -373,6 +389,10 @@ export function Generering({
     };
   }, []);
 
+  // Udvidelsen bliver sat i gang inde fra genereringen, men er defineret
+  // længere nede, fordi den bruger laegBlokkePaaPlads. Ref'en er broen.
+  const udvidRef = useRef<(() => void) | null>(null);
+
   // React kalder effekter to gange i udvikling for at afsløre fejl. Uden den
   // her vagt ville hver generering koste to prøvetekster.
   const igangsat = useRef(false);
@@ -405,6 +425,10 @@ export function Generering({
 
       kladdeRef.current = kladde;
       setSkabelon(kladde.skabelon);
+      setMindsteOrd(
+        laengdemaal[kladde.skabelon]?.[kladde.brief.laengde ?? ""] ?? null,
+      );
+      setUdvidFejl(null);
       setGrundlag(samlGrundlag(kladde, personligtGrundlag));
 
       let samlet = "";
@@ -470,6 +494,11 @@ export function Generering({
               blokke: nyeBlokke,
               faerdig: true,
             });
+
+            // Blev teksten kortere end valgt, lægges der afsnit til med det
+            // samme. Kun her, lige efter en ny tekst: en kladde, der åbnes
+            // igen, bliver ikke ændret af sig selv.
+            udvidRef.current?.();
           }
 
           if (hendelse.slags === "fejl") {
@@ -481,7 +510,7 @@ export function Generering({
         visFejl("netvaerk");
       }
     },
-    [gem, personligtGrundlag, tekster],
+    [gem, laengdemaal, personligtGrundlag, tekster],
   );
 
   /**
@@ -591,6 +620,9 @@ export function Generering({
     if (kladde.faerdig && kladde.html) {
       kladdeRef.current = kladde;
       setSkabelon(kladde.skabelon);
+      setMindsteOrd(
+        laengdemaal[kladde.skabelon]?.[kladde.brief.laengde ?? ""] ?? null,
+      );
       setGrundlag(samlGrundlag(kladde, personligtGrundlag));
       setTekst(kladde.tekst);
       setHtml(kladde.html);
@@ -604,7 +636,7 @@ export function Generering({
     }
 
     await generer(kladde);
-  }, [generer, personligtGrundlag, startKladde]);
+  }, [generer, laengdemaal, personligtGrundlag, startKladde]);
 
   useEffect(() => {
     if (igangsat.current) return;
@@ -631,6 +663,97 @@ export function Generering({
     },
     [gem],
   );
+
+  /**
+   * Lægger flere afsnit til, når brødteksten er kortere end valgt.
+   *
+   * Serveren tæller selv og bestemmer selv antallet; herfra sendes kun
+   * teksten. De nye afsnit sættes ind FØR det sidste afsnit, som typisk er
+   * artiklens afslutning — står de efter, slutter teksten to gange.
+   *
+   * Højst to runder. Rammer to kald ikke målet, er svaret ikke et tredje:
+   * så viser kortet tallet, og brugeren kan selv trykke.
+   */
+  const udvid = useCallback(async () => {
+    const kladde = kladdeRef.current;
+    if (!kladde) return;
+
+    const mindst = laengdemaal[kladde.skabelon]?.[kladde.brief.laengde ?? ""];
+    if (!mindst || broedtekstOrd(kladde.blokke) >= mindst) return;
+
+    setUdvider(true);
+    setUdvidFejl(null);
+
+    const visFejl = (aarsag: string) =>
+      setUdvidFejl(tekster.fejl[aarsag] ?? tekster.fejl.ukendt);
+
+    try {
+      for (let runde = 1; runde <= 2; runde++) {
+        const nu = kladdeRef.current?.blokke ?? [];
+        if (broedtekstOrd(nu) >= mindst) break;
+
+        const svar = await fetch("/api/udvid", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            skabelon: kladde.skabelon,
+            brief: kladde.brief,
+            blokke: nu,
+            stiltone: kladde.stiltone,
+          }),
+        });
+
+        const data = await svar.json().catch(() => null);
+
+        if (!svar.ok || typeof data?.html !== "string") {
+          visFejl(typeof data?.aarsag === "string" ? data.aarsag : "ukendt");
+          break;
+        }
+
+        // Serveren mente ikke, der manglede noget. Så er der ikke mere at
+        // hente ved at spørge igen.
+        if (!data.html) break;
+
+        // Blokkene læses igen HER: brugeren kan ikke rette imens, men
+        // rækkefølgen skal bygge på det, der står i kladden nu.
+        const efter = kladdeRef.current?.blokke ?? [];
+        const artikel = efter.filter((blok) => !erFaqBlok(blok));
+        const spoergsmaal = efter.filter(erFaqBlok);
+
+        const sektioner = artikel.filter((b) => b.slags === "sektion");
+        const sidste = sektioner.at(-1);
+        // Har artiklen kun ét afsnit, er det ikke en afslutning, og de nye
+        // lægges efter det.
+        const foer =
+          sektioner.length >= 2 && sidste
+            ? artikel.findIndex((b) => b.id === sidste.id)
+            : artikel.length;
+
+        const nye: Blok = {
+          id: "blok-udvid",
+          slags: "sektion",
+          overskrift: null,
+          nummer: null,
+          html: data.html as string,
+        };
+
+        laegBlokkePaaPlads([
+          ...artikel.slice(0, foer),
+          nye,
+          ...artikel.slice(foer),
+          ...spoergsmaal,
+        ]);
+      }
+    } catch {
+      visFejl("netvaerk");
+    } finally {
+      setUdvider(false);
+    }
+  }, [laegBlokkePaaPlads, laengdemaal, tekster]);
+
+  useEffect(() => {
+    udvidRef.current = () => void udvid();
+  }, [udvid]);
 
   /**
    * Lægger "Ofte stillede spørgsmål" til sidst i teksten.
@@ -985,6 +1108,18 @@ export function Generering({
         </p>
       )}
 
+      {erFaerdig && blokke.length > 0 && (
+        <Laengde
+          ord={broedtekstOrd(blokke)}
+          mindst={mindsteOrd}
+          udvider={udvider}
+          laast={omskriverId !== null || gemmerBlok !== null || faqHenter}
+          fejl={udvidFejl}
+          tekster={tekster}
+          udvid={() => void udvid()}
+        />
+      )}
+
       {fejl && (
         <div className="space-y-4 rounded-lg border border-rav bg-kort px-4 py-4">
           <p role="alert" className="text-sm leading-relaxed text-gran">
@@ -1124,7 +1259,10 @@ export function Generering({
                   streametTekst={omskriverId === blok.id ? omskrivTekst : ""}
                   fejl={omskrivFejl?.id === blok.id ? omskrivFejl.besked : null}
                   laast={
-                    omskriverId !== null || gemmerBlok !== null || faqHenter
+                    omskriverId !== null ||
+                    gemmerBlok !== null ||
+                    faqHenter ||
+                    udvider
                   }
                   kanSlettes={blokke.length > 1}
                   gemmer={gemmerBlok === blok.id}
@@ -1152,7 +1290,7 @@ export function Generering({
               <Faq
                 findes={blokke.some(erFaqBlok)}
                 henter={faqHenter}
-                laast={omskriverId !== null || gemmerBlok !== null}
+                laast={omskriverId !== null || gemmerBlok !== null || udvider}
                 fejl={faqFejl}
                 tekster={tekster}
                 tilfoej={(spoergsmaal) => void tilfoejFaq(spoergsmaal)}

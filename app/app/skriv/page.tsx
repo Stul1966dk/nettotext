@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { hentKladdeVedId } from "@/lib/kladder";
 import { hentTilpasning } from "@/lib/personalisering";
 import {
+  hentLaengdemaal,
   hentSkabelonerMedAlmenViden,
   hentSkabelonerMedProduktoversigt,
 } from "@/lib/skabeloner/hent";
@@ -81,11 +82,13 @@ export default async function SkrivSide({
   //
   // Sprogprøven er bevidst ikke med. Begrundelsen står ved samlGrundlag i
   // Generering.tsx.
-  const [tilpasning, medProduktoversigt, medAlmenViden] = await Promise.all([
-    hentTilpasning(),
-    hentSkabelonerMedProduktoversigt(),
-    hentSkabelonerMedAlmenViden(),
-  ]);
+  const [tilpasning, medProduktoversigt, medAlmenViden, laengdemaal] =
+    await Promise.all([
+      hentTilpasning(),
+      hentSkabelonerMedProduktoversigt(),
+      hentSkabelonerMedAlmenViden(),
+      hentLaengdemaal(),
+    ]);
   const personligtGrundlag = [
     tilpasning.brand?.beskrivelse ?? "",
     tilpasning.brand?.tone ?? "",
@@ -112,6 +115,7 @@ export default async function SkrivSide({
           personligtGrundlag={personligtGrundlag}
           medProduktoversigt={medProduktoversigt}
           medAlmenViden={medAlmenViden}
+          laengdemaal={laengdemaal}
           tekster={{
             ingenBrief: t("ingenBrief"),
             nyTekst: t("nyTekst"),
@@ -176,6 +180,13 @@ export default async function SkrivSide({
             faktaForklaring: t("faktaForklaring"),
             faktaAnsvar: t("faktaAnsvar"),
             faktaAnsvarAlmenViden: t("faktaAnsvarAlmenViden"),
+            // t.raw: pladsholderne udfyldes i browseren, som ved metaTegn.
+            ordantal: t.raw("ordantal") as string,
+            ordantalMaal: t.raw("ordantalMaal") as string,
+            udvider: t("udvider"),
+            udvidForKort: t.raw("udvidForKort") as string,
+            udvidKnap: t("udvidKnap"),
+            udvidGratis: t("udvidGratis"),
             faqOverskrift: t("faqOverskrift"),
             faqForklaring: t("faqForklaring"),
             faqEgneLabel: t("faqEgneLabel"),
