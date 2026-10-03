@@ -54,7 +54,14 @@ export function anthropicAdapter(apiNoegle: string): AiAdapter {
       // tokens i sekundet). Den løses med valg af model, med fast mode eller
       // med et højere maxDuration — ikke med effort. Målingen står i
       // serverloggen, se route.ts.
-      output_config: { effort: "medium" as const },
+      //
+      // Hævet fra "medium" til "high" 03.10.2026, og af en anden grund end
+      // tid: på "medium" brugte modellen ét sekund på at planlægge og skrev
+      // ca. 1.000 ord, når briefen bad om 1.400. På "high" planlægger den i
+      // 15 til 17 sekunder og skriver ca. 1.150 ord i syv afsnit uden
+      // opfundne tal. Prisen er ca. 70 % flere output-tokens og ca. 20
+      // sekunder mere pr. tekst — derfor maxDuration = 120 i route.ts.
+      output_config: { effort: "high" as const },
     };
   }
 

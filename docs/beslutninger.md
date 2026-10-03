@@ -36,6 +36,24 @@ trin 8.
 
 ---
 
+## 2026-10-03 — Grundigheden hævet fra medium til høj
+
+`effort` i `lib/ai/anthropic.ts` er hævet fra "medium" til "high". Ejerens
+valg efter test: på "medium" planlagde modellen i ét sekund og skrev ca.
+1.000 ord af 1.400 ønskede; på "high" planlægger den i 15 til 17 sekunder og
+skrev ca. 1.150 ord i syv afsnit uden opfundne tal.
+
+**Det koster:** ca. 70 % flere output-tokens pr. tekst (4.400 mod 2.700 i
+testen) og ca. 20 sekunder længere ventetid. Det gælder ALLE teksttyper og
+både platformens og brugerens egen nøgle. Et langt blogindlæg tager nu ca.
+63 sekunder, så loftet på 120 sekunder er nødvendigt — se tjeklisten.
+
+**Åbent:** længden. Hverken linjer i skrivevejledningen om antal afsnit, at
+fjerne de linjer, der advarer mod fyld, eller en FAQ til sidst fik teksten
+over ca. 1.150 ord. FAQ'en fortrængte brødtekst i stedet for at lægge til.
+
+---
+
 ## 2026-10-03 — Blogindlæg må bruge almen viden om emnet
 
 **Princippet fra 13.09.2026 bliver blødt op for de teksttyper, hvor det er
