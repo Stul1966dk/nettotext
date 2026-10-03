@@ -217,6 +217,9 @@ export function outputformat(brugerH1: boolean): string {
     "DEL 1: præcis to linjer ren tekst, først i svaret. Ingen HTML, ingen tom linje imellem:",
     "META-TITEL: Her står titlen til søgeresultatet",
     "META-BESKRIVELSE: Her står beskrivelsen til søgeresultatet",
+    // Grænserne er de samme, editoren tæller efter. Uden dem her blev
+    // meta-titlen for lang i tre af fire test 03.10.2026.
+    "Meta-titlen må højst være 60 tegn, og meta-beskrivelsen højst 160 tegn, mellemrum medregnet. Tæl efter, og skriv kortere, hvis du er i tvivl.",
     "",
     "DEL 2: selve teksten som et HTML-fragment, der begynder på linjen efter META-BESKRIVELSE.",
     `- Tilladte tags: ${tags}. Intet andet.`,
