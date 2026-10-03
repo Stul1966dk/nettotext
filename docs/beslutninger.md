@@ -36,6 +36,25 @@ trin 8.
 
 ---
 
+## 2026-10-03 — Ingen online research, heller ikke til blogindlæg
+
+Ejeren fik en færdig prompt til blogindlæg udefra, og den forudsatte, at
+modellen selv laver research på nettet før hver tekst. Beslutningen fra
+13.09.2026 blev taget op og **står ved magt, også for blogindlæg**: ingen
+hentning og ingen AI-websøgning. Grundene er de samme som dengang.
+
+Prompten er skrevet om til skrivevejledningen uden research-afsnittet. Det
+hedder nu "Kilder og belæg" og siger, at stoffet kommer fra briefen og
+brand-profilen. Linjen om, at en ubekræftet oplysning kan "formuleres med
+usikkerhed", er blevet til, at den udelades. Linjen om ikke at medtage meta
+title og meta description er fjernet, fordi det faste outputformat kræver dem.
+
+**Det koster:** et langt blogindlæg kan kun blive så fyldigt som briefen.
+"Indsæt kildemateriale" er dét, der skal bære de indlæg, der bygger på en
+undersøgelse.
+
+---
+
 ## 2026-10-03 — Det frie ønske kan slås fra pr. teksttype
 
 Første fund fra afprøvningen af teksttyperne én ad gangen: blogindlæggets
