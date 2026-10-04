@@ -42,11 +42,14 @@ Menuen i appen har fået et link til dashboardet, og mærket øverst til venstre
 fører samme sted hen. Fra en underside var eneste vej tilbage et link nederst
 på siden.
 
-Mailadressen er taget ud af menuen efter ejerens ønske. **Det koster:** der
-er nu intet sted i appen, hvor brugeren kan se, hvilken konto hun er logget
-ind med. Profil-afsnittet under Indstillinger, som skulle vise den, er ikke
-bygget endnu (se `status.md`, trin 5). Den hører hjemme dér, når afsnittet
-bygges sammen med "slet min konto".
+Mailadressen er taget ud af menulinjen efter ejerens ønske og står nu i en
+kontomenu bag et ikon yderst til højre, sammen med Indstillinger og Log ud.
+Brugeren skal kunne se, hvilken konto hun er logget ind med; uden menuen var
+der intet sted i appen, der viste det. Menulinjen har nu Dashboard,
+Administration (kun admin) og ikonet.
+
+Menuen er en knap, der folder et panel ud, ikke en `role="menu"`: indholdet
+er en oplysning, et link og en formular. Escape og klik udenfor lukker.
 
 ---
 

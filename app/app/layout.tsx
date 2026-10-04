@@ -5,7 +5,7 @@ import { getTranslations } from "next-intl/server";
 import { Maerke } from "@/components/Maerke";
 import { erAdmin } from "@/lib/admin";
 import { createClient } from "@/lib/supabase/server";
-import { logUd } from "./actions";
+import { Brugermenu } from "./Brugermenu";
 
 /**
  * Adgangskontrollen for hele appen ligger her — ikke i proxy.ts.
@@ -70,21 +70,17 @@ export default async function AppLayout({
               </Link>
             )}
 
-            <Link
-              href="/app/indstillinger"
-              className="rounded-lg px-2 py-1.5 text-sm text-gran underline underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-gran"
-            >
-              {t("indstillinger")}
-            </Link>
-
-            <form action={logUd}>
-              <button
-                type="submit"
-                className="rounded-lg border border-kant px-3 py-1.5 text-sm text-gran outline-none focus-visible:ring-2 focus-visible:ring-gran"
-              >
-                {t("logUd")}
-              </button>
-            </form>
+            {/* Det, der hører til brugeren selv, ligger samlet bag ikonet:
+                hvilken konto der er logget ind, indstillinger og log ud. */}
+            <Brugermenu
+              email={user.email ?? ""}
+              tekster={{
+                aaben: t("brugermenu"),
+                loggetIndSom: t("loggetIndSom"),
+                indstillinger: t("indstillinger"),
+                logUd: t("logUd"),
+              }}
+            />
           </nav>
         </div>
       </header>

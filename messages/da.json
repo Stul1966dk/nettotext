@@ -58,7 +58,9 @@
     "administration": "Administration",
     "dashboard": "Dashboard",
     "tilDashboard": "NettoText — gå til dashboardet",
-    "menu": "Menu"
+    "menu": "Menu",
+    "brugermenu": "Din konto",
+    "loggetIndSom": "Logget ind som"
   },
   "indstillinger": {
     "titel": "Indstillinger — NettoText",
