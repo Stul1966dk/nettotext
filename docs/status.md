@@ -1,6 +1,7 @@
 # Status — hvad mangler i version 1
 
-Sidst opdateret: **27. september 2026**, midt i trin 7.
+Sidst opdateret: **3. oktober 2026**, midt i trin 7. Teksttyperne gennemgås
+nu én ad gangen; blogindlægget er den første.
 
 Dokumentet holder byggeplanen i `teknisk-oplaeg-v1.md` op mod, hvad der
 faktisk står i koden og databasen. Byggeplanen er en plan; det her er en
@@ -38,7 +39,8 @@ hun skriver det samme i hver eneste brief.
   generering og ved omskrivning af ét afsnit. CLAUDE.md regel 5 gælder
   uændret: de supplerer systemets regler og kan ikke omdefinere dem.
 - Frit instruktionsfelt på brief-siden til det, der kun gælder én tekst.
-  Følger kladden og gemmes ikke derudover.
+  Følger kladden og gemmes ikke derudover. Fra 03.10.2026 kan feltet slås
+  fra pr. teksttype (migration 0028), og det er slået fra på blogindlægget.
 
 Afprøvet ende til ende 02.09.2026: brand-profilen, den gemte instruktion og
 det frie felt kunne alle tre genfindes i den skrevne tekst.
@@ -143,7 +145,7 @@ skærpet på tjeklisten.
 
 | Teksttype | Status |
 |---|---|
-| Blogindlæg | færdig (trin 2) |
+| Blogindlæg | færdig (trin 2), gennemgået og bygget om 03.10.2026 — se afsnittet om gennemgangen |
 | Produkttekst | færdig 03.09.2026 (migration 0014) |
 | Brandtekst | færdig 03.09.2026 (migration 0015) |
 | Landingsside | færdig 03.09.2026, oprettet gennem adminsiden |
@@ -317,11 +319,89 @@ DATAENE ikke: flaget `faktafelt` sad kun på produktteksten, så "Skriv en til"
 ville slæbe den forrige teksts kendsgerninger med over på de tre andre.
 Migration 0023 markerer fakta-feltet på blogindlæg, brandtekst og
 landingsside — hvilket samtidig giver alle tre knappen "Indsæt en
-specifikation".
+specifikation". Knappen hedder fra 03.10.2026 "Indsæt kildemateriale", og
+teksterne omkring den passer nu på alle teksttyper.
 
 **Ikke afprøvet endnu:** butiksoplysnings-feltet, og migration 0023.
 
 Fravalgt samtidig: eksport til Shopify og lignende. Se `beslutninger.md`.
+
+---
+
+## Gennemgang af teksttyperne, én ad gangen
+
+**Påbegyndt 03.10.2026 med blogindlægget.** Ejeren afprøver hver teksttype
+som en bruger ville, og det, der ikke holder, bliver rettet, før den næste
+tages. Begrundelserne står i `beslutninger.md` under 03.10.2026.
+
+| Teksttype | Status |
+|---|---|
+| Blogindlæg | gennemgået 03.10.2026, se nedenfor |
+| Produkttekst | ikke gennemgået |
+| Kategoritekst | ikke gennemgået |
+| Brandtekst | ikke gennemgået |
+| Landingsside | ikke gennemgået |
+
+### Blogindlæg — hvad gennemgangen ændrede
+
+**Briefen.** Feltet "Noget særligt til lige denne tekst" er væk fra
+blogindlægget, hjælpeteksterne står nu over felterne i stedet for under, og
+hvert spørgsmål har en streg over sig. De to sidste gælder alle teksttyper.
+"Noget teksten skal vide" rummer 3.000 tegn mod 1.000 før.
+
+**Ny skrivevejledning.** Ejeren fik en færdig prompt udefra, og den er
+skrevet om til appen og lagt ind på adminsiden. Den forudsatte research på
+nettet; beslutningen fra 13.09.2026 om ingen hentning og ingen AI-websøgning
+blev taget op og står ved magt.
+
+**Almen viden (migration 0029).** Blogindlægget må nu bruge modellens egen
+viden om emnet til at forklare og give råd. Tal, priser, navngivne produkter,
+lovregler og alt om afsenderen kommer stadig kun fra briefen. Flueben pr.
+teksttype på adminsiden, slået fra på alle andre. De teksttyper har deres
+egen ansvarslinje i briefen og i editoren.
+
+**Længden styres af koden.** Elleve test gav mellem 750 og 1.150 ord med
+samme brief, uanset skrivevejledningens ordlyd. Nu tæller koden brødteksten
+efter genereringen og bestiller selv et antal afsnit, hvis den er kortere end
+valgt (`POST /api/udvid`, `lib/tekst/laengde.ts`). Editoren viser altid
+ordantallet. "Langt" hedder 1.000-1.200 ord (migration 0030), og målet læses
+ud af valgmulighedens egen tekst.
+
+**Ofte stillede spørgsmål.** En knap i editoren (`POST /api/faq`) lægger fire
+til fem spørgsmål og svar til sidst i teksten, i et kald for sig. Modellen
+får hele artiklen med som listen over det, den ikke må gentage. Brugeren kan
+give sine egne spørgsmål. Kun på teksttyper, der må bruge almen viden.
+
+**Tre ting, der gælder alle teksttyper:**
+
+- Grundigheden (`effort`) er hævet fra "medium" til "high". Flere tokens og
+  ca. 20 sekunder mere pr. tekst.
+- `maxDuration` for `/api/generate` er hævet fra 60 til 120 sekunder.
+- Det faste outputformat sætter nu en grænse på 60 tegn for meta-titlen og
+  160 for meta-beskrivelsen.
+
+**En fejl blev fundet og rettet:** kladden kunne ikke gemmes på serveren, når
+et brief-felt var over 2.000 tegn. Loftet i `lib/kladder.ts` er nu 4.000, det
+samme som adminsiden tillader.
+
+**Afprøvet lokalt 03.10.2026:** briefen, almen viden, FAQ-knappen (37 sek.,
+fem spørgsmål, ingen besvaret i artiklen), udvidelsen med knap (739 → 1.096
+ord) og automatisk (879 → 1.055 ord), meta-grænsen og kladde-rettelsen.
+
+**Ikke afprøvet:**
+
+- Det deployede site. Et langt blogindlæg tager nu ca. 70 sekunder plus 20
+  til 40 for udvidelsen, og det er ikke bekræftet, at Vercels gratis-plan
+  lader genereringen køre over 60 sekunder. Står på tjeklisten.
+- "Kort" og "Mellem" med den nye længdestyring.
+- Anden runde af udvidelsen, og hvad brugeren ser, hvis den fejler.
+- Feltet til brugerens egne spørgsmål i FAQ-kortet.
+- "Indsæt kildemateriale" med en undersøgelse.
+
+**At holde øje med i de skrevne tekster:** modellen bruger stadig vendinger,
+skrivevejledningen forbyder ("uanset om du", "det rigtige valg", "gør en reel
+forskel"), slutter ofte med en opsummering og finder af og til på et
+eksempeltal. Faktatjekket fanger tallene.
 
 ---
 
@@ -506,6 +586,8 @@ opdager, om prøvekvoten eller budgetloftet er sat forkert.
   ét afsnit og nummererer resten om. Det sidste afsnit kan ikke slettes.
   Ingen af delene koster et AI-kald. Afprøvet ende til ende 13.09.2026,
   saneringen med `<script>`, `onclick`, `style` og et `javascript:`-link.
-- **Den lange tekstlængde (1.400 ord) er stadig ikke afprøvet i produktion.**
-  Se noten om `maxDuration` på tjeklisten. Opdelt generering sektion for
-  sektion er den foretrukne løsning, og blokkene fra trin 3 er fundamentet.
+- **Den lange tekstlængde er stadig ikke afprøvet i produktion.** Den hedder
+  fra 03.10.2026 1.000-1.200 ord, og `maxDuration` er 120 sekunder — se noten
+  på tjeklisten. Opdelt generering blev til noget i en anden form end
+  planlagt: artiklen skrives i ét kald, og koden lægger afsnit til bagefter,
+  hvis den er for kort. Se afsnittet om gennemgangen af teksttyperne.
