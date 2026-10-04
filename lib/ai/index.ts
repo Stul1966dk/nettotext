@@ -1,6 +1,7 @@
 import "server-only";
 
 import { hentNoegleTilBrug } from "@/lib/ainoegler";
+import { hentPlatformModel } from "@/lib/platformmodel";
 
 import { byggAdapter } from "./adapter";
 import { STANDARDMODEL, erKendtModel } from "./modeller";
@@ -53,6 +54,14 @@ function platformLeverandoer(noegle: string): Leverandoer {
 }
 
 /**
+ * Leverandøren bag platformens nøgle — eller null, når nøglen ikke er sat.
+ * Adminsiden bruger den til at vise de modeller, der kan vælges imellem.
+ */
+export function platformensLeverandoer(): Leverandoer | null {
+  return PLATFORM_AI_KEY ? platformLeverandoer(PLATFORM_AI_KEY) : null;
+}
+
+/**
  * Vælger nøgle og adapter for én generering.
  *
  * `harProeveKvote` afgøres af kalderen, som allerede har reserveret kvoten —
@@ -80,7 +89,8 @@ export async function vaelgNoegle(
 
     return {
       adapter: byggAdapter(leverandoer, PLATFORM_AI_KEY),
-      model: STANDARDMODEL[leverandoer],
+      // Adminens valg på adminsiden; standardmodellen, hvis der ikke er et.
+      model: await hentPlatformModel(leverandoer),
       betaler: "platform",
     };
   }

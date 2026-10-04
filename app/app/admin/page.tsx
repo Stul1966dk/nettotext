@@ -2,9 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
+import { LEVERANDOER_NAVN, platformensLeverandoer, valgbareModeller } from "@/lib/ai";
 import { hentFejltal } from "@/lib/fejloversigt";
+import { hentPlatformModel } from "@/lib/platformmodel";
 
 import { Noegletal } from "./Noegletal";
+import { Platformmodel } from "./Platformmodel";
 
 /**
  * Adminsidens forside.
@@ -24,6 +27,12 @@ export default async function AdminForside() {
   const t = await getTranslations("admin");
   const fejltal = await hentFejltal();
 
+  // Layoutet har allerede slået fast, at det er adminen. Modellerne er dem,
+  // der hører til platformens nøgle og har en pris — de eneste, der må vælges.
+  const leverandoer = platformensLeverandoer();
+  const modeller = leverandoer ? valgbareModeller(leverandoer) : [];
+  const valgtModel = leverandoer ? await hentPlatformModel(leverandoer) : "";
+
   return (
     <div className="space-y-8">
       <div className="space-y-3">
@@ -34,6 +43,29 @@ export default async function AdminForside() {
       </div>
 
       <Noegletal />
+
+      {leverandoer && modeller.length > 0 && (
+        <Platformmodel
+          valgt={valgtModel}
+          modeller={modeller.map((m) => ({
+            id: m.id,
+            navn: m.navn,
+            beskrivelse: m.beskrivelse,
+            pris: m.pris
+              ? t("modelPris", { ind: m.pris.ind, ud: m.pris.ud })
+              : "",
+          }))}
+          tekster={{
+            overskrift: t("modelOverskrift"),
+            forklaring: t("modelForklaring", {
+              leverandoer: LEVERANDOER_NAVN[leverandoer],
+            }),
+            budget: t("modelBudget"),
+            gem: t("modelGem"),
+            gemmer: t("gemmer"),
+          }}
+        />
+      )}
 
       <Link
         href="/app/admin/teksttyper"

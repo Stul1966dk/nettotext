@@ -36,6 +36,37 @@ trin 8.
 
 ---
 
+## 2026-10-04 — Opus 5 på platformens nøgle, valgt på adminsiden
+
+**Ejerens beslutning: de bedste tekster, og den ekstra omkostning er
+accepteret.** Det omgør valget af Sonnet 5 fra 25.08.2026 for det, platformen
+selv betaler.
+
+**Grundlaget er én test**, samme brief og samme opsætning som dagens
+Sonnet-test af et langt blogindlæg: Opus skrev 1.083 ord i første forsøg
+(Sonnet 879 og derefter en udvidelse), brugte ingen af de vendinger,
+skrivevejledningen forbyder, og sluttede med et konkret næste skridt i stedet
+for en opsummering. Samlet tid 55 sekunder mod 92. Pris ca. 1 krone mod ca.
+60 øre, regnet ud fra tokenforbruget og listepriserne — halvanden gang så
+dyrt og ikke 2,5, fordi Opus planlagde kortere og ikke skulle udvides. Én
+test er lidt; Sonnet svingede meget på samme brief.
+
+**Valget ligger i databasen og kan ændres uden udrulning** (migration 0031,
+tabellen `app_settings`, kortet "AI-model på platformens nøgle" på
+adminsidens forside). Tabellen har RLS uden policies: kun service_role
+kommer ind, og skrivningen tjekker admin først. Kan valget ikke læses, bruges
+`STANDARDMODEL`, som stadig er Sonnet.
+
+**Hvad valget gælder:** alt, platformen betaler for på prøvekvoten — teksten,
+omskrivninger, udvidelser og ofte stillede spørgsmål. Ikke brugere med egen
+nøgle, som vælger selv, og ikke idéforslag og faktaudtræk, som altid bruger
+den billigste model.
+
+**Det koster:** prøveteksterne bliver dyrere, og `DAILY_BUDGET_DKK` rækker
+til færre tekster om dagen. Beløbet er ikke justeret.
+
+---
+
 ## 2026-10-03 — Koden tæller ordene og lægger afsnit til
 
 **Længden styres af et tal, koden kontrollerer — ikke af en formulering i
