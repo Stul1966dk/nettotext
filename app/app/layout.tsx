@@ -38,13 +38,29 @@ export default async function AppLayout({
     <div className="flex min-h-full flex-1 flex-col">
       <header className="border-b border-kant bg-kort">
         <div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-4 px-6 py-4">
-          <span className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-gran-let">
+          {/* Mærket fører til dashboardet, som et logo plejer. Linket ved
+              siden af gør det samme med ord, for dem der ikke prøver at
+              klikke på et logo. */}
+          <Link
+            href="/app"
+            aria-label={t("tilDashboard")}
+            className="flex items-center gap-2 rounded-lg font-mono text-xs uppercase tracking-widest text-gran-let outline-none focus-visible:ring-2 focus-visible:ring-gran"
+          >
             <Maerke className="text-stempel" />
             NettoText
-          </span>
+          </Link>
 
-          <div className="flex items-center gap-4">
-            <span className="truncate text-sm text-gran-let">{user.email}</span>
+          <nav
+            aria-label={t("menu")}
+            className="flex flex-wrap items-center justify-end gap-x-4 gap-y-2"
+          >
+            <Link
+              href="/app"
+              className="rounded-lg px-2 py-1.5 text-sm text-gran underline underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-gran"
+            >
+              {t("dashboard")}
+            </Link>
+
             {visAdminlink && (
               <Link
                 href="/app/admin"
@@ -69,7 +85,7 @@ export default async function AppLayout({
                 {t("logUd")}
               </button>
             </form>
-          </div>
+          </nav>
         </div>
       </header>
 

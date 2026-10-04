@@ -36,6 +36,20 @@ trin 8.
 
 ---
 
+## 2026-10-04 — Dashboard i menuen, mailadressen ud
+
+Menuen i appen har fået et link til dashboardet, og mærket øverst til venstre
+fører samme sted hen. Fra en underside var eneste vej tilbage et link nederst
+på siden.
+
+Mailadressen er taget ud af menuen efter ejerens ønske. **Det koster:** der
+er nu intet sted i appen, hvor brugeren kan se, hvilken konto hun er logget
+ind med. Profil-afsnittet under Indstillinger, som skulle vise den, er ikke
+bygget endnu (se `status.md`, trin 5). Den hører hjemme dér, når afsnittet
+bygges sammen med "slet min konto".
+
+---
+
 ## 2026-10-04 — Opus 5 på platformens nøgle, valgt på adminsiden
 
 **Ejerens beslutning: de bedste tekster, og den ekstra omkostning er
@@ -54,8 +68,13 @@ test er lidt; Sonnet svingede meget på samme brief.
 **Valget ligger i databasen og kan ændres uden udrulning** (migration 0031,
 tabellen `app_settings`, kortet "AI-model på platformens nøgle" på
 adminsidens forside). Tabellen har RLS uden policies: kun service_role
-kommer ind, og skrivningen tjekker admin først. Kan valget ikke læses, bruges
-`STANDARDMODEL`, som stadig er Sonnet.
+kommer ind, og skrivningen tjekker admin først.
+
+**Opus er også standarden, når valget mangler eller ikke kan læses**
+(`PLATFORM_STANDARD` i `lib/platformmodel.ts`). Det er med vilje ikke det
+samme som `STANDARDMODEL`, som stadig er Sonnet: den er forslaget til
+brugere, der betaler med deres egen nøgle. Afprøvet med en hel ny tekst valgt
+gennem adminsiden: 1.015 ord i første forsøg på 56 sekunder, uden udvidelse.
 
 **Hvad valget gælder:** alt, platformen betaler for på prøvekvoten — teksten,
 omskrivninger, udvidelser og ofte stillede spørgsmål. Ikke brugere med egen

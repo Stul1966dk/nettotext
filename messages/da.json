@@ -55,7 +55,10 @@
     "kladdeSlet": "Slet",
     "kladdeSletter": "Sletter …",
     "kladdeSletFejl": "Kladden kunne ikke slettes. Prøv igen om lidt.",
-    "administration": "Administration"
+    "administration": "Administration",
+    "dashboard": "Dashboard",
+    "tilDashboard": "NettoText — gå til dashboardet",
+    "menu": "Menu"
   },
   "indstillinger": {
     "titel": "Indstillinger — NettoText",
