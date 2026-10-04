@@ -66,8 +66,8 @@ gemninger hed længderne stadig kort, mellem og langt.
 **Afprøvet én gang efter skiftet**, et blogindlæg på Ariete-briefen: 756
 ord, ingen kolon i titel og overskrifter, ingen betingelser med
 udsagnsordet først, og sprogtjekket fandt intet at rette. Stående blev
-"så maskinerne står i køkkener langt uden for Italien", som nu er kommet i
-fem af fem test, og fyldsætningen "Den kombination siger en hel del om, hvad
+"så maskinerne står i køkkener langt uden for Italien", som i en eller anden
+ordlyd har stået i fem af dagens seks Ariete-tekster, og fyldsætningen "Den kombination siger en hel del om, hvad
 du får med hjem". Prøven i "Fyld og floskler" fanger altså ikke alt.
 Produkt-, brand- og kategoritekst er ikke prøvet med de nye vejledninger.
 
