@@ -374,16 +374,15 @@ give sine egne spørgsmål. Kun på teksttyper, der må bruge almen viden.
 
 **Almindeligt dansk og gennemskrivning (04.10.2026).** Seks fælles sprogregler
 om sætningsbygning ligger i koden (`SPROGREGLER` i `lib/ai/prompt.ts`) og
-gælder alle teksttyper. Lige efter genereringen skriver editoren selv teksten
-igennem i et ekstra kald (`POST /api/gennemskriv`), der kun retter de
-sætninger, som bryder reglerne. Serveren afviser svaret, hvis opbygningen er
-ændret, teksten er skrumpet til under 80 %, eller der står nye tal. Derefter
+gælder alle teksttyper. Lige efter genereringen leder koden selv efter
+sætninger, der bryder reglerne (`lib/tekst/sprogtjek.ts`). Finder den nogen,
+retter modellen kun dem i et ekstra kald (`POST /api/gennemskriv`), og koden
+sætter rettelserne ind. Finder den ingen, bliver modellen ikke kaldt. Derefter
 måles længden, og udvidelsen kører, hvis teksten er for kort. Afprøvet lokalt
-én gang på et blogindlæg (733 → 706 ord, 47 sek., 11 sætninger rettet).
+på et blogindlæg: 17 fund, 17 rettet, 23 sekunder.
 
-Ikke afprøvet: det deployede site (hver tekst tager nu ca. et minut mere),
-produkt-, brand- og kategoritekst, hvad brugeren ser, når gennemskrivningen
-afvises, og udvidelsen efter en gennemskrivning.
+Ikke afprøvet: det deployede site, produkt-, brand- og kategoritekst, og
+udvidelsen efter en gennemskrivning. Pynt og talemåder kan tjekket ikke se.
 
 **Tre ting, der gælder alle teksttyper:**
 

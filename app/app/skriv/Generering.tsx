@@ -765,9 +765,10 @@ export function Generering({
   /**
    * Retter sproget i den færdige tekst efter reglerne om almindeligt dansk.
    *
-   * Serveren afviser selv et svar, der har ændret på opbygningen, længden
-   * eller tallene. Så bliver teksten stående, som den er, og brugeren får
-   * en knap til at prøve igen.
+   * Serveren finder selv de sætninger, der skal rettes, og sætter kun dem
+   * ind igen. Finder den ingen, svarer den med det samme og uden at bruge
+   * penge. Fejler kaldet, bliver teksten stående, som den er, og brugeren
+   * får en knap til at prøve igen.
    *
    * Spørgsmålene skrives ikke igennem og lægges tilbage efter artiklen.
    * Meta-felterne skiftes kun ud, hvis brugeren ikke har rettet i dem,
@@ -799,10 +800,14 @@ export function Generering({
 
       const data = await svar.json().catch(() => null);
 
-      if (!svar.ok || typeof data?.html !== "string" || !data.html) {
+      if (!svar.ok || typeof data?.html !== "string") {
         setGennemskrivFejl(true);
         return;
       }
+
+      // Tom html: serveren fandt ikke noget at rette, eller ingen af
+      // rettelserne holdt. Så står teksten, som den er.
+      if (!data.html) return;
 
       const spoergsmaal = (kladdeRef.current?.blokke ?? []).filter(erFaqBlok);
       laegBlokkePaaPlads([...delIBlokke(data.html), ...spoergsmaal]);

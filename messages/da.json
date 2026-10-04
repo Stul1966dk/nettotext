@@ -332,7 +332,7 @@
     "udvidForKort": "Teksten er kortere end de {mindst} ord, du valgte.",
     "udvidKnap": "Gør teksten længere",
     "udvidGratis": "Det koster ikke en prøvetekst.",
-    "gennemskriver": "Læser teksten igennem og retter sproget. Det tager typisk et minut. Du kan læse imens, men ikke rette i afsnittene, før det er færdigt.",
+    "gennemskriver": "Læser teksten igennem og retter sproget. Det tager typisk under et minut. Du kan læse imens, men ikke rette i afsnittene, før det er færdigt.",
     "gennemskrivFejl": "Sproget blev ikke rettet igennem. Teksten står, som den blev skrevet, og du kan bruge den, som den er.",
     "gennemskrivKnap": "Ret sproget igennem",
     "faqOverskrift": "Ofte stillede spørgsmål",

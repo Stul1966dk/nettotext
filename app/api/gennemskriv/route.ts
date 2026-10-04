@@ -2,55 +2,60 @@ import { z } from "zod";
 
 import { ManglerNoegle, vaelgNoegle, AiFejl } from "@/lib/ai";
 import {
-  byggGennemskrivBesked,
+  byggSprogretBesked,
   byggSystemprompt,
-  GENNEMSKRIV_TILLAEG,
+  SPROGRET_TILLAEG,
 } from "@/lib/ai/prompt";
 import { hentBudgetstatus, skrivForbrug } from "@/lib/budget";
 import { logFejl } from "@/lib/fejl";
 import { harProeveKvote } from "@/lib/kvote";
-import { hentTilpasning } from "@/lib/personalisering";
 import { tagPladsIKoeen } from "@/lib/ratelimit";
 import { hentSkabelon } from "@/lib/skabeloner/hent";
 import { hentAktivtMateriale } from "@/lib/skabeloner/materiale";
 import { stiltoneSkema } from "@/lib/skabeloner/stiltone";
 import { briefSkema } from "@/lib/skabeloner/typer";
 import { createClient } from "@/lib/supabase/server";
-import { delIBlokke, type Blok } from "@/lib/tekst/blokke";
 import { erFaqBlok } from "@/lib/tekst/faq";
 import { tjekTal } from "@/lib/tekst/faktatjek";
-import { broedtekstOrd } from "@/lib/tekst/laengde";
 import { samlHtml } from "@/lib/tekst/markdown";
-import { udtraekMeta } from "@/lib/tekst/meta";
 import { sanerHtml } from "@/lib/tekst/saner";
+import { findSprogfund, tilHtml, type Sprogfund } from "@/lib/tekst/sprogtjek";
 
 /**
  * POST /api/gennemskriv — retter sproget i en færdig tekst.
  *
  * Bygget 04.10.2026. Reglerne om almindeligt dansk (SPROGREGLER i
  * lib/ai/prompt.ts) bliver ikke overholdt fuldt ud, mens modellen skriver.
- * Her får den teksten igen med én opgave: ret de sætninger, der bryder
- * reglerne, og lad resten stå. Se docs/beslutninger.md.
+ * Her bliver de sætninger, der bryder reglerne, rettet bagefter. Se
+ * docs/beslutninger.md.
+ *
+ * KODEN FINDER, MODELLEN RETTER, KODEN SÆTTER IND.
+ *   1. lib/tekst/sprogtjek.ts finder de sætninger og overskrifter, der ser
+ *      ud til at bryde en regel. Er der ingen, svarer ruten uden at bruge
+ *      penge og uden at tage en plads i køen.
+ *   2. Modellen får listen og svarer med én linje pr. nummer: en ny sætning,
+ *      OK eller SLET.
+ *   3. Rettelserne sættes ind her. Resten af teksten kan ikke blive ændret,
+ *      for modellen har aldrig skrevet den.
+ *
+ * Hver rettelse tjekkes for sig: den må ikke indeholde HTML, ikke være
+ * meget længere end den gamle sætning og ikke indeholde tal, som hverken
+ * teksten eller briefen har. En rettelse, der ikke holder, bliver sprunget
+ * over, og den gamle sætning bliver stående.
  *
  * Editoren kalder ruten af sig selv lige efter genereringen og før en
  * eventuel udvidelse. Den gælder alle teksttyper.
- *
- * SERVEREN STOLER IKKE PÅ SVARET. En gennemskrivning må rette ordlyd, ikke
- * indhold. Før svaret sendes tilbage, tjekkes det, at opbygningen er den
- * samme, at teksten ikke er skrumpet, og at der ikke står tal, som hverken
- * den gamle tekst eller briefen har. Holder svaret ikke, afvises det, og
- * brugeren beholder den tekst, hun har.
  *
  * Samme tjek og samme beslutning om kvoten som /api/udvid og /api/faq: det
  * koster ikke en prøvetekst at gøre en tekst færdig, brugeren allerede har
  * fået.
  */
 
-// Hele teksten skrives en gang til, så tiden er den samme som i /api/generate.
-export const maxDuration = 120;
+export const maxDuration = 60;
 
-/** Så meget af den gamle længde skal være tilbage. Pynt, der slettes, fylder. */
-const MINDSTE_ANDEL = 0.8;
+/** Grænserne fra outputformatet. Se outputformat() i lib/ai/prompt.ts. */
+const TITEL_LOFT = 60;
+const BESKRIVELSE_LOFT = 160;
 
 const blokSkema = z.object({
   id: z.string().min(1).max(32),
@@ -69,15 +74,24 @@ const anmodningSkema = z.object({
   stiltone: stiltoneSkema,
 });
 
-/** Har den nye tekst samme opbygning som den gamle? */
-function sammeOpbygning(foer: Blok[], efter: Blok[]): boolean {
-  const antal = (blokke: Blok[], slags: Blok["slags"]) =>
-    blokke.filter((blok) => blok.slags === slags).length;
+/** Modellens svar: nummer i kantede parenteser, derefter teksten. */
+const SVARLINJE = /^\s*\[(\d+)\]\s*(.+?)\s*$/;
 
-  return (
-    antal(foer, "titel") === antal(efter, "titel") &&
-    antal(foer, "sektion") === antal(efter, "sektion")
-  );
+/**
+ * Må den nye tekst sættes ind i stedet for den gamle?
+ *
+ * `grundlag` er hele den gamle tekst og briefen. Et tal, der står et af de
+ * to steder, har rettelsen ikke fundet på.
+ */
+function holder(enhed: Sprogfund, ny: string, grundlag: string): boolean {
+  if (!ny || ny.includes("<")) return false;
+  if (ny.length > enhed.tekst.length * 2 + 60) return false;
+  if (enhed.slags === "meta-titel" && ny.length > TITEL_LOFT) return false;
+  if (enhed.slags === "meta-beskrivelse" && ny.length > BESKRIVELSE_LOFT) {
+    return false;
+  }
+
+  return tjekTal(tilHtml(ny), grundlag).length === 0;
 }
 
 export async function POST(request: Request) {
@@ -116,11 +130,29 @@ export async function POST(request: Request) {
     return Response.json({ aarsag: "ugyldig_brief" }, { status: 400 });
   }
 
-  // Spørgsmålene er skrevet i deres eget kald og bliver ikke skrevet igennem.
+  // Spørgsmålene er skrevet i deres eget kald og bliver ikke rettet her.
   // Klienten lægger dem tilbage efter artiklen.
   const artikel = anmodning.data.blokke.filter((blok) => !erFaqBlok(blok));
   if (artikel.length === 0) {
     return Response.json({ aarsag: "ugyldig_anmodning" }, { status: 400 });
+  }
+
+  // Koden leder selv. Er der ikke noget at rette, svares der, FØR der tages
+  // en plads i køen eller bruges en krone.
+  const fund = findSprogfund(
+    artikel,
+    anmodning.data.titel,
+    anmodning.data.beskrivelse,
+  );
+
+  if (fund.length === 0) {
+    return Response.json({
+      html: "",
+      titel: null,
+      beskrivelse: null,
+      fund: 0,
+      rettet: 0,
+    });
   }
 
   // --- (c) Rate limit ------------------------------------------------------
@@ -174,10 +206,7 @@ export async function POST(request: Request) {
     }
   }
 
-  const [tilpasning, materialer] = await Promise.all([
-    hentTilpasning(),
-    hentAktivtMateriale(skabelon.slug),
-  ]);
+  const materialer = await hentAktivtMateriale(skabelon.slug);
 
   const begyndt = Date.now();
 
@@ -189,19 +218,12 @@ export async function POST(request: Request) {
         skabelon,
         anmodning.data.stiltone,
         materialer,
-        GENNEMSKRIV_TILLAEG,
+        SPROGRET_TILLAEG,
       ),
-      bruger: byggGennemskrivBesked(
-        skabelon.input_fields,
-        brief.data,
-        artikel,
-        anmodning.data.titel,
-        anmodning.data.beskrivelse,
-        tilpasning,
-      ),
+      bruger: byggSprogretBesked(artikel, fund),
       model: valg.model,
-      // Samme loft som en ny tekst: svaret er hele teksten en gang til.
-      maxTokens: 16000,
+      // Højst 40 sætninger, plus den tid modellen bruger på at planlægge.
+      maxTokens: 6000,
     });
 
     // Regnskabet føres, uanset hvad der kom tilbage. Tokens er brugt.
@@ -227,47 +249,92 @@ export async function POST(request: Request) {
       });
     }
 
-    // Meta-linjerne skilles fra, og resten saneres (CLAUDE.md regel 4).
-    const udtraek = udtraekMeta(svar.tekst);
-    const html = sanerHtml(udtraek.komplet ? udtraek.krop : svar.tekst);
-    const nye = delIBlokke(html);
-
-    // De tre tjek. Grundlaget for tallene er den gamle tekst og briefen:
-    // et tal, der står et af de to steder, har gennemskrivningen ikke
-    // fundet på.
-    const ordFoer = broedtekstOrd(artikel);
-    const ordEfter = broedtekstOrd(nye);
     const grundlag = [samlHtml(artikel), ...Object.values(brief.data)].join(
       "\n",
     );
 
-    const afvist = !sammeOpbygning(artikel, nye)
-      ? "opbygning"
-      : ordEfter < ordFoer * MINDSTE_ANDEL
-        ? "laengde"
-        : tjekTal(html, grundlag).length > 0
-          ? "nye tal"
-          : null;
+    // Rettelserne sættes ind én for én. Blokkene kopieres, så anmodningens
+    // egne ikke bliver ændret undervejs.
+    const blokke = artikel.map((blok) => ({ ...blok }));
+    let titel: string | null = null;
+    let beskrivelse: string | null = null;
+    let rettet = 0;
+    let sprunget = 0;
+
+    for (const linje of svar.tekst.split("\n")) {
+      const fundet = linje.match(SVARLINJE);
+      if (!fundet) continue;
+
+      const enhed = fund[Number(fundet[1]) - 1];
+      const ny = fundet[2];
+      if (!enhed || ny === "OK") continue;
+
+      if (enhed.slags === "meta-titel" || enhed.slags === "meta-beskrivelse") {
+        if (ny === "SLET" || !holder(enhed, ny, grundlag)) {
+          sprunget++;
+          continue;
+        }
+
+        if (enhed.slags === "meta-titel") titel = ny;
+        else beskrivelse = ny;
+        rettet++;
+        continue;
+      }
+
+      const blok = enhed.blok === null ? undefined : blokke[enhed.blok];
+      const sted = blok ? blok.html.indexOf(enhed.raa) : -1;
+
+      // Sætningen findes ikke længere, typisk fordi en tidligere rettelse i
+      // samme afsnit har flyttet på den.
+      if (!blok || sted === -1) {
+        sprunget++;
+        continue;
+      }
+
+      const foer = blok.html.slice(0, sted);
+      const efter = blok.html.slice(sted + enhed.raa.length);
+
+      if (ny === "SLET") {
+        // Kun sætninger kan slettes. Mellemrummet efter sætningen går med,
+        // og et afsnit, der bliver tomt, forsvinder.
+        if (enhed.slags !== "saetning") {
+          sprunget++;
+          continue;
+        }
+
+        blok.html = (foer + efter.replace(/^\s+/, "")).replace(
+          /<p>\s*<\/p>/g,
+          "",
+        );
+        rettet++;
+        continue;
+      }
+
+      if (!holder(enhed, ny, grundlag)) {
+        sprunget++;
+        continue;
+      }
+
+      blok.html = foer + tilHtml(ny) + efter;
+      rettet++;
+    }
 
     // Kun tal og tidsforbrug, aldrig noget af teksten.
     console.log(
-      `[gennemskriv] ${ordFoer} ord før / ${ordEfter} efter · ` +
-        `${afvist ? `AFVIST (${afvist})` : "brugt"} · ` +
-        `${svar.model} · betalt af ${valg.betaler} ` +
+      `[gennemskriv] ${fund.length} fund · ${rettet} rettet · ${sprunget} sprunget over ` +
+        `· ${svar.model} · betalt af ${valg.betaler} ` +
         `· ${Date.now() - begyndt} ms · ` +
         `${svar.inputTokens} ind / ${svar.outputTokens} ud ` +
         `· cache ${svar.cacheLaest ?? 0} læst / ${svar.cacheSkrevet ?? 0} skrevet`,
     );
 
-    if (afvist) {
-      return Response.json({ aarsag: "tomt_svar" }, { status: 502 });
-    }
-
     return Response.json({
-      html: samlHtml(nye),
-      // Fulgte svaret ikke formatet, beholder klienten de meta-felter, den har.
-      titel: udtraek.komplet ? udtraek.meta.titel : null,
-      beskrivelse: udtraek.komplet ? udtraek.meta.beskrivelse : null,
+      // Saneres igen (CLAUDE.md regel 4): der er sat tekst fra modellen ind.
+      html: rettet > 0 ? sanerHtml(samlHtml(blokke)) : "",
+      titel,
+      beskrivelse,
+      fund: fund.length,
+      rettet,
     });
   } catch (fejl) {
     await logFejl("POST /api/gennemskriv · generering", fejl, {

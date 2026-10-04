@@ -84,33 +84,54 @@ findes i køkkener langt uden for Italien" kom igen næsten ordret. Reglen om
 kolon er derfor udvidet til komma og tankestreg i titler; den udvidelse er
 ikke afprøvet.
 
-**Gennemskrivningen er bygget samme dag, efter ejerens beslutning.**
-`POST /api/gennemskriv` får den færdige tekst og retter kun de sætninger, der
-bryder de seks regler. Editoren kalder den selv lige efter genereringen, og
-afsnittene er låst imens. Den gælder alle teksttyper og koster ikke en
-prøvetekst.
+**Gennemskrivningen er bygget samme dag, efter ejerens beslutning, og
+bygget om én gang.** Første udgave lod modellen skrive hele teksten om. Det
+virkede (11 sætninger rettet), men kostede det samme som genereringen: 47
+sekunder og 4.950 output-tokens for at rette 11 sætninger. Den udgave er
+ikke i produktion.
 
-**Serveren stoler ikke på svaret.** En gennemskrivning må rette ordlyd, ikke
-indhold. Svaret afvises, hvis antallet af afsnit eller titlen er ændret, hvis
-teksten er under 80 % af den gamle længde, eller hvis der står tal, som
-hverken den gamle tekst eller briefen har. Så beholder brugeren sin tekst og
-får en knap til at prøve igen. Tjekket fanger tal, ikke nye påstande i ord.
+**Nu finder koden, modellen retter, og koden sætter ind.**
+`lib/tekst/sprogtjek.ts` genkender mønstrene på ordstillingen: betingelse
+med udsagnsordet først, udpegning, kommentar om teksten, kolon uden
+opremsning, delt overskrift og modsætningen "ikke X, men Y". `POST
+/api/gennemskriv` sender kun de fundne sætninger til modellen, som svarer
+med én linje pr. nummer: en ny sætning, OK eller SLET. Koden sætter
+rettelserne ind. Resten af teksten kan ikke blive ændret, for modellen har
+ikke skrevet den.
 
-**Rækkefølgen er gennemskrivning først, udvidelse bagefter.** Testen gjorde
-teksten kortere (733 ord blev til 706, under de valgte 720), fordi pynt
-bliver slettet. Længden måles derfor til sidst. Afsnit, udvidelsen lægger
-til, bliver ikke skrevet igennem.
+**Er der ingen fund, bliver modellen ikke kaldt.** Ruten svarer så på under
+et sekund, uden at bruge penge og uden at tage en plads i køen.
 
-**Prisen:** ét kald mere pr. tekst med hele teksten som svar. I testen 47
-sekunder og 4.950 output-tokens på Opus, altså omtrent det samme som selve
-genereringen. Forbruget logges som "afsnit", som udvidelsen.
+**Hver rettelse tjekkes for sig.** Den må ikke indeholde HTML, ikke være
+meget længere end den gamle sætning og ikke indeholde tal, som hverken
+teksten eller briefen har. Holder den ikke, bliver den gamle sætning
+stående. Tjekket fanger tal, ikke nye påstande i ord.
 
-**Afprøvet én gang** på Ariete-briefen. 11 sætninger blev rettet, resten stod
-ordret. Rettet blev blandt andet "det er forskellen på" og "er det den
-løsning, der giver mindst besvær", og kommentaren "Udseendet følger med" blev
-slettet. Stående blev "så maskinerne sælges i vidt omfang uden for Italien".
-Rækkefølgen blev vendt efter testen, og den vendte rækkefølge er ikke kørt.
-Afvisningerne og de tre andre teksttyper er heller ikke afprøvet.
+**Editoren kalder ruten selv lige efter genereringen og før udvidelsen**, og
+afsnittene er låst imens. Den gælder alle teksttyper, koster ikke en
+prøvetekst og logges som "afsnit", som udvidelsen.
+
+**Tjekket er groft med vilje.** Det peger en gang imellem på en sætning, der
+er i orden, og modellen må svare OK. Det overser det, der ikke kan genkendes
+på formen: pynt hængt på en oplysning og billedsprog. Sætninger med fed,
+kursiv eller links springes over.
+
+**Afprøvet 04.10.2026:**
+- Ejerens oprindelige Ariete-tekst, kaldt direkte: 17 fund, 17 rettet, 23
+  sekunder, 2.510 output-tokens. Alle seks eksempler fra ejerens klage blev
+  rettet eller slettet, og titlen mistede sit kolon. Enkelte rettelser er
+  stive ("Når maskinen ingen kværn har indbygget").
+- Et helt forløb i editoren: den nye tekst havde ingen fund, og ruten
+  svarede på 251 ms uden at kalde modellen.
+
+**Ikke afprøvet:** at editoren sætter rettelserne ind efter ombygningen (den
+del af koden er uændret fra første udgave, hvor den virkede), udvidelsen
+efter en gennemskrivning, og de tre andre teksttyper.
+
+**Det, der står tilbage i teksterne:** den sidste testtekst havde ingen fund,
+men indeholdt stadig "så maskinerne er kendte langt uden for Italien",
+"hånd i hanke med" og "ikke et nyt navn uden historie". Den sidste form er
+lagt ind i tjekket bagefter. Pynt og talemåder kan koden ikke se.
 
 ---
 
