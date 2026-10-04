@@ -261,6 +261,13 @@ export function outputformat(brugerH1: boolean): string {
  * De ligger i koden, fordi de skal gælde ens for alle teksttyper og for
  * omskrivning, FAQ og udvidelse. Se docs/beslutninger.md 04.10.2026.
  *
+ * De to sidste afsnit kom til senere samme dag. "Fyld og floskler" afløser
+ * listerne med forbudte vendinger: en liste bliver aldrig fuldstændig, og
+ * modellen vælger nabovendingen, når én bliver forbudt. I stedet får den én
+ * prøve, der gælder alle sætninger. De tre vendinger i afsnittet er
+ * eksempler, og det står der. "Retskrivning og tegn" stod i fire kopier i
+ * skrivevejledningerne.
+ *
  * Teksten er selv skrevet efter reglerne. En model efterligner det sprog,
  * den får (beslutningen 25.08.2026), så en regel mod kolon, der selv er
  * fuld af kolon, modarbejder sig selv. Hold den sådan ved rettelser.
@@ -302,7 +309,23 @@ I brødteksten står kolon kun foran en opremsning. Brug punktum eller "fordi" a
 
 De seks eksempler viser sætningsbygning. De er ikke stof til teksten, og deres oplysninger må ikke bruges.
 
-Prøv hver sætning af, før du skriver den næste. En sætning, du ikke ville sige højt til en kunde, skriver du om.`;
+Prøv hver sætning af, før du skriver den næste. En sætning, du ikke ville sige højt til en kunde, skriver du om.
+
+FYLD OG FLOSKLER
+Hver sætning skal handle om netop det, teksten handler om. Stil dette spørgsmål til hver sætning, du skriver. Kunne den stå uændret i en tekst om noget helt andet? Så fortæller den ikke læseren noget. Skriv den om, så den rummer en oplysning, eller slet den.
+- Prøven gælder især indledninger, overgange mellem afsnit, afslutninger og rosende ord.
+- Prøven gælder alle vendinger, også dem, der ikke er nævnt her. "Når det kommer til", "spiller en afgørende rolle" og "det perfekte valg" er tre eksempler på, hvad den fanger. De er ikke en liste over, hvad der er forbudt.
+- En vending, brugeren selv bruger i briefen eller brand-profilen, er hendes egen og må stå i teksten.
+- Skriv direkte, hvad noget er. Begynd ikke med at sige, hvad det ikke er.
+
+RETSKRIVNING OG TEGN
+- Skriv almindeligt, nutidigt dansk efter dansk retskrivning, med danske kommaer og sammensatte ord i ét ord.
+- Overskrifter har kun stort bogstav i første ord og i egennavne.
+- Brug et dansk ord, når der findes et, som alle bruger. Forklar et fagudtryk kort, første gang det står der, når læseren ikke kan forventes at kende det.
+- Brug hverken lang tankestreg, semikolon eller emoji. Sæt punktum eller komma, hvor du ville have sat en tankestreg.
+- Lad korte og lange sætninger skifte, og lad afsnittene have den længde, indholdet har brug for.
+- En opremsning har lige så gerne to eller fire led som tre.
+- Brug en punktopstilling, når indholdet er en liste, og løbende tekst, når det er en forklaring.`;
 
 /**
  * Den sidste linje i hver systemprompt. CLAUDE.md regel 5.

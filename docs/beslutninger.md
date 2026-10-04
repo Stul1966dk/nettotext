@@ -36,6 +36,39 @@ trin 8.
 
 ---
 
+## 2026-10-04 — Én prøve i stedet for lister med forbudte vendinger
+
+**Ejerens indvending:** en liste med forbudte vendinger kan aldrig blive
+fuldstændig, og modellen kan læse den, som om alt andet er tilladt. Det
+passer med dagens test, hvor et forbud mod kolon i titler gav komma i stedet.
+
+**Koden har nu afsnittet "Fyld og floskler"** i `SPROGREGLER`. Det giver
+modellen én prøve til hver sætning: kunne den stå uændret i en tekst om noget
+helt andet? Tre vendinger er nævnt som eksempler og udtrykkeligt ikke som en
+liste. En vending, brugeren selv bruger i briefen eller brand-profilen, må
+stå i teksten. Afsnittet "Retskrivning og tegn" er flyttet samme sted hen,
+fordi det stod i fire kopier.
+
+**Skrivevejledningerne i databasen er ikke rørt.** De har stadig deres egne
+lister og sprogregler, så modellen får begge dele, indtil ejeren skifter dem
+ud. Forslag til fire nye vejledninger uden lister og uden husets smag ligger
+i `docs/forslag-skrivevejledninger.md`. Tanken er tre lag: håndværk i koden,
+indhold og opbygning i vejledningen, og tonen fra brugeren selv.
+
+**Sprogprøven taber stadig til belæg og til de seks regler om
+sætningsbygning.** Det er med vilje. En bruger, der selv skriver "Vil du
+..., skal du ...", får det rettet. Det er prisen for, at teksterne ikke
+lyder maskinskrevne, og det er en regel om form, ikke om holdninger.
+
+**Ikke afprøvet.** Ingen tekst er skrevet med de to nye afsnit eller med de
+foreslåede vejledninger.
+
+**Migration 0032** retter "PGAVE" til "OPGAVE" først i blogindlæggets
+vejledning. Den skal køres af ejeren i Supabase og er overflødig, hvis den
+nye vejledning bliver lagt ind i stedet.
+
+---
+
 ## 2026-10-04 — Fælles sprogregler i koden: "Almindeligt dansk"
 
 **Ejerens gennemlæsning:** teksterne lyder stadig maskinskrevne, selvom de
