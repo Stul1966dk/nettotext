@@ -1,7 +1,9 @@
 # Forslag til nye skrivevejledninger
 
-Skrevet 04.10.2026. Ikke lagt ind nogen steder endnu. Hver vejledning står i
-en boks, der kan kopieres ind i feltet "Skrivevejledning" på adminsiden.
+Skrevet 04.10.2026 og lagt ind på adminsiden samme dag, alle fire. Filen er
+nu en kopi af det, der står i feltet "Skrivevejledning" for hver teksttype
+den dag. Rettes vejledningerne senere på adminsiden, er det adminsiden, der
+gælder. De gamle udgaver ligger i adminsidens historik (`template_versions`).
 
 ## Tanken bag
 
@@ -164,7 +166,7 @@ INDHOLD
 - Skriv det, virksomheden gør. Et arbejdstrin, et værktøj eller en fast vane fortæller læseren mere end tillægsord som "professionel" og "engageret".
 - Brug historien om, hvorfor virksomheden startede, eller hvordan den griber en opgave an, når briefen har den.
 - En sætning, der kunne stå uændret på en konkurrents hjemmeside, skriver du om, så den handler om denne virksomhed.
-- Vendinger som "vi brænder for", "kvalitet i højsædet", "kunden i centrum" og "den ekstra mil" bruger alle virksomheder om sig selv. Skriv det konkrete, de dækker over, når briefen fortæller det. Bruger brugeren selv vendingen i briefen eller brand-profilen, må den stå i teksten.
+- Vendinger som "vi brænder for", "kvalitet i højsædet", "kunden i centrum" og "den ekstra mil" bruger alle virksomheder om sig selv. Skriv det konkrete, de dækker over, når briefen fortæller det. Når brugeren selv bruger vendingen i briefen eller brand-profilen, må den stå i teksten.
 - Årstal, antal ansatte, antal kunder, geografi, uddannelser, certifikater, medlemskaber og udmærkelser kommer kun fra briefen og brand-profilen.
 - Skriv kun, at virksomheden er størst, bedst, førende eller landsdækkende, når briefen siger det.
 - Når briefen selv afgrænser, hvem virksomheden ikke arbejder for, tager du det med.

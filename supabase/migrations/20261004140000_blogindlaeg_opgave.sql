@@ -4,13 +4,12 @@
 -- bogstav er faldet ud. Det betyder intet for modellen, men det ser forkert
 -- ud for den, der åbner feltet.
 --
--- Rettelsen ligger her og ikke på adminsiden af samme grund som migration
--- 0030: formularen gemmer også brief-felterne, og dér dannes en
--- valgmuligheds værdi ud fra dens label. En gemning ville kunne give
--- længderne nye værdier.
---
 -- Betingelsen gør migrationen ufarlig at køre to gange, og den rører ikke
--- vejledningen, hvis ejeren selv har rettet fejlen i mellemtiden.
+-- vejledningen, hvis fejlen er rettet i mellemtiden.
+--
+-- OVERHALET SAMME DAG: vejledningen begyndte allerede med "OPGAVE", da den
+-- blev læst igen, og hele vejledningen blev derefter skiftet ud gennem
+-- adminsiden. Migrationen gør derfor ingenting og behøver ikke blive kørt.
 
 update public.templates
    set system_prompt = 'O' || system_prompt

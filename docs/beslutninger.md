@@ -49,23 +49,37 @@ liste. En vending, brugeren selv bruger i briefen eller brand-profilen, må
 stå i teksten. Afsnittet "Retskrivning og tegn" er flyttet samme sted hen,
 fordi det stod i fire kopier.
 
-**Skrivevejledningerne i databasen er ikke rørt.** De har stadig deres egne
-lister og sprogregler, så modellen får begge dele, indtil ejeren skifter dem
-ud. Forslag til fire nye vejledninger uden lister og uden husets smag ligger
-i `docs/forslag-skrivevejledninger.md`. Tanken er tre lag: håndværk i koden,
-indhold og opbygning i vejledningen, og tonen fra brugeren selv.
+**De fire skrivevejledninger er skiftet ud samme dag**, gennem adminsiden og
+efter ejerens besked. De nye har ingen lister med forbudte vendinger og
+ingen af husets smag, og de siger udtrykkeligt, at tonen er brugerens.
+Tanken er tre lag: håndværk i koden, indhold og opbygning i vejledningen, og
+tonen fra brugeren selv. Teksterne står i
+`docs/forslag-skrivevejledninger.md`, og de gamle udgaver ligger i
+adminsidens historik. Den faste del af prompten til et blogindlæg faldt fra
+ca. 7.000 til ca. 3.900 tokens.
+
+**At gemme på adminsiden ændrer ikke valgmulighedernes værdier.** Det blev
+antaget, da "PGAVE" skulle rettes, og det var forkert: værdierne dannes kun
+på ny, når selve feltet med valgmuligheder bliver rettet. Efter alle fire
+gemninger hed længderne stadig kort, mellem og langt.
+
+**Afprøvet én gang efter skiftet**, et blogindlæg på Ariete-briefen: 756
+ord, ingen kolon i titel og overskrifter, ingen betingelser med
+udsagnsordet først, og sprogtjekket fandt intet at rette. Stående blev
+"så maskinerne står i køkkener langt uden for Italien", som nu er kommet i
+fem af fem test, og fyldsætningen "Den kombination siger en hel del om, hvad
+du får med hjem". Prøven i "Fyld og floskler" fanger altså ikke alt.
+Produkt-, brand- og kategoritekst er ikke prøvet med de nye vejledninger.
 
 **Sprogprøven taber stadig til belæg og til de seks regler om
 sætningsbygning.** Det er med vilje. En bruger, der selv skriver "Vil du
 ..., skal du ...", får det rettet. Det er prisen for, at teksterne ikke
 lyder maskinskrevne, og det er en regel om form, ikke om holdninger.
 
-**Ikke afprøvet.** Ingen tekst er skrevet med de to nye afsnit eller med de
-foreslåede vejledninger.
-
-**Migration 0032** retter "PGAVE" til "OPGAVE" først i blogindlæggets
-vejledning. Den skal køres af ejeren i Supabase og er overflødig, hvis den
-nye vejledning bliver lagt ind i stedet.
+**Migration 0032** skulle rette "PGAVE" til "OPGAVE" først i blogindlæggets
+vejledning. Den er overhalet: fejlen var væk, da vejledningen blev læst
+igen, og hele vejledningen er skiftet ud. Migrationen gør ingenting og
+behøver ikke blive kørt.
 
 ---
 
