@@ -14,8 +14,8 @@ import type { Blok } from "@/lib/tekst/blokke";
  * TJEKKET ER GROFT, OG DET ER MED VILJE. Det kender ikke dansk grammatik; det
  * kender ordstillinger. Det peger derfor en gang imellem på en sætning, der
  * er i orden, og modellen har lov at svare, at den er det. Det overser også
- * noget: pynt hængt på en oplysning ("så maskinerne står i køkkener langt
- * uden for Italien") og billedsprog kan ikke genkendes på formen.
+ * noget: billedsprog og talemåder kan ikke genkendes på formen, og pynt
+ * kun i de to former, der står ved PYNT_EFTER_TAL længere nede.
  *
  * En enhed med fed, kursiv eller et link i sig bliver sprunget over. Den kan
  * ikke skiftes ud med ren tekst, uden at formateringen forsvinder.
@@ -133,6 +133,23 @@ const KOMMENTAR =
 const MODSAETNING =
   /\bikke\b[^.;:]{1,70}, men\b|, ikke (et|en|det|den|de|som|for)\b/;
 
+/**
+ * "Cirka 60 % af salget går til eksport, så maskinerne står i køkkener
+ * langt uden for Italien" — regel 4.
+ *
+ * Pynt kan ikke genkendes i almindelighed, men to former kom igen og igen i
+ * testene 04.10.2026: en oplysning med et tal efterfulgt af ", så ...", og
+ * sætningen, der fortæller læseren, hvad en oplysning betyder for hende.
+ * Den anden form var også dér, påstande uden belæg slap ind ("en stor
+ * koncern bag sig, når det gælder reservedele og service").
+ *
+ * Begge former kan være i orden. "Tanken rummer 1,5 liter, så du skal fylde
+ * den hver dag" er en oplysning. Modellen afgør det og må svare OK.
+ */
+const PYNT_EFTER_TAL = /(\d|\bprocent\b)[^.!?]*, så \S/;
+const HVAD_DET_BETYDER =
+  /\b[Ff]or dig (som \S+ )?betyder det\b|\b[Dd]et betyder( i praksis)?, at\b/;
+
 /** Overskrift delt i emne og undertitel — regel 6. */
 const DELT_OVERSKRIFT = /, (sådan|det|her|hvad|hvordan|derfor)\b| – | — /;
 
@@ -144,6 +161,12 @@ function reglerForSaetning(saetning: string): string[] {
   }
   if (UDPEGNING.some((moenster) => moenster.test(saetning))) {
     regler.push("regel 2, udpegning");
+  }
+  if (PYNT_EFTER_TAL.test(saetning)) {
+    regler.push("regel 4, mulig pynt hængt på en oplysning efter \", så\"");
+  }
+  if (HVAD_DET_BETYDER.test(saetning)) {
+    regler.push("regel 4, sætningen fortæller læseren, hvad en oplysning betyder");
   }
   if (KOMMENTAR.test(saetning)) {
     regler.push("regel 5, kommentar om teksten");

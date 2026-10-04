@@ -382,7 +382,11 @@ måles længden, og udvidelsen kører, hvis teksten er for kort. Afprøvet lokal
 på et blogindlæg: 17 fund, 17 rettet, 23 sekunder.
 
 Ikke afprøvet: det deployede site, produkt-, brand- og kategoritekst, og
-udvidelsen efter en gennemskrivning. Pynt og talemåder kan tjekket ikke se.
+udvidelsen efter en gennemskrivning. Talemåder og billedsprog kan tjekket
+ikke se, og pynt kun i to faste former.
+
+De fire skrivevejledninger er skiftet ud 04.10.2026 med kortere udgaver uden
+lister med forbudte vendinger. Kun blogindlægget er prøvet med de nye.
 
 **Tre ting, der gælder alle teksttyper:**
 

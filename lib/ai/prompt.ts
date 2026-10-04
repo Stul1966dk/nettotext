@@ -828,6 +828,7 @@ SÅDAN RETTER DU
 - Skriv sætningen om, så den overholder alle seks regler og ikke bruger de forbudte sætningsmønstre fra skrivevejledningen. Den nye sætning siger det samme som den gamle og passer ind mellem sætningerne omkring den.
 - Den nye sætning skal lyde, som man ville sige den. Byt ikke én stiv ordstilling ud med en anden.
 - Programmet tager fejl en gang imellem. Svar OK, når sætningen overholder reglerne, som den står.
+- Ved fund efter regel 4 fjerner du den del af sætningen, der maler oplysningen ud eller forklarer, hvad den betyder, og lader selve oplysningen stå. Svar OK, når den del selv er en oplysning, læseren kan bruge. Svar SLET, når hele sætningen er forklaring uden en oplysning i.
 - Svar SLET, når sætningen kun kommenterer teksten og ikke rummer en oplysning. En overskrift, en meta-titel og en meta-beskrivelse kan ikke slettes.
 - Læg ingen tal, navne, påstande eller råd til, og fjern ingen.
 - En overskrift bliver ved med at være en overskrift om det samme. Meta-titlen er højst 60 tegn, og meta-beskrivelsen højst 160.

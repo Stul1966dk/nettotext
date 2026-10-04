@@ -36,6 +36,31 @@ trin 8.
 
 ---
 
+## 2026-10-04 — Sprogtjekket peger på to former for pynt
+
+Sætningen "så maskinerne står i køkkener langt uden for Italien" stod i en
+eller anden ordlyd i fem af dagens seks Ariete-tekster, uanset regler og
+vejledninger. Pynt kan ikke genkendes i almindelighed, men to former kan:
+
+- en oplysning med et tal efterfulgt af ", så ..."
+- "For dig som køber betyder det ..." og "det betyder, at ..."
+
+`lib/tekst/sprogtjek.ts` peger nu på begge som fund efter regel 4, og
+modellen har fået besked på at fjerne den del, der maler ud, og lade
+oplysningen stå. Begge former kan være i orden, og modellen må svare OK.
+
+**Den anden form var også dér, påstande uden belæg slap ind**, for eksempel
+"en stor koncern bag sig, når det gælder reservedele og service". Tjekket
+fanger altså en del af belægsproblemet som en sidegevinst, men kun den del,
+der har netop den form.
+
+**Afprøvet én gang** på den sidste testtekst: 2 fund, 2 rettet, 2,5
+sekunder. Eksportsætningen blev til "Cirka 60 procent af det samlede salg går
+til eksport.", og sætningen om koncernen blev slettet. Falske alarmer er kun
+prøvet på en håndfuld sætninger.
+
+---
+
 ## 2026-10-04 — Én prøve i stedet for lister med forbudte vendinger
 
 **Ejerens indvending:** en liste med forbudte vendinger kan aldrig blive
