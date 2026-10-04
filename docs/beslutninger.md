@@ -36,6 +36,60 @@ trin 8.
 
 ---
 
+## 2026-10-04 — Fælles sprogregler i koden: "Almindeligt dansk"
+
+**Ejerens gennemlæsning:** teksterne lyder stadig maskinskrevne, selvom de
+går fri af alle de forbudte vendinger. Eksemplerne var kolon i titlen
+("Ariete espressomaskiner: guide til ..."), betingelser med udsagnsordet
+først ("Brygger du på hele bønner, er malegraden ..."), udpegning og
+billedsprog ("er det filterholderen, der bærer resultatet"), pynt hængt på
+en oplysning ("så maskinerne står i køkkener langt uden for Italien") og
+kommentarer om teksten selv ("Det er værd at have med").
+
+**Det er sætningsmønstre, ikke vendinger.** En liste med forbudte ord fanger
+dem ikke, og modellen vælger nabovendingen, når én bliver forbudt (se punktet
+om modsætningsfiguren på tjeklisten). De nye regler beskriver derfor, hvordan
+en sætning bygges, med ét forkert og ét rigtigt eksempel pr. regel.
+
+**Reglerne bor i koden** (`SPROGREGLER` i `lib/ai/prompt.ts`) og lægges ind
+mellem materialet og outputformatet. Det afviger fra beslutningen 27.09.2026,
+hvor sprogreglerne blev stående i skrivevejledningen, og det er godkendt af
+ejeren: reglerne skal gælde ens for alle teksttyper og for omskrivning, FAQ
+og udvidelse. Skrivevejledningens egne lister med forbudte vendinger er ikke
+rørt og kan stadig rettes på adminsiden. Siger de to noget forskelligt om
+sproget, vinder koden. Reglerne kan ses på adminsiden sammen med det faste
+format, men ikke rettes dér.
+
+**Vores egne prompttekster i koden er skrevet om**, så de ikke selv bruger
+de mønstre, de forbyder: udsagnsord først, kolon uden opremsning, lang
+tankestreg (også i blokmarkørerne, der nu slutter på "(START)" og "(SLUT)").
+Samme begrundelse som 25.08.2026: en model efterligner det sprog, den får.
+Idéforslagene og faktaudtrækket er ikke skrevet om, fordi de ikke skriver
+brødtekst.
+
+**Ikke gjort endnu:** de fire skrivevejledninger i databasen bruger selv
+mønstrene ("Mangler du et konkret tal, så skriv ..."). De er ejerens tekst
+og kan være rettet på adminsiden siden migrationerne, så de skal læses dér,
+før nogen skriver dem om.
+
+**Afprøvet to gange lokalt på Ariete-briefen, og reglerne rækker kun et
+stykke.** Første test fjernede kolon helt, også i titlen, men lod fem
+betingelser med udsagnsordet først og tre udpegninger stå. Derefter blev de
+to regler skærpet og gentaget sidst i brugerbeskeden (`SPROG_HUSK`). Anden
+test: to betingelser med udsagnsordet først, tre udpegninger, og tre
+sætninger, der begynder med "hvis", så reglen gav ikke ensformighed. To ting
+gik ikke væk: titlen blev delt med komma i stedet for kolon ("Ariete
+espressomaskiner, sådan er de skruet sammen"), og sætningen "så maskinerne
+findes i køkkener langt uden for Italien" kom igen næsten ordret. Reglen om
+kolon er derfor udvidet til komma og tankestreg i titler; den udvidelse er
+ikke afprøvet.
+
+**Næste skridt, hvis ejeren vil længere:** en gennemskrivning i et ekstra
+kald, hvor modellen retter den færdige tekst efter de seks regler. Det gør
+hver tekst langsommere og cirka dobbelt så dyr. Det er ikke bygget.
+
+---
+
 ## 2026-10-04 — Dashboard i menuen, mailadressen ud
 
 Menuen i appen har fået et link til dashboardet, og mærket øverst til venstre

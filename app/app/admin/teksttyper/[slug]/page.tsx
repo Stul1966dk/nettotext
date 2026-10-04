@@ -4,7 +4,7 @@ import { getTranslations } from "next-intl/server";
 
 import { MODELLER } from "@/lib/ai/modeller";
 import { beregnPrisDkk } from "@/lib/ai/pris";
-import { outputformat } from "@/lib/ai/prompt";
+import { outputformat, SPROGREGLER } from "@/lib/ai/prompt";
 import {
   hentAlleSkabeloner,
   hentSkabelonTilRedigering,
@@ -196,7 +196,10 @@ export default async function RedigerTeksttype({ params }: Props) {
           }
         }
         kopikilder={kopikilder}
-        formater={{ medH1: outputformat(true), udenH1: outputformat(false) }}
+        formater={{
+          medH1: `${SPROGREGLER}\n\n${outputformat(true)}`,
+          udenH1: `${SPROGREGLER}\n\n${outputformat(false)}`,
+        }}
         tekster={tekster}
       />
 
