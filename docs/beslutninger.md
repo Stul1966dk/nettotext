@@ -84,9 +84,33 @@ findes i køkkener langt uden for Italien" kom igen næsten ordret. Reglen om
 kolon er derfor udvidet til komma og tankestreg i titler; den udvidelse er
 ikke afprøvet.
 
-**Næste skridt, hvis ejeren vil længere:** en gennemskrivning i et ekstra
-kald, hvor modellen retter den færdige tekst efter de seks regler. Det gør
-hver tekst langsommere og cirka dobbelt så dyr. Det er ikke bygget.
+**Gennemskrivningen er bygget samme dag, efter ejerens beslutning.**
+`POST /api/gennemskriv` får den færdige tekst og retter kun de sætninger, der
+bryder de seks regler. Editoren kalder den selv lige efter genereringen, og
+afsnittene er låst imens. Den gælder alle teksttyper og koster ikke en
+prøvetekst.
+
+**Serveren stoler ikke på svaret.** En gennemskrivning må rette ordlyd, ikke
+indhold. Svaret afvises, hvis antallet af afsnit eller titlen er ændret, hvis
+teksten er under 80 % af den gamle længde, eller hvis der står tal, som
+hverken den gamle tekst eller briefen har. Så beholder brugeren sin tekst og
+får en knap til at prøve igen. Tjekket fanger tal, ikke nye påstande i ord.
+
+**Rækkefølgen er gennemskrivning først, udvidelse bagefter.** Testen gjorde
+teksten kortere (733 ord blev til 706, under de valgte 720), fordi pynt
+bliver slettet. Længden måles derfor til sidst. Afsnit, udvidelsen lægger
+til, bliver ikke skrevet igennem.
+
+**Prisen:** ét kald mere pr. tekst med hele teksten som svar. I testen 47
+sekunder og 4.950 output-tokens på Opus, altså omtrent det samme som selve
+genereringen. Forbruget logges som "afsnit", som udvidelsen.
+
+**Afprøvet én gang** på Ariete-briefen. 11 sætninger blev rettet, resten stod
+ordret. Rettet blev blandt andet "det er forskellen på" og "er det den
+løsning, der giver mindst besvær", og kommentaren "Udseendet følger med" blev
+slettet. Stående blev "så maskinerne sælges i vidt omfang uden for Italien".
+Rækkefølgen blev vendt efter testen, og den vendte rækkefølge er ikke kørt.
+Afvisningerne og de tre andre teksttyper er heller ikke afprøvet.
 
 ---
 

@@ -56,6 +56,9 @@ type Tekster = BlokkortTekster &
   kladdeGemmer: string;
   kladdeGemt: string;
   kladdeIkkeGemt: string;
+  gennemskriver: string;
+  gennemskrivFejl: string;
+  gennemskrivKnap: string;
   kopieret: string;
   kopiMarkeret: string;
   proevIgen: string;
@@ -308,6 +311,11 @@ export function Generering({
   const [udvider, setUdvider] = useState(false);
   const [udvidFejl, setUdvidFejl] = useState<string | null>(null);
 
+  // Gennemskrivningen retter sproget i den færdige tekst. Kører af sig selv
+  // lige efter genereringen og før udvidelsen — se gennemskriv() længere nede.
+  const [gennemskriver, setGennemskriver] = useState(false);
+  const [gennemskrivFejl, setGennemskrivFejl] = useState(false);
+
   // Afsnittet med ofte stillede spørgsmål. Skrives i sit eget kald, når
   // brugeren beder om det. Se Faq.tsx.
   const [faqHenter, setFaqHenter] = useState(false);
@@ -389,9 +397,10 @@ export function Generering({
     };
   }, []);
 
-  // Udvidelsen bliver sat i gang inde fra genereringen, men er defineret
-  // længere nede, fordi den bruger laegBlokkePaaPlads. Ref'en er broen.
-  const udvidRef = useRef<(() => void) | null>(null);
+  // Udvidelsen og gennemskrivningen bliver sat i gang inde fra genereringen,
+  // men er defineret længere nede, fordi de bruger laegBlokkePaaPlads.
+  // Ref'en er broen.
+  const efterGenereringRef = useRef<(() => void) | null>(null);
 
   // React kalder effekter to gange i udvikling for at afsløre fejl. Uden den
   // her vagt ville hver generering koste to prøvetekster.
@@ -429,6 +438,7 @@ export function Generering({
         laengdemaal[kladde.skabelon]?.[kladde.brief.laengde ?? ""] ?? null,
       );
       setUdvidFejl(null);
+      setGennemskrivFejl(false);
       setGrundlag(samlGrundlag(kladde, personligtGrundlag));
 
       let samlet = "";
@@ -496,9 +506,10 @@ export function Generering({
             });
 
             // Blev teksten kortere end valgt, lægges der afsnit til med det
-            // samme. Kun her, lige efter en ny tekst: en kladde, der åbnes
-            // igen, bliver ikke ændret af sig selv.
-            udvidRef.current?.();
+            // samme, og derefter rettes sproget. Kun her, lige efter en ny
+            // tekst: en kladde, der åbnes igen, bliver ikke ændret af sig
+            // selv.
+            efterGenereringRef.current?.();
           }
 
           if (hendelse.slags === "fejl") {
@@ -751,9 +762,87 @@ export function Generering({
     }
   }, [laegBlokkePaaPlads, laengdemaal, tekster]);
 
+  /**
+   * Retter sproget i den færdige tekst efter reglerne om almindeligt dansk.
+   *
+   * Serveren afviser selv et svar, der har ændret på opbygningen, længden
+   * eller tallene. Så bliver teksten stående, som den er, og brugeren får
+   * en knap til at prøve igen.
+   *
+   * Spørgsmålene skrives ikke igennem og lægges tilbage efter artiklen.
+   * Meta-felterne skiftes kun ud, hvis brugeren ikke har rettet i dem,
+   * mens kaldet var undervejs.
+   */
+  const gennemskriv = useCallback(async () => {
+    const kladde = kladdeRef.current;
+    if (!kladde || kladde.blokke.length === 0) return;
+
+    setGennemskriver(true);
+    setGennemskrivFejl(false);
+
+    const sendtTitel = kladde.titel;
+    const sendtBeskrivelse = kladde.beskrivelse;
+
+    try {
+      const svar = await fetch("/api/gennemskriv", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          skabelon: kladde.skabelon,
+          brief: kladde.brief,
+          blokke: kladde.blokke,
+          titel: sendtTitel,
+          beskrivelse: sendtBeskrivelse,
+          stiltone: kladde.stiltone,
+        }),
+      });
+
+      const data = await svar.json().catch(() => null);
+
+      if (!svar.ok || typeof data?.html !== "string" || !data.html) {
+        setGennemskrivFejl(true);
+        return;
+      }
+
+      const spoergsmaal = (kladdeRef.current?.blokke ?? []).filter(erFaqBlok);
+      laegBlokkePaaPlads([...delIBlokke(data.html), ...spoergsmaal]);
+
+      if (
+        typeof data.titel === "string" &&
+        data.titel &&
+        kladdeRef.current?.titel === sendtTitel
+      ) {
+        setTitel(data.titel);
+        gem({ titel: data.titel });
+      }
+
+      if (
+        typeof data.beskrivelse === "string" &&
+        data.beskrivelse &&
+        kladdeRef.current?.beskrivelse === sendtBeskrivelse
+      ) {
+        setBeskrivelse(data.beskrivelse);
+        gem({ beskrivelse: data.beskrivelse });
+      }
+    } catch {
+      setGennemskrivFejl(true);
+    } finally {
+      setGennemskriver(false);
+    }
+  }, [gem, laegBlokkePaaPlads]);
+
+  // Rækkefølgen er med vilje: først sproget, så længden. Gennemskrivningen
+  // sletter pynt og gør teksten lidt kortere (733 ord blev til 706 i testen
+  // 04.10.2026), så længden skal måles bagefter. De afsnit, udvidelsen
+  // lægger til, bliver ikke skrevet igennem, men er skrevet efter de samme
+  // sprogregler.
   useEffect(() => {
-    udvidRef.current = () => void udvid();
-  }, [udvid]);
+    efterGenereringRef.current = () =>
+      void (async () => {
+        await gennemskriv();
+        await udvid();
+      })();
+  }, [udvid, gennemskriv]);
 
   /**
    * Lægger "Ofte stillede spørgsmål" til sidst i teksten.
@@ -1113,11 +1202,51 @@ export function Generering({
           ord={broedtekstOrd(blokke)}
           mindst={mindsteOrd}
           udvider={udvider}
-          laast={omskriverId !== null || gemmerBlok !== null || faqHenter}
+          laast={
+            omskriverId !== null ||
+            gemmerBlok !== null ||
+            faqHenter ||
+            gennemskriver
+          }
           fejl={udvidFejl}
           tekster={tekster}
           udvid={() => void udvid()}
         />
+      )}
+
+      {erFaerdig && gennemskriver && (
+        <p
+          role="status"
+          className="rounded-lg border border-kant bg-kort px-4 py-3 text-sm leading-relaxed text-gran"
+        >
+          {tekster.gennemskriver}
+        </p>
+      )}
+
+      {erFaerdig && gennemskrivFejl && !gennemskriver && (
+        <div className="space-y-3 rounded-lg border border-rav bg-kort px-4 py-4">
+          <p role="alert" className="text-sm leading-relaxed text-gran">
+            {tekster.gennemskrivFejl}
+          </p>
+
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <button
+              type="button"
+              onClick={() => void gennemskriv()}
+              disabled={
+                omskriverId !== null ||
+                gemmerBlok !== null ||
+                faqHenter ||
+                udvider
+              }
+              className="rounded-lg border border-gran px-4 py-2 text-sm font-medium text-gran outline-none focus-visible:ring-2 focus-visible:ring-gran focus-visible:ring-offset-2 focus-visible:ring-offset-kort disabled:opacity-60"
+            >
+              {tekster.gennemskrivKnap}
+            </button>
+
+            <p className="text-sm text-gran-let">{tekster.udvidGratis}</p>
+          </div>
+        </div>
       )}
 
       {fejl && (
@@ -1262,7 +1391,8 @@ export function Generering({
                     omskriverId !== null ||
                     gemmerBlok !== null ||
                     faqHenter ||
-                    udvider
+                    udvider ||
+                    gennemskriver
                   }
                   kanSlettes={blokke.length > 1}
                   gemmer={gemmerBlok === blok.id}
@@ -1290,7 +1420,12 @@ export function Generering({
               <Faq
                 findes={blokke.some(erFaqBlok)}
                 henter={faqHenter}
-                laast={omskriverId !== null || gemmerBlok !== null || udvider}
+                laast={
+                  omskriverId !== null ||
+                  gemmerBlok !== null ||
+                  udvider ||
+                  gennemskriver
+                }
                 fejl={faqFejl}
                 tekster={tekster}
                 tilfoej={(spoergsmaal) => void tilfoejFaq(spoergsmaal)}
