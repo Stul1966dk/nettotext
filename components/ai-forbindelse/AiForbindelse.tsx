@@ -20,7 +20,19 @@ export type LeverandoerValg = {
   konsol: string;
   /** Modellen, formularen står på fra start. Se standardValgbarModel. */
   standard: string;
-  modeller: { id: string; navn: string; beskrivelse: string }[];
+  /**
+   * Alle modeller hos leverandøren. `klar: false` betyder, at leverandøren
+   * er lukket (OpenAI); så vises valget slet ikke.
+   */
+  modeller: Modelvalg[];
+};
+
+type Modelvalg = {
+  id: string;
+  navn: string;
+  beskrivelse: string;
+  klar: boolean;
+  anbefalet: boolean;
 };
 
 export type GemtNoegle = {
@@ -219,6 +231,10 @@ export function AiForbindelse({
                   ?.modeller ?? []
               }
               vaerdi={gemt.model}
+              grupper={{
+                anbefalet: tekster.modelAnbefalet,
+                ikkeAnbefalet: tekster.modelIkkeAnbefalet,
+              }}
               deaktiveret={arbejder !== null}
               onVaelg={skiftModel}
             />
@@ -330,6 +346,10 @@ export function AiForbindelse({
             label={tekster.modelLabel}
             modeller={leverandoer.modeller}
             vaerdi={model}
+            grupper={{
+              anbefalet: tekster.modelAnbefalet,
+              ikkeAnbefalet: tekster.modelIkkeAnbefalet,
+            }}
             deaktiveret={arbejder !== null}
             onVaelg={setModel}
           />
@@ -411,17 +431,24 @@ function ModelValg({
   label,
   modeller,
   vaerdi,
+  grupper,
   deaktiveret,
   onVaelg,
 }: {
   id: string;
   label: string;
-  modeller: { id: string; navn: string; beskrivelse: string }[];
+  modeller: Modelvalg[];
   vaerdi: string;
+  /** Overskrifterne på de to grupper i rullemenuen. */
+  grupper: { anbefalet: string; ikkeAnbefalet: string };
   deaktiveret: boolean;
   onVaelg: (id: string) => void;
 }) {
-  if (modeller.length === 0) return null;
+  const valgbare = modeller.filter((m) => m.klar);
+  if (valgbare.length === 0) return null;
+
+  const anbefalede = valgbare.filter((m) => m.anbefalet);
+  const fraraadede = valgbare.filter((m) => !m.anbefalet);
 
   return (
     <div className="space-y-2">
@@ -436,11 +463,23 @@ function ModelValg({
         onChange={(e) => onVaelg(e.target.value)}
         className={feltKlasse}
       >
-        {modeller.map((m) => (
-          <option key={m.id} value={m.id}>
-            {m.navn} — {m.beskrivelse}
-          </option>
-        ))}
+        <optgroup label={grupper.anbefalet}>
+          {anbefalede.map((m) => (
+            <option key={m.id} value={m.id}>
+              {m.navn} — {m.beskrivelse}
+            </option>
+          ))}
+        </optgroup>
+        {fraraadede.length > 0 && (
+          // Kan vælges, men grunden til at vi fraråder dem står i teksten.
+          <optgroup label={grupper.ikkeAnbefalet}>
+            {fraraadede.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.navn} — {m.beskrivelse}
+              </option>
+            ))}
+          </optgroup>
+        )}
       </select>
     </div>
   );

@@ -36,6 +36,60 @@ trin 8.
 
 ---
 
+## 2026-11-11 — Alle modeller kan vælges; listen hentes automatisk
+
+Ejeren ville kunne vælge blandt alle tilgængelige modeller, og have listen
+opdateret automatisk med nye modeller og priser. Valgt: **hybridløsningen,
+uden låste modeller.** Første udgave låste modeller uden pris; ejeren bad
+samme dag om, at ingen låses, men at der i stedet står en hjælpetekst ved
+de modeller, vi fraråder, med grunden.
+
+- **Modellerne hentes automatisk** fra Anthropic med platformens nøgle og
+  gemmes i et døgn (`lib/ai/modelkatalog.ts`, `unstable_cache`). Det er
+  gratis at hente listen. Fejler den, vises pristabellen, som den er.
+  Modeller i pristabellen, som Anthropic ikke længere har, skjules.
+- **Priserne kan ikke hentes.** Hverken Anthropic eller OpenAI udgiver
+  priser, et program kan læse. Fravalgt: en ekstern prisliste (fx en
+  offentlig fil på GitHub), fordi en forkert pris får budgetloftet til at
+  regne forkert. Priserne står i `lib/ai/modeller.ts`, slået op 11.11.2026.
+- **Alle 15 Claude modeller står i pristabellen** og kan vælges. Fem er
+  anbefalet: Opus 5.5, Opus 5, Sonnet 5.5, Sonnet 5 og Haiku 5.5. Ti står
+  under "Ikke anbefalet" med grunden: Fable 5.2 (dyr og langsom, kan nå
+  tidsgrænsen på 120 sekunder), Fable 5.1 og 5 (afløst af 5.2), Opus 4.5 til
+  4.8 og Sonnet 4.5 og 4.6 (ældre og dyrere end de nye), Haiku 4.5 (ti
+  gange dyrere end Haiku 5.5).
+- **En ny model, som pristabellen ikke kender, kan også vælges** med det
+  samme. Indtil prisen er lagt ind, regner budgetloftet med den HØJESTE pris
+  i tabellen (`beregnPrisDkk`), og hvert kald skriver en linje i fejlloggen,
+  så det bliver opdaget. Den står under "Ikke anbefalet" som "ny model, ikke
+  afprøvet".
+- **Valideringen på serveren** (`kanVaelges`) godtager en model, der står i
+  pristabellen ELLER på Anthropics egen liste. Listen kommer fra Anthropic,
+  ikke fra browseren.
+- **OpenAI er stadig lukket** som leverandør (tjeklisten øverst). Det er en
+  lås på leverandøren, ikke på modeller.
+- **Modelforskelle står i tabellen:** `fallback` (sikkerhedslinen
+  `fallbacks: "default"`, kun på Fable 5.2/5.1, Opus 5.5/5 og Sonnet 5.5) og
+  `effort: false` (Haiku 4.5 og Sonnet 4.5 afviser `effort`). Et kort
+  prøvekald til alle 15 med appens indstillinger gik igennem 11.11.2026.
+  Haiku 4.5 skrev i øvrigt, at træterrasser er beplantede skrænter.
+- **Haiku 5.5 har højere pris over 100.000 tokens ind** (`langPris`).
+
+**Det koster os senere:**
+- **Idéforslag og udtræk af oplysninger skifter til Haiku 5.5**, fordi
+  `billigsteModel()` altid tager den billigste. Haiku 5.5 er ikke afprøvet
+  på udtræk af oplysninger. Fanger den færre end Sonnet 5, kan det give
+  svagere tekster.
+- Opus 5.5 og Sonnet 5.5 er ikke sammenlignet med Opus 5 og Sonnet 5 på
+  danske tekster.
+- Cache-læsninger koster kun 0,05 gange inputprisen på Opus 5.5 og Sonnet
+  5.5 (0,025 på Fable 5.2/5.1). `pris.ts` regner med 0,1 for alle, så
+  skønnet er lidt for højt. Det er den rigtige side at tage fejl af.
+- Hver ny model skal stadig have sin pris lagt ind. Indtil da tæller den for
+  meget i budgettet.
+
+---
+
 ## 2026-10-04 — Sprogtjekket peger på to former for pynt
 
 Sætningen "så maskinerne står i køkkener langt uden for Italien" stod i en

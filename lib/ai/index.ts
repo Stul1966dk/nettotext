@@ -4,7 +4,8 @@ import { hentNoegleTilBrug } from "@/lib/ainoegler";
 import { hentPlatformModel } from "@/lib/platformmodel";
 
 import { byggAdapter } from "./adapter";
-import { STANDARDMODEL, erKendtModel } from "./modeller";
+import { kanVaelges } from "./modelkatalog";
+import { STANDARDMODEL } from "./modeller";
 import { AiFejl, type AiAdapter, type Leverandoer } from "./typer";
 
 export { byggAdapter };
@@ -109,14 +110,20 @@ export async function vaelgNoegle(
     adapter: byggAdapter(egen.leverandoer, egen.apiNoegle),
     // Værn mod en gemt model, der siden er taget af listen. Bedre at skrive
     // teksten med standardmodellen end at fejle på et navn, vi ikke kender.
-    model: sikkerModel(egen.leverandoer, egen.model),
+    model: await sikkerModel(egen.leverandoer, egen.model),
     betaler: "user",
   };
 }
 
-/** Værn mod et modelnavn, der ikke står på vores kuraterede liste. */
-export function sikkerModel(leverandoer: Leverandoer, oensket: string): string {
-  return erKendtModel(leverandoer, oensket)
+/**
+ * Værn mod et modelnavn, der ikke længere kan vælges — fx en model, Anthropic
+ * har taget ud af drift. Så skrives teksten med standardmodellen i stedet.
+ */
+export async function sikkerModel(
+  leverandoer: Leverandoer,
+  oensket: string,
+): Promise<string> {
+  return (await kanVaelges(leverandoer, oensket))
     ? oensket
     : STANDARDMODEL[leverandoer];
 }

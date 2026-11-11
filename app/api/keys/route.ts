@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { modelErValgbar } from "@/lib/ai/modeller";
+import { kanVaelges } from "@/lib/ai/modelkatalog";
 import { AiFejl, LEVERANDOERER } from "@/lib/ai/typer";
 import {
   gemNoegle,
@@ -89,7 +89,7 @@ export async function POST(request: Request) {
     const info = await hentNoegleTilBrug(user.id);
     if (!info) return fejl("ingen_noegle", 400);
 
-    if (!modelErValgbar(info.leverandoer, anmodning.data.model)) {
+    if (!(await kanVaelges(info.leverandoer, anmodning.data.model))) {
       return fejl("ugyldig_anmodning", 400);
     }
 
@@ -126,7 +126,7 @@ export async function POST(request: Request) {
     // Serverside-tjek af det samme, som UI'et allerede skjuler. En leverandør
     // uden priser kan ikke bogføres, og så må den ikke vælges — heller ikke
     // af en, der sender anmodningen uden om siden. Se lib/ai/modeller.ts.
-    if (!modelErValgbar(leverandoer, model)) {
+    if (!(await kanVaelges(leverandoer, model))) {
       return fejl("leverandoer_ikke_klar", 400);
     }
 

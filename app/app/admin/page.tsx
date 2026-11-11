@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
-import { LEVERANDOER_NAVN, platformensLeverandoer, valgbareModeller } from "@/lib/ai";
+import { LEVERANDOER_NAVN, platformensLeverandoer } from "@/lib/ai";
+import { modelOversigt } from "@/lib/ai/modelkatalog";
 import { hentFejltal } from "@/lib/fejloversigt";
 import { hentPlatformModel } from "@/lib/platformmodel";
 
@@ -27,10 +28,10 @@ export default async function AdminForside() {
   const t = await getTranslations("admin");
   const fejltal = await hentFejltal();
 
-  // Layoutet har allerede slået fast, at det er adminen. Modellerne er dem,
-  // der hører til platformens nøgle og har en pris — de eneste, der må vælges.
+  // Layoutet har allerede slået fast, at det er adminen. Oversigten er alle
+  // modeller hos platformens leverandør; kun dem med en pris kan vælges.
   const leverandoer = platformensLeverandoer();
-  const modeller = leverandoer ? valgbareModeller(leverandoer) : [];
+  const modeller = leverandoer ? await modelOversigt(leverandoer) : [];
   const valgtModel = leverandoer ? await hentPlatformModel(leverandoer) : "";
 
   return (
@@ -50,16 +51,20 @@ export default async function AdminForside() {
           modeller={modeller.map((m) => ({
             id: m.id,
             navn: m.navn,
-            beskrivelse: m.beskrivelse,
+            beskrivelse: m.ny ? t("modelNyBeskrivelse") : m.beskrivelse,
             pris: m.pris
               ? t("modelPris", { ind: m.pris.ind, ud: m.pris.ud })
               : "",
+            anbefalet: m.anbefalet,
           }))}
           tekster={{
             overskrift: t("modelOverskrift"),
             forklaring: t("modelForklaring", {
               leverandoer: LEVERANDOER_NAVN[leverandoer],
             }),
+            ikkeAnbefalet: t("modelIkkeAnbefalet"),
+            ikkeAnbefaletForklaring: t("modelIkkeAnbefaletForklaring"),
+            kilde: t("modelKilde"),
             budget: t("modelBudget"),
             gem: t("modelGem"),
             gemmer: t("gemmer"),

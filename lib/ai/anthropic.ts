@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 
 import { skoenTokens } from "./estimat";
+import { findModel } from "./modeller";
 import { AiFejl, type AiAdapter, type Anmodning, type Resultat, type StreamBid } from "./typer";
 
 /**
@@ -23,13 +24,17 @@ export function anthropicAdapter(apiNoegle: string): AiAdapter {
    * `fallbacks: "default"` er en sikkerhedsline: nægter modellen at svare på
    * en anmodning, prøver Anthropic samme anmodning på en anden model i stedet
    * for bare at give op. Det sker næppe for en dansk blogtekst, men det koster
-   * intet, når det ikke bruges. Sættes kun på Opus-modellerne, se nedenfor.
+   * intet, når det ikke bruges. Sættes kun på de modeller, der er mærket
+   * `fallback` i pristabellen, se nedenfor.
    */
   function grundparametre(anmodning: Anmodning) {
-    // Sikkerhedslinen `fallbacks` er dokumenteret til Opus-modellerne. Vi
-    // sætter den kun dér, frem for at risikere at et kald bliver afvist,
-    // fordi modellen ikke kender parameteren.
-    const fallback = anmodning.model.startsWith("claude-opus-")
+    // Sikkerhedslinen `fallbacks` er kun dokumenteret til nogle modeller
+    // (Opus 5, Opus 5.5 og Sonnet 5.5 blandt dem, vi bruger). Hvilke står i
+    // pristabellen, så vi ikke risikerer, at et kald bliver afvist, fordi
+    // modellen ikke kender parameteren.
+    const model = findModel(anmodning.model);
+
+    const fallback = model?.fallback
       ? {
           betas: ["server-side-fallback-2026-07-01"],
           fallbacks: "default" as const,
@@ -61,7 +66,13 @@ export function anthropicAdapter(apiNoegle: string): AiAdapter {
       // 15 til 17 sekunder og skriver ca. 1.150 ord i syv afsnit uden
       // opfundne tal. Prisen er ca. 70 % flere output-tokens og ca. 20
       // sekunder mere pr. tekst — derfor maxDuration = 120 i route.ts.
-      output_config: { effort: "high" as const },
+      //
+      // Udeladt på de få ældre modeller, der ikke kender den (Haiku 4.5,
+      // Sonnet 4.5) — de afviser ellers hele kaldet. Se `effort` i
+      // pristabellen.
+      ...(model?.effort === false
+        ? {}
+        : { output_config: { effort: "high" as const } }),
     };
   }
 

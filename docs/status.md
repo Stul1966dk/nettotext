@@ -67,7 +67,10 @@ Færdigt:
   AES-256-GCM med `ENCRYPTION_KEY`; begrundelsen står i `beslutninger.md`.
 - `POST /api/keys` — gem, validér, skift model og slet nøgle.
 - AI-forbindelse i `/app/indstillinger`: vælg leverandør, indsæt nøgle,
-  kurateret modelliste, "Test forbindelsen"-knap, slet nøgle.
+  modelliste, "Test forbindelsen"-knap, slet nøgle. Fra 11.11.2026 hentes
+  Anthropics modeller automatisk én gang i døgnet (`lib/ai/modelkatalog.ts`).
+  Alle kan vælges; dem vi fraråder, står under "Ikke anbefalet" med grunden.
+  Priserne står i `lib/ai/modeller.ts`. Samme liste på adminsidens modelvalg.
   Afprøvet ende til ende med en rigtig nøgle 02.09.2026 — kryptering,
   lagring, dekryptering og kald til Anthropic. **Undtagen sletningen**, som
   ikke er kørt igennem på en rigtig nøgle endnu.

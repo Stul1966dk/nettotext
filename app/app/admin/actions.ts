@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 import { z } from "zod";
 
-import { findModel, modelErValgbar, platformensLeverandoer } from "@/lib/ai";
+import { findModel, platformensLeverandoer } from "@/lib/ai";
+import { kanVaelges } from "@/lib/ai/modelkatalog";
 import { hentAdmin } from "@/lib/admin";
 import { gemPlatformModel } from "@/lib/platformmodel";
 
@@ -16,8 +17,8 @@ import { gemPlatformModel } from "@/lib/platformmodel";
  *   1. ADMIN-TJEKKET GENTAGES HER. Layoutet beskytter siden, ikke
  *      handlingen: en server action kan kaldes direkte.
  *   2. INPUT VALIDERES, før noget skrives. Modellen skal stå på den
- *      kuraterede liste, høre til platformens leverandør og have en pris —
- *      ellers ville budgetloftet tælle forkert. Se modelErValgbar().
+ *      pristabel eller Anthropics egen liste og høre til platformens
+ *      leverandør. Se kanVaelges().
  */
 
 export type ModelSvar = { ok: boolean; besked: string };
@@ -39,7 +40,7 @@ export async function gemPlatformModelAction(
   if (
     !resultat.success ||
     !leverandoer ||
-    !modelErValgbar(leverandoer, resultat.data.model)
+    !(await kanVaelges(leverandoer, resultat.data.model))
   ) {
     return { ok: false, besked: t("modelFejl") };
   }

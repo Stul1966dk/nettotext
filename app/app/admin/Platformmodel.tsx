@@ -7,8 +7,11 @@ import { gemPlatformModelAction, type ModelSvar } from "./actions";
 /**
  * Valget af model på platformens nøgle.
  *
- * Radioknapper frem for en rullemenu: der er to modeller, og forskellen på
- * dem — sprog mod pris — skal kunne læses, før der vælges.
+ * Radioknapper frem for en rullemenu: forskellen på modellerne — sprog mod
+ * pris — skal kunne læses, før der vælges.
+ *
+ * Alle modeller kan vælges (ejerens beslutning 11.11.2026). De anbefalede
+ * står øverst; de øvrige står under "Ikke anbefalet" med grunden ved hver.
  */
 
 type ModelValg = {
@@ -17,6 +20,7 @@ type ModelValg = {
   beskrivelse: string;
   /** Prisen som færdig tekst. Tom, hvis den ikke kendes. */
   pris: string;
+  anbefalet: boolean;
 };
 
 export function Platformmodel({
@@ -29,6 +33,9 @@ export function Platformmodel({
   tekster: {
     overskrift: string;
     forklaring: string;
+    ikkeAnbefalet: string;
+    ikkeAnbefaletForklaring: string;
+    kilde: string;
     budget: string;
     gem: string;
     gemmer: string;
@@ -38,6 +45,9 @@ export function Platformmodel({
     gemPlatformModelAction,
     null,
   );
+
+  const anbefalede = modeller.filter((m) => m.anbefalet);
+  const fraraadede = modeller.filter((m) => !m.anbefalet);
 
   return (
     <form
@@ -54,38 +64,31 @@ export function Platformmodel({
       <fieldset className="space-y-3">
         <legend className="sr-only">{tekster.overskrift}</legend>
 
-        {modeller.map((model) => (
-          <label
-            key={model.id}
-            className="flex cursor-pointer items-start gap-3 rounded-lg border border-kant bg-bund px-4 py-3"
-          >
-            <input
-              type="radio"
-              name="model"
-              value={model.id}
-              // Ikke styret af state: formularen nulstilles af React efter
-              // hver gemning, og siden hentes igen med det gemte valg.
-              defaultChecked={model.id === valgt}
-              className="mt-1 h-4 w-4 accent-gran"
-            />
-            <span className="space-y-1">
-              <span className="block text-sm font-medium text-gran">
-                {model.navn}
-              </span>
-              <span className="block text-sm leading-relaxed text-gran-let">
-                {model.beskrivelse}
-              </span>
-              {model.pris && (
-                <span className="block font-mono text-xs text-gran-let">
-                  {model.pris}
-                </span>
-              )}
-            </span>
-          </label>
+        {anbefalede.map((model) => (
+          <Valg key={model.id} model={model} valgt={valgt} />
         ))}
+
+        {fraraadede.length > 0 && (
+          <div className="space-y-3 pt-4">
+            <div className="space-y-1">
+              <p className="font-mono text-xs uppercase tracking-widest text-gran-let">
+                {tekster.ikkeAnbefalet}
+              </p>
+              <p className="text-sm leading-relaxed text-gran-let">
+                {tekster.ikkeAnbefaletForklaring}
+              </p>
+            </div>
+
+            {fraraadede.map((model) => (
+              <Valg key={model.id} model={model} valgt={valgt} />
+            ))}
+          </div>
+        )}
       </fieldset>
 
-      <p className="text-sm leading-relaxed text-gran-let">{tekster.budget}</p>
+      <p className="text-sm leading-relaxed text-gran-let">
+        {tekster.budget} {tekster.kilde}
+      </p>
 
       {svar && (
         <p
@@ -106,5 +109,34 @@ export function Platformmodel({
         {arbejder ? tekster.gemmer : tekster.gem}
       </button>
     </form>
+  );
+}
+
+function Valg({ model, valgt }: { model: ModelValg; valgt: string }) {
+  return (
+    <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-kant bg-bund px-4 py-3">
+      <input
+        type="radio"
+        name="model"
+        value={model.id}
+        // Ikke styret af state: formularen nulstilles af React efter hver
+        // gemning, og siden hentes igen med det gemte valg.
+        defaultChecked={model.id === valgt}
+        className="mt-1 h-4 w-4 accent-gran"
+      />
+      <span className="space-y-1">
+        <span className="block text-sm font-medium text-gran">
+          {model.navn}
+        </span>
+        <span className="block text-sm leading-relaxed text-gran-let">
+          {model.beskrivelse}
+        </span>
+        {model.pris && (
+          <span className="block font-mono text-xs text-gran-let">
+            {model.pris}
+          </span>
+        )}
+      </span>
+    </label>
   );
 }

@@ -1,5 +1,6 @@
 import "server-only";
 
+import { kanVaelges } from "@/lib/ai/modelkatalog";
 import { modelErValgbar, STANDARDMODEL } from "@/lib/ai/modeller";
 import type { Leverandoer } from "@/lib/ai/typer";
 import { createServiceClient } from "@/lib/supabase/server-service";
@@ -66,7 +67,7 @@ export async function hentPlatformModel(
 
     const valgt = data?.value;
 
-    if (typeof valgt === "string" && modelErValgbar(leverandoer, valgt)) {
+    if (typeof valgt === "string" && (await kanVaelges(leverandoer, valgt))) {
       return valgt;
     }
   } catch {

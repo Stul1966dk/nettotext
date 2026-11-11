@@ -1,4 +1,23 @@
-import { findModel } from "./modeller";
+import { findModel, MODELLER } from "./modeller";
+
+/** Står modellen i pristabellen med en pris? Ellers er prisen et skøn. */
+export function kenderPris(modelId: string): boolean {
+  return findModel(modelId)?.pris !== undefined;
+}
+
+/** Den højeste ind- og udpris i hele tabellen, hver for sig. */
+function hoejestePris(): { ind: number; ud: number } | null {
+  const priser = Object.values(MODELLER)
+    .flat()
+    .flatMap((m) => (m.pris ? [m.pris] : []));
+
+  if (priser.length === 0) return null;
+
+  return {
+    ind: Math.max(...priser.map((p) => p.ind)),
+    ud: Math.max(...priser.map((p) => p.ud)),
+  };
+}
 
 /**
  * Hvad kostede ét kald?
@@ -46,8 +65,21 @@ export function beregnPrisDkk(
   outputTokens: number,
   cache: { skrevet?: number; laest?: number } = {},
 ): number | null {
-  const pris = findModel(modelId)?.pris;
-  if (!pris) return null;
+  const model = findModel(modelId);
+
+  // Ny model, vi ikke har prisen på endnu: regn med den dyreste, vi kender.
+  // Så tæller budgetloftet hellere for meget end for lidt.
+  const kendtPris = model?.pris ?? hoejestePris();
+  if (!kendtPris) return null;
+
+  // Hele promptens længde tæller med, cachen inklusive. Er den over
+  // grænsen, betaler HELE kaldet den høje pris — ikke kun det overskydende.
+  const promptLaengde =
+    inputTokens + (cache.skrevet ?? 0) + (cache.laest ?? 0);
+  const pris =
+    model?.langPris && promptLaengde > model.langPris.overTokens
+      ? model.langPris
+      : kendtPris;
 
   const ind =
     inputTokens +

@@ -5,8 +5,8 @@ import {
   LEVERANDOER_NAVN,
   leverandoerErKlar,
   standardValgbarModel,
-  valgbareModeller,
 } from "@/lib/ai/modeller";
+import { modelOversigt } from "@/lib/ai/modelkatalog";
 import { LEVERANDOERER } from "@/lib/ai/typer";
 import { hentNoegleInfo } from "@/lib/ainoegler";
 
@@ -28,18 +28,24 @@ export async function AiForbindelseSektion() {
 
   const noegle = await hentNoegleInfo();
 
-  const leverandoerer: LeverandoerValg[] = LEVERANDOERER.map((id) => ({
-    id,
-    navn: LEVERANDOER_NAVN[id],
-    klar: leverandoerErKlar(id),
-    konsol: LEVERANDOER_KONSOL[id],
-    standard: standardValgbarModel(id),
-    modeller: valgbareModeller(id).map((m) => ({
-      id: m.id,
-      navn: m.navn,
-      beskrivelse: m.beskrivelse,
+  // Alle modeller hos leverandøren. Nye modeller, pristabellen ikke kender,
+  // får en fast tekst i stedet for en beskrivelse.
+  const leverandoerer: LeverandoerValg[] = await Promise.all(
+    LEVERANDOERER.map(async (id) => ({
+      id,
+      navn: LEVERANDOER_NAVN[id],
+      klar: leverandoerErKlar(id),
+      konsol: LEVERANDOER_KONSOL[id],
+      standard: standardValgbarModel(id),
+      modeller: (await modelOversigt(id)).map((m) => ({
+        id: m.id,
+        navn: m.navn,
+        beskrivelse: m.ny ? t("modelNy") : m.beskrivelse,
+        klar: m.klar,
+        anbefalet: m.anbefalet,
+      })),
     })),
-  }));
+  );
 
   // Datoen formateres på serveren, så den ser ens ud uanset browser — og så
   // klienten ikke skal hydrere en dato, der lige er skiftet.
@@ -70,6 +76,8 @@ export async function AiForbindelseSektion() {
         leverandoerLabel: t("leverandoerLabel"),
         leverandoerIkkeKlar: t.raw("leverandoerIkkeKlar") as string,
         modelLabel: t("modelLabel"),
+        modelAnbefalet: t("modelAnbefalet"),
+        modelIkkeAnbefalet: t("modelIkkeAnbefalet"),
         noegleLabel: t("noegleLabel"),
         noeglePladsholder: t("noeglePladsholder"),
         noegleHjaelp: t.raw("noegleHjaelp") as string,

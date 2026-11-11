@@ -1,6 +1,6 @@
 import "server-only";
 
-import { beregnPrisDkk } from "@/lib/ai/pris";
+import { beregnPrisDkk, kenderPris } from "@/lib/ai/pris";
 import type { Betaler, Leverandoer } from "@/lib/ai";
 import { logFejl } from "@/lib/fejl";
 import { createServiceClient } from "@/lib/supabase/server-service";
@@ -124,13 +124,14 @@ export async function skrivForbrug(post: {
     laest: post.cacheLaest,
   });
 
-  if (pris === null) {
-    // Modellen står uden pris i lib/ai/modeller.ts. Så tæller kaldet ikke med
-    // i dagens forbrug, og loftet er tilsvarende for løst. Det skal larme.
+  if (!kenderPris(post.model)) {
+    // Modellen står uden pris i lib/ai/modeller.ts. Forbruget er regnet med
+    // den højeste kendte pris (se beregnPrisDkk), så loftet tæller for meget,
+    // ikke for lidt. Men prisen skal lægges ind, så det skal stå i loggen.
     await logFejl(
       "lib/budget · manglende pris",
-      `Ingen pris kendt for modellen ${post.model}. Forbruget logges som ` +
-        "0 kr., og budgetloftet tæller for lavt. Tilføj prisen i " +
+      `Ingen pris kendt for modellen ${post.model}. Forbruget er regnet ` +
+        "med den højeste pris i tabellen. Tilføj prisen i " +
         "lib/ai/modeller.ts.",
       { bruger: post.brugerId, ekstra: { model: post.model } },
     );
