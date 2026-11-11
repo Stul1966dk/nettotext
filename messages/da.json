@@ -489,7 +489,7 @@
     "fejlAdgang": "Du har ikke adgang til at rette teksttyper.",
     "modelOverskrift": "AI-model på platformens nøgle",
     "modelForklaring": "Den model, {leverandoer} skriver med, når platformen betaler: prøveteksterne og de omskrivninger, udvidelser og ofte stillede spørgsmål, der hører til dem. Brugere med egen nøgle vælger selv model under Indstillinger. Idéforslag og udtræk af oplysninger bruger altid den billigste model.",
-    "modelPris": "{ind} / {ud} dollars pr. million tokens ind / ud",
+    "modelPris": "{ind, number} / {ud, number} dollars pr. million tokens ind / ud",
     "modelBudget": "En dyrere model bruger dagens budget hurtigere.",
     "modelIkkeAnbefalet": "Ikke anbefalet",
     "modelIkkeAnbefaletForklaring": "Kan vælges, men passer dårligere til NettoText. Grunden står ved hver model.",
