@@ -155,14 +155,6 @@ export const MODELLER: Record<Leverandoer, readonly Model[]> = {
       ikkeAnbefalet: true,
     })),
     {
-      id: "claude-opus-4-5-20251101",
-      navn: "Claude Opus 4.5",
-      beskrivelse:
-        "Ældre Opus. Koster det samme som Opus 5 og mere end Opus 5.5.",
-      pris: { ind: 5, ud: 25 },
-      ikkeAnbefalet: true,
-    },
-    {
       id: "claude-sonnet-4-6",
       navn: "Claude Sonnet 4.6",
       beskrivelse: "Ældre Sonnet. Dyrere end Sonnet 5 og Sonnet 5.5.",
@@ -234,6 +226,20 @@ export const STANDARDMODEL: Record<Leverandoer, string> = {
  * andre modeller. Slås priserne op i modellisten ovenfor, åbner vejen af sig
  * selv. Se tjeklisten i docs/beslutninger.md.
  */
+/**
+ * Modeller, der er valgt fra med vilje, selv om Anthropic stadig har dem.
+ *
+ * Uden denne liste ville en model, der er fjernet fra pristabellen, dukke op
+ * igen som "ny model, ikke afprøvet", så længe den står på Anthropics liste.
+ * En gemt model herfra skrives med standardmodellen i stedet (sikkerModel).
+ *
+ * Opus 4.5 er fjernet 23.11.2026: Anthropic tager den ud af drift 22.01.2027.
+ */
+export const FRAVALGTE_MODELLER: ReadonlySet<string> = new Set([
+  "claude-opus-4-5",
+  "claude-opus-4-5-20251101",
+]);
+
 export function modelErValgbar(leverandoer: Leverandoer, id: string): boolean {
   return MODELLER[leverandoer].some((m) => m.id === id && m.pris !== undefined);
 }
