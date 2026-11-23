@@ -3,7 +3,7 @@ import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
 import { unstable_cache } from "next/cache";
 
-import { MODELLER, modelErValgbar } from "./modeller";
+import { FRAVALGTE_MODELLER, MODELLER, modelErValgbar } from "./modeller";
 import type { Leverandoer } from "./typer";
 
 /**
@@ -112,7 +112,7 @@ export async function modelOversigt(
 
   const kendteId = new Set(kendte.map((m) => m.id));
   const nye = liste
-    .filter((m) => !kendteId.has(m.id))
+    .filter((m) => !kendteId.has(m.id) && !FRAVALGTE_MODELLER.has(m.id))
     .map((m) => ({
       id: m.id,
       navn: m.navn,
@@ -139,6 +139,7 @@ export async function kanVaelges(
 ): Promise<boolean> {
   if (modelErValgbar(leverandoer, id)) return true;
   if (leverandoer !== "anthropic") return false;
+  if (FRAVALGTE_MODELLER.has(id)) return false;
 
   try {
     return (await hentAnthropicListe()).some((m) => m.id === id);

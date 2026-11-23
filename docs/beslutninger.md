@@ -52,12 +52,16 @@ de modeller, vi fraråder, med grunden.
   priser, et program kan læse. Fravalgt: en ekstern prisliste (fx en
   offentlig fil på GitHub), fordi en forkert pris får budgetloftet til at
   regne forkert. Priserne står i `lib/ai/modeller.ts`, slået op 11.11.2026.
-- **Alle 15 Claude modeller står i pristabellen** og kan vælges. Fem er
+- **14 Claude modeller står i pristabellen** og kan vælges. Fem er
   anbefalet: Opus 5.5, Opus 5, Sonnet 5.5, Sonnet 5 og Haiku 5.5. Ti står
   under "Ikke anbefalet" med grunden: Fable 5.2 (dyr og langsom, kan nå
-  tidsgrænsen på 120 sekunder), Fable 5.1 og 5 (afløst af 5.2), Opus 4.5 til
+  tidsgrænsen på 120 sekunder), Fable 5.1 og 5 (afløst af 5.2), Opus 4.6 til
   4.8 og Sonnet 4.5 og 4.6 (ældre og dyrere end de nye), Haiku 4.5 (ti
   gange dyrere end Haiku 5.5).
+- **Opus 4.5 er fjernet 23.11.2026**, fordi Anthropic tager den ud af drift
+  22.01.2027. Den står i `FRAVALGTE_MODELLER` i `lib/ai/modeller.ts`, så den
+  ikke dukker op igen som ny model fra Anthropics liste. En bruger, der har
+  den gemt, får teksten skrevet med standardmodellen (`sikkerModel`).
 - **En ny model, som pristabellen ikke kender, kan også vælges** med det
   samme. Indtil prisen er lagt ind, regner budgetloftet med den HØJESTE pris
   i tabellen (`beregnPrisDkk`), og hvert kald skriver en linje i fejlloggen,
